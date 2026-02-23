@@ -374,6 +374,7 @@ const App = (function() {
         <div class="task-checkbox ${task.status === 'completed' ? 'checked' : ''}" data-action="toggle" data-id="${task.id}"></div>
         <div class="task-content" data-action="edit" data-id="${task.id}">
           <div class="task-title">${Utils.escapeHtml(task.title)}</div>
+          ${task.description ? `<div class="task-description">${Utils.escapeHtml(task.description)}</div>` : ''}
           <div class="task-meta">
             <span class="status-badge ${task.status}">${formatStatus(task.status)}</span>
             <span class="priority-badge ${task.priority}">${task.priority}</span>

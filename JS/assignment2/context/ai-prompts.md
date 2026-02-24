@@ -1,28 +1,4 @@
 ---
-timestamp: 2026-02-24T12:06:10.823Z
-prompt:
-go to the next step. dont forget the opsx guidelines
----
----
-timestamp: 2026-02-24T12:07:28.891Z
-prompt:
-go to the next step. dont forget the opsx guidelines
----
----
-timestamp: 2026-02-24T12:09:45.657Z
-prompt:
-go to the next step. dont forget the opsx guidelines
----
----
-timestamp: 2026-02-24T12:11:41.700Z
-prompt:
-go to the next step. dont forget the opsx guidelines
----
----
-timestamp: 2026-02-24T13:13:14.497Z
-prompt:
-start with the next task. follow opsx guidelines, go over config.yaml
----
 timestamp: 2026-02-23T22:31:48.456Z
 prompt:
 <explicit_instructions type="opsx-new.md">
@@ -97,25 +73,6 @@ timestamp: 2026-02-23T22:38:15.921Z
 prompt:
 Create TypeScript interfaces (no implementation code) that model the full domain of a typical task management app. First review the previous JavaScript implementation in the parent folder (assignment1) to align with existing features. Define only interfaces/type aliases/enums for core entities and their relationships: Task (id, title, description, status, priority, dueDate, createdAt, updatedAt, completedAt, recurrence, dependencies, checklist/subtasks, tags/labels, comments, attachments, reminders), Project/Board/List grouping, User/Assignee, Tag/Label, Status, Priority, Comment, ChecklistItem/Subtask, Dependency (with type), Recurrence pattern, Reminder, Attachment, Audit fields. Model one-to-many and many-to-many relations (e.g., tasks ↔ tags, tasks ↔ users), and use appropriate enum/string literal types for constrained values. Focus solely on the type/interface definitions that capture data shape and relationships; do not include any runtime logic or implementation. keep in mind the ospx guidelines
 ---
-timestamp: 2026-02-23T22:56:44.872Z
-prompt:
-create the proposals for the next ai as ospx wants you to. dont write ant code yet
----
-timestamp: 2026-02-23T23:00:49.074Z
-prompt:
-do it
----
-timestamp: 2026-02-23T23:02:27.229Z
-prompt:
-go to the next step
----
-timestamp: 2026-02-23T23:11:55.955Z
-prompt:
-go to the next step
----
-timestamp: 2026-02-23T23:12:49.098Z
-prompt:
-go to the next step
 ---
 timestamp: 2026-02-23T22:41:52.482Z
 prompt:
@@ -126,6 +83,32 @@ assignment2 is going to be a task management app. Implement te actual assignment
     - Add: recurring tasks, task dependencies, statistics
     search, sorting
     - Category +-< Task >-+ Priority relationships
+---
+---
+timestamp: 2026-02-23T22:56:44.872Z
+prompt:
+create the proposals for the next ai as ospx wants you to. dont write ant code yet
+---
+---
+timestamp: 2026-02-23T23:00:49.074Z
+prompt:
+do it
+---
+---
+timestamp: 2026-02-23T23:02:27.229Z
+prompt:
+go to the next step
+---
+---
+timestamp: 2026-02-23T23:11:55.955Z
+prompt:
+go to the next step
+---
+---
+timestamp: 2026-02-23T23:12:49.098Z
+prompt:
+go to the next step
+---
 ---
 timestamp: 2026-02-24T11:57:57.415Z
 prompt:
@@ -196,6 +179,147 @@ After completing the steps, summarize:
 <task> go over the specs, design, proposal and tasks to see if there is a plan for DAL layer, using existing domain interfaces. use localstarage for storage. plan for full CRUD with cascade delete, search, etc. use UOW and repository pattern. dont forget the opsx guidelines.
 </task>
 ---
+---
+timestamp: 2026-02-24T11:57:57.415Z
+prompt:
+<explicit_instructions type="opsx-new.md">
+Start a new change using the experimental artifact-driven approach.
+
+**Input**: The argument after `/opsx:new` is the change name (kebab-case), OR a description of what the user wants to build.
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
+
+   Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
+   > "What change do you want to work on? Describe what you want to build or fix."
+
+   From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
+
+   **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
+
+2. **Determine the workflow schema**
+
+   Use the default schema (omit `--schema`) unless the user explicitly requests a different workflow.
+
+   **Use a different schema only if the user mentions:**
+   - A specific schema name → use `--schema <name>`
+   - "show workflows" or "what workflows" → run `openspec schemas --json` and let them choose
+
+   **Otherwise**: Omit `--schema` to use the default.
+
+3. **Create the change directory**
+   ```bash
+   openspec new change "<name>"
+   ```
+   Add `--schema <name>` only if the user requested a specific workflow.
+   This creates a scaffolded change at `openspec/changes/<name>/` with the selected schema.
+
+4. **Show the artifact status**
+   ```bash
+   openspec status --change "<name>"
+   ```
+   This shows which artifacts need to be created and which are ready (dependencies satisfied).
+
+5. **Get instructions for the first artifact**
+   The first artifact depends on the schema. Check the status output to find the first artifact with status "ready".
+   ```bash
+   openspec instructions <first-artifact-id> --change "<name>"
+   ```
+   This outputs the template and context for creating the first artifact.
+
+6. **STOP and wait for user direction**
+
+**Output**
+
+After completing the steps, summarize:
+- Change name and location
+- Schema/workflow being used and its artifact sequence
+- Current status (0/N artifacts complete)
+- The template for the first artifact
+- Prompt: "Ready to create the first artifact? Run `/opsx:continue` or just describe what this change is about and I'll draft it."
+
+**Guardrails**
+- Do NOT create any artifacts yet - just show the instructions
+- Do NOT advance beyond showing the first artifact template
+- If the name is invalid (not kebab-case), ask for a valid name
+- If a change with that name already exists, suggest using `/opsx:continue` instead
+- Pass --schema if using a non-default workflow
+</explicit_instructions>
+<task> go over the specs, design, proposal and tasks to see if there is a plan for DAL layer, using existing domain interfaces. use localstarage for storage. plan for full CRUD with cascade delete, search, etc. use UOW and repository pattern. dont forget the opsx guidelines.
+</task>
+---
+---
+timestamp: 2026-02-24T11:57:57.415Z
+prompt:
+<explicit_instructions type="opsx-new.md">
+Start a new change using the experimental artifact-driven approach.
+
+**Input**: The argument after `/opsx:new` is the change name (kebab-case), OR a description of what the user wants to build.
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
+
+   Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
+   > "What change do you want to work on? Describe what you want to build or fix."
+
+   From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
+
+   **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
+
+2. **Determine the workflow schema**
+
+   Use the default schema (omit `--schema`) unless the user explicitly requests a different workflow.
+
+   **Use a different schema only if the user mentions:**
+   - A specific schema name → use `--schema <name>`
+   - "show workflows" or "what workflows" → run `openspec schemas --json` and let them choose
+
+   **Otherwise**: Omit `--schema` to use the default.
+
+3. **Create the change directory**
+   ```bash
+   openspec new change "<name>"
+   ```
+   Add `--schema <name>` only if the user requested a specific workflow.
+   This creates a scaffolded change at `openspec/changes/<name>/` with the selected schema.
+
+4. **Show the artifact status**
+   ```bash
+   openspec status --change "<name>"
+   ```
+   This shows which artifacts need to be created and which are ready (dependencies satisfied).
+
+5. **Get instructions for the first artifact**
+   The first artifact depends on the schema. Check the status output to find the first artifact with status "ready".
+   ```bash
+   openspec instructions <first-artifact-id> --change "<name>"
+   ```
+   This outputs the template and context for creating the first artifact.
+
+6. **STOP and wait for user direction**
+
+**Output**
+
+After completing the steps, summarize:
+- Change name and location
+- Schema/workflow being used and its artifact sequence
+- Current status (0/N artifacts complete)
+- The template for the first artifact
+- Prompt: "Ready to create the first artifact? Run `/opsx:continue` or just describe what this change is about and I'll draft it."
+
+**Guardrails**
+- Do NOT create any artifacts yet - just show the instructions
+- Do NOT advance beyond showing the first artifact template
+- If the name is invalid (not kebab-case), ask for a valid name
+- If a change with that name already exists, suggest using `/opsx:continue` instead
+- Pass --schema if using a non-default workflow
+</explicit_instructions>
+<task> go over the specs, design, proposal and tasks to see if there is a plan for DAL layer, using existing domain interfaces. use localstarage for storage. plan for full CRUD with cascade delete, search, etc. use UOW and repository pattern. dont forget the opsx guidelines.
+</task>
+---
+---
 timestamp: 2026-02-24T12:00:01.945Z
 prompt:
 <explicit_instructions type="opsx-ff.md">
@@ -208,7 +332,7 @@ Fast-forward through artifact creation - generate everything needed to start imp
 1. **If no input provided, ask what they want to build**
 
    Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
-   > "What change do you want to work on? Describe what you want to build or fix."
+   > "What change do you want to build or fix."
 
    From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
 
@@ -290,72 +414,29 @@ After completing all artifacts, summarize:
 <feedback>
 </feedback>
 ---
-timestamp: 2026-02-24T11:57:57.415Z
-prompt:
-<explicit_instructions type="opsx-new.md">
-Start a new change using the experimental artifact-driven approach.
-
-**Input**: The argument after `/opsx:new` is the change name (kebab-case), OR a description of what the user wants to build.
-
-**Steps**
-
-1. **If no input provided, ask what they want to build**
-
-   Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
-   > "What change do you want to work on? Describe what you want to build or fix."
-
-   From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
-
-   **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
-
-2. **Determine the workflow schema**
-
-   Use the default schema (omit `--schema`) unless the user explicitly requests a different workflow.
-
-   **Use a different schema only if the user mentions:**
-   - A specific schema name → use `--schema <name>`
-   - "show workflows" or "what workflows" → run `openspec schemas --json` and let them choose
-
-   **Otherwise**: Omit `--schema` to use the default.
-
-3. **Create the change directory**
-   ```bash
-   openspec new change "<name>"
-   ```
-   Add `--schema <name>` only if the user requested a specific workflow.
-   This creates a scaffolded change at `openspec/changes/<name>/` with the selected schema.
-
-4. **Show the artifact status**
-   ```bash
-   openspec status --change "<name>"
-   ```
-   This shows which artifacts need to be created and which are ready (dependencies satisfied).
-
-5. **Get instructions for the first artifact**
-   The first artifact depends on the schema. Check the status output to find the first artifact with status "ready".
-   ```bash
-   openspec instructions <first-artifact-id> --change "<name>"
-   ```
-   This outputs the template and context for creating the first artifact.
-
-6. **STOP and wait for user direction**
-
-**Output**
-
-After completing the steps, summarize:
-- Change name and location
-- Schema/workflow being used and its artifact sequence
-- Current status (0/N artifacts complete)
-- The template for the first artifact
-- Prompt: "Ready to create the first artifact? Run `/opsx:continue` or just describe what this change is about and I'll draft it."
-
-**Guardrails**
-- Do NOT create any artifacts yet - just show the instructions
-- Do NOT advance beyond showing the first artifact template
-- If the name is invalid (not kebab-case), ask for a valid name
-- If a change with that name already exists, suggest using `/opsx:continue` instead
-- Pass --schema if using a non-default workflow
-</explicit_instructions>
-<task> go over the specs, design, proposal and tasks to see if there is a plan for DAL layer, using existing domain interfaces. use localstarage for storage. plan for full CRUD with cascade delete, search, etc. use UOW and repository pattern. dont forget the opsx guidelines.
-</task>
 ---
+timestamp: 2026-02-24T12:06:10.823Z
+prompt:
+go to the next step. dont forget the opsx guidelines
+---
+---
+timestamp: 2026-02-24T12:07:28.891Z
+prompt:
+go to the next step. dont forget the opsx guidelines
+---
+---
+timestamp: 2026-02-24T12:09:45.657Z
+prompt:
+go to the next step. dont forget the opsx guidelines
+---
+---
+timestamp: 2026-02-24T12:11:41.700Z
+prompt:
+go to the next step. dont forget the opsx guidelines
+---
+---
+timestamp: 2026-02-24T13:13:14.497Z
+prompt:
+start with the next task. follow opsx guidelines, go over config.yaml
+---
+/opsx-apply.md implement the ts-task-manager-domain-types. follow opsx guidelines

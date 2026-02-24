@@ -440,3 +440,8 @@ prompt:
 start with the next task. follow opsx guidelines, go over config.yaml
 ---
 /opsx-apply.md implement the ts-task-manager-domain-types. follow opsx guidelines
+---
+timestamp: 2026-02-24T20:01:13.959Z
+prompt:
+create a plan to write a html which would incorporate the work that has been done before. go over everything that is in this project. follow opsx guidlines, and write the prompt to ai-prompts.md
+---

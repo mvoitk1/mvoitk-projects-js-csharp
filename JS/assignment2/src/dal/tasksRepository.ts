@@ -23,6 +23,8 @@ const PRIORITY_VALUE_ORDER: Record<string, number> = {
 type ForeignKeySets = {
   categoryIds: Set<EntityId>;
   priorityIds: Set<EntityId>;
+  recurrenceById: Map<EntityId, IRecurrenceRuleDto>;
+  dependencyById: Map<EntityId, IDependencyDto>;
 };
 
 const cloneTask = (task: ITaskDto): ITaskDto => ({
@@ -45,10 +47,14 @@ const ensure = (condition: boolean, message: string): void => {
 const buildFkSets = (): ForeignKeySets => {
   const categories = loadEnvelope<ICategoryDto>("categories").items;
   const priorities = loadEnvelope<IPriorityDto>("priorities").items;
+  const recurrence = loadEnvelope<IRecurrenceRuleDto>("recurrence").items;
+  const dependencies = loadEnvelope<IDependencyDto>("dependencies").items;
 
   return {
     categoryIds: new Set(categories.map((c) => c.id)),
     priorityIds: new Set(priorities.map((p) => p.id)),
+    recurrenceById: new Map(recurrence.map((r) => [r.id, r])),
+    dependencyById: new Map(dependencies.map((d) => [d.id, d])),
   };
 };
 
@@ -82,6 +88,18 @@ const validateTask = (task: ITaskDto, fk: ForeignKeySets): void => {
 
   ensure(fk.categoryIds.has(task.categoryId), `task.categoryId ${task.categoryId} does not exist`);
   ensure(fk.priorityIds.has(task.priorityId), `task.priorityId ${task.priorityId} does not exist`);
+
+   if (task.recurrenceRuleId) {
+     const rule = fk.recurrenceById.get(task.recurrenceRuleId);
+     ensure(!!rule, `task.recurrenceRuleId ${task.recurrenceRuleId} does not exist`);
+     ensure(rule?.taskId === task.id, `recurrenceRuleId ${task.recurrenceRuleId} does not belong to task ${task.id}`);
+   }
+
+   (task.dependencyIds ?? []).forEach((depId) => {
+     const edge = fk.dependencyById.get(depId);
+     ensure(!!edge, `dependency ${depId} does not exist`);
+     ensure(edge?.taskId === task.id, `dependency ${depId} does not belong to task ${task.id}`);
+   });
 };
 
 export class TasksRepository implements ITasksRepository {

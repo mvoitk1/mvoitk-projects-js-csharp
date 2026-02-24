@@ -18,6 +18,11 @@ timestamp: 2026-02-24T12:11:41.700Z
 prompt:
 go to the next step. dont forget the opsx guidelines
 ---
+---
+timestamp: 2026-02-24T13:13:14.497Z
+prompt:
+start with the next task. follow opsx guidelines, go over config.yaml
+---
 timestamp: 2026-02-23T22:31:48.456Z
 prompt:
 <explicit_instructions type="opsx-new.md">

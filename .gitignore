@@ -18,3 +18,11 @@ obj/
 
 # Logs
 *.log
+
+# Rider user files
+*.DotSettings.user
+
+# SQLite
+**/venueplatform.db
+**/*.db-wal
+**/*.db-shm

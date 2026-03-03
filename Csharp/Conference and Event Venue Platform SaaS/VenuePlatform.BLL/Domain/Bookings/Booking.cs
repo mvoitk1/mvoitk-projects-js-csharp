@@ -19,6 +19,9 @@ public sealed class Booking : ITenantScoped
     public decimal TotalAmount { get; private set; }
     public Guid? SpaceConfigurationId { get; private set; }
     public BookingStatus Status { get; private set; }
+    public Guid? CreatedByUserId { get; private set; }
+    public Guid? ConfirmedByUserId { get; private set; }
+    public Guid? CancelledByUserId { get; private set; }
 
     private Booking() { } // EF
 
@@ -46,12 +49,13 @@ public sealed class Booking : ITenantScoped
         Status = BookingStatus.Pending;
     }
 
-    public void Cancel(string? reason, DateTime cancelledUtc)
+    public void Cancel(string? reason, DateTime cancelledUtc, Guid userId)
     {
-        if (IsCancelled) return; // idempotent
+        if (IsCancelled) return; // idempotent - do not overwrite actor
 
         IsCancelled = true;
         CancelledUtc = cancelledUtc;
+        CancelledByUserId = userId;
 
         if (!string.IsNullOrWhiteSpace(reason))
         {
@@ -61,12 +65,17 @@ public sealed class Booking : ITenantScoped
         }
     }
 
-    public void Confirm()
+    public void Confirm(Guid userId)
     {
         if (IsCancelled)
             throw new InvalidOperationException("Cancelled booking cannot be confirmed.");
         
-        Status = BookingStatus.Confirmed;
+        // Idempotent: only set if transitioning from Pending to Confirmed
+        if (Status != BookingStatus.Confirmed)
+        {
+            Status = BookingStatus.Confirmed;
+            ConfirmedByUserId = userId;
+        }
     }
 
     public void SetTotalAmount(decimal amount)
@@ -91,5 +100,14 @@ public sealed class Booking : ITenantScoped
         StartUtc = startUtc;
         EndUtc = endUtc;
         AttendeeCount = attendeeCount;
+    }
+
+    public void SetCreatedBy(Guid userId)
+    {
+        // No-op if already set (idempotent)
+        if (CreatedByUserId is null)
+        {
+            CreatedByUserId = userId;
+        }
     }
 }

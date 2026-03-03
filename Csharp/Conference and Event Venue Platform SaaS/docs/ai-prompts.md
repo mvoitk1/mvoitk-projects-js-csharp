@@ -656,3 +656,494 @@ Phase 6.4: Added booking cancellation metadata (CancelledUtc, CancelReason).
 **Target Framework:** net10.0 confirmed
 
 ---
+
+## 2026-03-03T23:27:00Z
+
+**Summary:** Phase 6.5: Added booking actor fields for create/confirm/cancel actions.
+
+### Prompt Text
+
+```
+# Coder Mode — Phase 6.5: Booking actor fields (CreatedByUserId, ConfirmedByUserId, CancelledByUserId), KISS
+
+## Goal
+Store which user performed key booking actions:
+- CreatedByUserId
+- ConfirmedByUserId
+- CancelledByUserId
+
+This is Booking-only audit metadata (NOT a platform-wide audit trail system).
+
+No new middleware, no generic audit framework.
+
+---
+
+## Hard constraints
+- net10.0
+- Minimal APIs only
+- No new services/repositories
+- No CQRS/MediatR/AutoMapper
+- Keep it explicit and minimal
+- Use current authenticated user id from JWT claims (sub)
+
+---
+
+## Logging
+Append this prompt to `docs/ai-prompts.md` with date/time placeholder + summary:
+"Phase 6.5: Added booking actor fields for create/confirm/cancel actions."
+
+---
+
+## Step 1 — Domain: add actor fields + setters
+
+Edit:
+`VenuePlatform.BLL/Domain/Bookings/Booking.cs`
+
+Add:
+- `public Guid? CreatedByUserId { get; private set; }`
+- `public Guid? ConfirmedByUserId { get; private set; }`
+- `public Guid? CancelledByUserId { get; private set; }`
+
+Rules:
+- CreatedByUserId set once at create
+- ConfirmedByUserId set when confirming (only if transition happens)
+- CancelledByUserId set when cancelling (only if transition happens)
+- Idempotent endpoints must not overwrite these once set
+
+Add small methods (KISS, type-safe):
+- `public void SetCreatedBy(Guid userId)` (no-op if already set)
+- Update `Confirm()` to accept userId or add `Confirm(Guid userId)` overload:
+  - if already confirmed -> no-op
+  - if cancelled -> throw as before
+  - set Status=Confirmed and ConfirmedByUserId=userId (only if it wasn't confirmed)
+- Update `Cancel(...)` to accept userId or add `Cancel(string? reason, DateTime cancelledUtc, Guid userId)` overload:
+  - if already cancelled -> return (do not overwrite CancelledByUserId)
+
+Choose the cleanest signature set; avoid duplicating logic.
+
+---
+
+## Step 2 — DAL: mapping + migration
+
+Edit Booking configuration in `ApplicationDbContext`:
+- Map the three actor fields as nullable Guid columns
+
+Migration:
+- `dotnet ef migrations add AddBookingActorFields -p VenuePlatform.DAL -s VenuePlatform.Web`
+- `dotnet ef database update -p VenuePlatform.DAL -s VenuePlatform.Web`
+
+---
+
+## Step 3 — Contracts: expose actor fields (optional but useful)
+
+Update:
+`VenuePlatform.Contracts/Bookings/BookingResponse.cs`
+Add:
+- `Guid? CreatedByUserId`
+- `Guid? ConfirmedByUserId`
+- `Guid? CancelledByUserId`
+
+Update:
+`VenuePlatform.Contracts/Bookings/BookingDetailsResponse.cs`
+Add the same.
+
+Update mapping code accordingly.
+
+---
+
+## Step 4 — Web: extract current user id (KISS)
+
+In endpoints where needed, extract user id from claims:
+- `sub` claim contains Guid
+- If missing/invalid -> return 401 (should not happen if auth is set correctly)
+
+Do NOT introduce a new ICurrentUser service in this phase; keep it local and explicit.
+
+---
+
+## Step 5 — Apply in endpoints
+
+### A) Create endpoints
+- POST /bookings
+- POST /bookings/with-spaces
+
+After creating Booking instance:
+- set CreatedByUserId from current user
+
+### B) Confirm endpoint
+POST /bookings/{id}/confirm
+When confirming:
+- set ConfirmedByUserId as part of Confirm transition
+
+### C) Cancel endpoint
+DELETE /bookings/{id}?reason=
+When cancelling:
+- set CancelledByUserId as part of Cancel transition
+- keep idempotent behavior (don't overwrite existing actor if already cancelled)
+
+---
+
+## Acceptance criteria
+
+- New booking stores CreatedByUserId
+- Confirm sets ConfirmedByUserId only once
+- Cancel sets CancelledByUserId only once, preserves on repeated cancels
+- Actor fields appear in responses (if you implemented Step 3)
+- No schema or behavior changes beyond metadata
+- Build passes (0 warnings, 0 errors)
+
+STOP AFTER IMPLEMENTING.
+Do NOT implement:
+- generic audit trail system
+- system roles audit features
+- per-entity audit base classes
+```
+
+### Summary of Response
+
+Phase 6.5: Added booking actor fields for create/confirm/cancel actions.
+
+**Implementation Complete:**
+
+**Changes to `VenuePlatform.BLL/Domain/Bookings/Booking.cs`:**
+- Added `public Guid? CreatedByUserId { get; private set; }` property
+- Added `public Guid? ConfirmedByUserId { get; private set; }` property
+- Added `public Guid? CancelledByUserId { get; private set; }` property
+- Updated `Cancel(string? reason, DateTime cancelledUtc, Guid userId)` method:
+  - Sets `CancelledByUserId = userId` only when transitioning to cancelled state
+  - Idempotent: does not overwrite if already cancelled
+- Updated `Confirm(Guid userId)` method:
+  - Sets `ConfirmedByUserId = userId` only when transitioning from Pending to Confirmed
+  - Idempotent: no-op if already confirmed
+- Added `SetCreatedBy(Guid userId)` method:
+  - Sets `CreatedByUserId = userId` only if not already set
+  - Idempotent: no-op if already set
+
+**Changes to `VenuePlatform.DAL/Persistence/ApplicationDbContext.cs`:**
+- Added `booking.Property(b => b.CreatedByUserId).IsRequired(false);`
+- Added `booking.Property(b => b.ConfirmedByUserId).IsRequired(false);`
+- Added `booking.Property(b => b.CancelledByUserId).IsRequired(false);`
+
+**Migration Files Created:**
+- `20260303232744_AddBookingActorFields.cs` - Adds three actor columns to Bookings table
+- `20260303232744_AddBookingActorFields.Designer.cs` - Migration designer file
+- Updated `ApplicationDbContextModelSnapshot.cs` - Added actor properties to Booking entity
+
+**Changes to `VenuePlatform.Contracts/Bookings/BookingResponse.cs`:**
+- Added `Guid? CreatedByUserId` parameter to record
+- Added `Guid? ConfirmedByUserId` parameter to record
+- Added `Guid? CancelledByUserId` parameter to record
+
+**Changes to `VenuePlatform.Contracts/Bookings/BookingDetailsResponse.cs`:**
+- Added `Guid? CreatedByUserId` parameter to record
+- Added `Guid? ConfirmedByUserId` parameter to record
+- Added `Guid? CancelledByUserId` parameter to record
+
+**Changes to `VenuePlatform.Web/Program.cs`:**
+- Updated POST /bookings endpoint:
+  - Calls `booking.SetCreatedBy(userId)` after creating booking
+- Updated POST /bookings/with-spaces endpoint:
+  - Calls `booking.SetCreatedBy(userId)` after creating booking
+- Updated POST /bookings/{id}/confirm endpoint:
+  - Changed `booking.Confirm()` to `booking.Confirm(userId)`
+- Updated DELETE /bookings/{id} endpoint:
+  - Changed `booking.Cancel(reason, DateTime.UtcNow)` to `booking.Cancel(reason, DateTime.UtcNow, userId)`
+- Updated all `BookingResponse` instantiations to include actor fields
+- Updated all `BookingDetailsResponse` instantiations to include actor fields
+- Updated all booking query projections to include actor fields
+
+**Build Status:** Verified successful (0 warnings, 0 errors)
+
+**Target Framework:** net10.0 confirmed
+
+---
+
+## 2026-03-03T23:32:33Z
+
+**Summary:** Safe refactor: split Program.cs endpoints into endpoint modules; no behavior change.
+
+### Prompt Text
+
+```
+# Coder Mode — SAFE REFACTOR: Split `Program.cs` into endpoint modules (NO behavior changes)
+
+## Goal
+`VenuePlatform.Web/Program.cs` is ~2200 lines. Refactor by extracting endpoints into feature files while keeping:
+- **all routes identical**
+- **all auth/role checks identical**
+- **all validation logic identical**
+- **all helper functions identical**
+- **middleware order identical**
+- **DI registrations identical**
+- **Swagger behavior identical**
+- **responses identical**
+
+This is a **pure refactor**: compile-safe, minimal, and reversible.
+
+---
+
+## Hard constraints (must obey)
+- net10.0
+- Minimal APIs only (no Controllers/MVC)
+- No MediatR/CQRS/AutoMapper
+- No new services/repositories
+- Do NOT change DAL/BLL/Contracts
+- Do NOT change database schema/migrations
+- Do NOT change endpoint paths, verbs, query params, payload shapes, or status codes
+- Do NOT change authorization logic or membership checks
+- Do NOT change tenant resolution behavior or exempt routes
+- Helpers may be moved, but logic must remain byte-for-byte equivalent (only signature adjustments if needed)
+
+---
+
+## Logging
+Append this prompt to `docs/ai-prompts.md` with date/time placeholder + summary:
+"Safe refactor: split Program.cs endpoints into endpoint modules; no behavior change."
+
+---
+
+## Output requirement
+At the end, provide:
+- list of new files created
+- what `Program.cs` contains after refactor (high-level)
+- confirmation that all routes remain identical
+- confirmation: `dotnet build` succeeds (0 warnings, 0 errors)
+
+---
+
+# Step 1 — Create Web folder structure
+
+Create folder in `VenuePlatform.Web`:
+
+`Endpoints/`
+
+Create these files (static classes + extension methods):
+
+1) `VenuePlatform.Web/Endpoints/AuthEndpoints.cs`
+2) `VenuePlatform.Web/Endpoints/ClientEndpoints.cs`
+3) `VenuePlatform.Web/Endpoints/SpaceEndpoints.cs`
+4) `VenuePlatform.Web/Endpoints/SpaceConfigurationEndpoints.cs`
+5) `VenuePlatform.Web/Endpoints/BookingEndpoints.cs`
+6) `VenuePlatform.Web/Endpoints/DevEndpoints.cs` (dev-only routes)
+7) `VenuePlatform.Web/Endpoints/HealthEndpoints.cs` (platform + tenant health endpoints, if present)
+
+Keep naming consistent and KISS.
+
+---
+
+# Step 2 — Keep `Program.cs` as the composition root only
+
+After refactor, `Program.cs` should primarily contain:
+
+- builder creation + configuration
+- service registrations (DI) (unchanged)
+- middleware pipeline setup (unchanged order)
+- swagger setup (unchanged)
+- creation of tenant route group(s) (unchanged)
+- calls to `Map...Endpoints()` extension methods
+
+Do NOT move DI registrations or middleware out of Program.cs.
+
+---
+
+# Step 3 — Extension method pattern (KISS)
+
+Each endpoint file should contain one public extension method, e.g.:
+
+```csharp
+namespace VenuePlatform.Web.Endpoints;
+
+public static class BookingEndpoints
+{
+    public static RouteGroupBuilder MapBookingEndpoints(this RouteGroupBuilder group)
+    {
+        // all existing booking routes mapped here
+        return group;
+    }
+}
+```
+
+Notes:
+- Use `RouteGroupBuilder` for tenant-scoped endpoints.
+- Use `IEndpointRouteBuilder` for non-tenant endpoints (auth, platform health, swagger helper endpoints if any).
+- Do NOT change route templates.
+
+---
+
+# Step 4 — Move endpoints by feature WITHOUT changing code behavior
+
+Move the endpoint mappings and handler lambdas from `Program.cs` into the appropriate modules:
+
+- Auth endpoints -> `AuthEndpoints.cs`
+- Clients -> `ClientEndpoints.cs`
+- Spaces + availability -> `SpaceEndpoints.cs`
+- Space configurations (and join endpoints) -> `SpaceConfigurationEndpoints.cs`
+- Bookings:
+  - list, details, create, with-spaces, update, with-spaces update, confirm, cancel, set spaces, conflict helpers, min-duration helpers, pricing helpers, current-user-id extraction helper -> `BookingEndpoints.cs`
+- Dev-only endpoints -> `DevEndpoints.cs`
+- Health endpoints (platform + tenant) -> `HealthEndpoints.cs`
+
+**Move code, don't rewrite it.**
+
+---
+
+# Step 5 — Handle shared helpers safely (no behavior change)
+
+You likely have shared local helper functions in Program.cs:
+- `FindConflictingBookings`
+- `ValidateMinBookingDurationAsync`
+- `CalculateBookingTotal`
+- current user id extraction helper
+- any "missing ids" helper
+
+Rule:
+- If a helper is only used by one feature, move it into that feature file as a `private static` method.
+- If a helper is used by multiple feature files, create ONE shared internal helper file:
+
+Create:
+`VenuePlatform.Web/Endpoints/EndpointHelpers.cs`
+
+---
+
+# Step 6 — Preserve tenant route grouping exactly
+
+If currently you do:
+- `var tenantGroup = app.MapGroup("/{companySlug}");`
+
+Keep it and pass that group into module mapping:
+
+```csharp
+tenantGroup.MapBookingEndpoints();
+```
+
+---
+
+# Step 7 — Build + sanity checks
+
+After moving code:
+1) Run:
+   - `dotnet build`
+2) Quick manual smoke (no need to add tests):
+   - `GET /health`
+   - `POST /auth/login` (if present)
+   - `GET /{companySlug}/spaces/availability?...`
+   - `GET /{companySlug}/bookings?...`
+   - `POST /{companySlug}/bookings/with-spaces` (dev user)
+   - `POST /{companySlug}/bookings/{id}/confirm`
+   - `DELETE /{companySlug}/bookings/{id}?reason=test`
+
+Confirm behavior unchanged.
+
+---
+
+## Acceptance criteria
+- `Program.cs` reduced substantially (ideally < 400 lines)
+- Endpoints compile and run
+- No route changes, no behavior changes
+- No new dependencies or architectural layers
+- Build passes: 0 warnings, 0 errors
+
+STOP AFTER IMPLEMENTING THIS REFACTOR.
+Do NOT implement new features while refactoring.
+```
+
+### Summary of Response
+
+Safe refactor: split Program.cs endpoints into endpoint modules; no behavior change.
+
+**New Files Created:**
+
+1. **`VenuePlatform.Web/Endpoints/EndpointHelpers.cs`** - Shared internal helper methods:
+   - `GetUserIdFromClaims(ClaimsPrincipal user)` - Extracts user ID from JWT "sub" claim
+   - `FindConflictingBookings(...)` - Detects booking space conflicts
+   - `ValidateMinBookingDurationAsync(...)` - Validates minimum booking duration against SpaceConfiguration
+   - `CalculateBookingTotal(...)` - Calculates booking total amount based on duration and rates
+
+2. **`VenuePlatform.Web/Endpoints/AuthEndpoints.cs`** - Authentication endpoints (non-tenant):
+   - `POST /auth/login` - User login with JWT token generation
+
+3. **`VenuePlatform.Web/Endpoints/HealthEndpoints.cs`** - Health check endpoints:
+   - `GET /health` - Platform health (non-tenant)
+   - `GET /{companySlug}/health` - Tenant health
+   - `GET /{companySlug}/db-check` - DbContext/Repository wiring check
+
+4. **`VenuePlatform.Web/Endpoints/ClientEndpoints.cs`** - Client management (tenant-scoped):
+   - `POST /{companySlug}/clients/seed-one` - Create test client (Manager+)
+   - `GET /{companySlug}/clients` - List clients (any member)
+   - `GET /{companySlug}/memberships` - List memberships
+
+5. **`VenuePlatform.Web/Endpoints/SpaceEndpoints.cs`** - Space management (tenant-scoped):
+   - `GET /{companySlug}/spaces` - List spaces
+   - `POST /{companySlug}/spaces` - Create space (Manager+)
+   - `GET /{companySlug}/spaces/{id}` - Get space by ID
+   - `POST /{companySlug}/spaces/{id}/deactivate` - Deactivate space (Manager+)
+   - `GET /{companySlug}/spaces/availability` - Search available spaces
+
+6. **`VenuePlatform.Web/Endpoints/SpaceConfigurationEndpoints.cs`** - Space configurations (tenant-scoped):
+   - `GET /{companySlug}/space-configurations` - List configurations
+   - `POST /{companySlug}/space-configurations` - Create configuration (Manager+)
+   - `GET /{companySlug}/space-configurations/{id}` - Get configuration with spaces
+   - `PUT /{companySlug}/space-configurations/{id}/spaces` - Replace included spaces (Manager+)
+
+7. **`VenuePlatform.Web/Endpoints/BookingEndpoints.cs`** - Booking management (tenant-scoped):
+   - `GET /{companySlug}/bookings` - List bookings
+   - `GET /{companySlug}/bookings/{id}` - Get booking by ID
+   - `GET /{companySlug}/bookings/{id}/details` - Get detailed booking info
+   - `POST /{companySlug}/bookings` - Create booking (Manager+)
+   - `POST /{companySlug}/bookings/with-spaces` - Create booking with spaces (Manager+)
+   - `PUT /{companySlug}/bookings/{id}` - Update booking (Manager+)
+   - `PUT /{companySlug}/bookings/{id}/spaces` - Replace booking spaces (Manager+)
+   - `PUT /{companySlug}/bookings/{id}/with-spaces` - Update booking with spaces (Manager+)
+   - `POST /{companySlug}/bookings/{id}/confirm` - Confirm booking (Manager+)
+   - `DELETE /{companySlug}/bookings/{id}` - Cancel booking (Manager+)
+
+8. **`VenuePlatform.Web/Endpoints/DevEndpoints.cs`** - Development-only endpoints (no auth):
+   - `POST /dev/companies` - Create company
+   - `POST /dev/users` - Create user
+   - `POST /dev/memberships` - Assign user to company with role
+
+**Changes to `VenuePlatform.Web/Program.cs`:**
+- Reduced from ~2200 lines to ~85 lines
+- Now acts as composition root only:
+  - Service registrations (unchanged)
+  - Middleware pipeline setup (unchanged order)
+  - Swagger/OpenAPI configuration
+  - Calls to endpoint extension methods
+  - Database migration and seeding
+
+**Behavior Preservation:**
+- All routes remain identical (same paths, verbs, query params)
+- All auth/role checks unchanged
+- All validation logic unchanged
+- All helper functions logic identical (moved to EndpointHelpers)
+- Middleware order unchanged
+- DI registrations unchanged
+- Swagger behavior unchanged
+- All responses identical
+
+**Build Status:** Verified successful (0 warnings, 0 errors)
+
+**Target Framework:** net10.0 confirmed
+
+**Extension Method Pattern Used:**
+```csharp
+// Platform-level endpoints (non-tenant)
+app.MapPlatformHealthEndpoints();
+app.MapAuthEndpoints(builder.Configuration);
+
+// Tenant-scoped endpoints
+var tenantGroup = app.MapGroup("/{companySlug}");
+tenantGroup.MapTenantHealthEndpoints();
+tenantGroup.MapClientEndpoints();
+tenantGroup.MapSpaceEndpoints();
+tenantGroup.MapSpaceConfigurationEndpoints();
+tenantGroup.MapBookingEndpoints();
+
+// Dev-only endpoints (Development environment only)
+if (app.Environment.IsDevelopment())
+{
+    app.MapDevEndpoints();
+}
+```
+
+---

@@ -13,5 +13,8 @@ public sealed record BookingResponse(
     Guid? SpaceConfigurationId,
     BookingStatus Status,
     DateTime? CancelledUtc,
-    string? CancelReason
+    string? CancelReason,
+    Guid? CreatedByUserId,
+    Guid? ConfirmedByUserId,
+    Guid? CancelledByUserId
 );

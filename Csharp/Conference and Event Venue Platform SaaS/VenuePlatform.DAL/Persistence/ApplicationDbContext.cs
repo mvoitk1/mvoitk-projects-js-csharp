@@ -240,6 +240,16 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
         booking.Property(b => b.Status)
             .IsRequired();
 
+
+        booking.Property(b => b.CreatedByUserId)
+            .IsRequired(false);
+
+        booking.Property(b => b.ConfirmedByUserId)
+            .IsRequired(false);
+
+        booking.Property(b => b.CancelledByUserId)
+            .IsRequired(false);
+
         booking.HasIndex(b => new { b.CompanyId, b.StartUtc });
         booking.HasIndex(b => new { b.CompanyId, b.EndUtc });
         booking.HasIndex(b => new { b.CompanyId, b.SpaceConfigurationId });

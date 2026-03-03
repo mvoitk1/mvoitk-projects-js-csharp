@@ -14,7 +14,10 @@ public sealed record BookingDetailsResponse(
     IReadOnlyList<SpaceSummary> Spaces,
     BookingStatus Status,
     DateTime? CancelledUtc,
-    string? CancelReason
+    string? CancelReason,
+    Guid? CreatedByUserId,
+    Guid? ConfirmedByUserId,
+    Guid? CancelledByUserId
 );
 
 public sealed record SpaceSummary(Guid Id, string Name);

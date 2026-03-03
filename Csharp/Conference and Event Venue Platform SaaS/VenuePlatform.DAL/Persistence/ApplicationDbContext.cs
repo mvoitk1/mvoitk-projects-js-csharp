@@ -5,6 +5,7 @@ using VenuePlatform.BLL.Domain.Companies;
 using VenuePlatform.BLL.Domain.Clients;
 using VenuePlatform.BLL.Domain.Auth;
 using VenuePlatform.BLL.Domain.Spaces;
+using VenuePlatform.BLL.Domain.Bookings;
 
 namespace VenuePlatform.DAL.Persistence;
 
@@ -31,6 +32,8 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
     public DbSet<Space> Spaces => Set<Space>();
     public DbSet<SpaceConfiguration> SpaceConfigurations => Set<SpaceConfiguration>();
     public DbSet<SpaceConfigurationSpace> SpaceConfigurationSpaces => Set<SpaceConfigurationSpace>();
+    public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<BookingSpace> BookingSpaces => Set<BookingSpace>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -187,5 +190,93 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
 
         // Index on SpaceConfigurationId for fast lookups
         spaceConfigSpace.HasIndex(x => x.SpaceConfigurationId);
+
+        // Booking configuration with tenant query filter
+        var booking = modelBuilder.Entity<Booking>();
+
+        booking.ToTable("Bookings");
+
+        booking.HasKey(b => b.Id);
+
+        booking.Property(b => b.CompanyId)
+            .IsRequired();
+
+        booking.Property(b => b.ClientId)
+            .IsRequired();
+
+        booking.Property(b => b.Title)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        booking.Property(b => b.StartUtc)
+            .IsRequired();
+
+        booking.Property(b => b.EndUtc)
+            .IsRequired();
+
+        booking.Property(b => b.AttendeeCount)
+            .IsRequired();
+
+        booking.Property(b => b.CreatedUtc)
+            .IsRequired();
+
+        booking.Property(b => b.IsCancelled)
+            .IsRequired();
+
+        booking.Property(b => b.CancelledUtc)
+            .IsRequired(false);
+
+        booking.Property(b => b.CancelReason)
+            .IsRequired(false)
+            .HasMaxLength(500);
+
+        booking.Property(b => b.TotalAmount)
+            .IsRequired()
+            .HasPrecision(18, 2);
+
+        booking.Property(b => b.SpaceConfigurationId)
+            .IsRequired(false);
+
+        booking.Property(b => b.Status)
+            .IsRequired();
+
+        booking.HasIndex(b => new { b.CompanyId, b.StartUtc });
+        booking.HasIndex(b => new { b.CompanyId, b.EndUtc });
+        booking.HasIndex(b => new { b.CompanyId, b.SpaceConfigurationId });
+
+        // Tenant query filter for Booking
+        booking.HasQueryFilter(b => companyId != null && b.CompanyId == companyId);
+
+        // BookingSpace join table configuration
+        var bookingSpace = modelBuilder.Entity<BookingSpace>();
+
+        bookingSpace.ToTable("BookingSpaces");
+
+        // Composite key
+        bookingSpace.HasKey(x => new { x.BookingId, x.SpaceId });
+
+        bookingSpace.Property(x => x.BookingId)
+            .IsRequired();
+
+        bookingSpace.Property(x => x.SpaceId)
+            .IsRequired();
+
+        // Foreign key to Bookings with Cascade delete
+        bookingSpace.HasOne<Booking>()
+            .WithMany()
+            .HasForeignKey(x => x.BookingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Foreign key to Spaces with Restrict delete
+        bookingSpace.HasOne<Space>()
+            .WithMany()
+            .HasForeignKey(x => x.SpaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Index on BookingId for fast lookups
+        bookingSpace.HasIndex(x => x.BookingId);
+
+        // Index on SpaceId for fast lookups (useful for conflict detection)
+        bookingSpace.HasIndex(x => x.SpaceId);
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VenuePlatform.DAL.Persistence;
 
@@ -10,9 +11,11 @@ using VenuePlatform.DAL.Persistence;
 namespace VenuePlatform.DAL.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260303200414_AddBookingAggregate")]
+    partial class AddBookingAggregate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -240,13 +243,6 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.Property<int>("AttendeeCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("CancelReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("CancelledUtc")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("ClientId")
                         .HasColumnType("TEXT");
 
@@ -262,29 +258,17 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.Property<bool>("IsCancelled")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("SpaceConfigurationId")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("StartUtc")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId", "EndUtc");
-
-                    b.HasIndex("CompanyId", "SpaceConfigurationId");
 
                     b.HasIndex("CompanyId", "StartUtc");
 
@@ -414,23 +398,6 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.ToTable("SpaceConfigurations", (string)null);
                 });
 
-            modelBuilder.Entity("VenuePlatform.DAL.Persistence.BookingSpace", b =>
-                {
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("SpaceId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("BookingId", "SpaceId");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("SpaceId");
-
-                    b.ToTable("BookingSpaces", (string)null);
-                });
-
             modelBuilder.Entity("VenuePlatform.DAL.Persistence.SpaceConfigurationSpace", b =>
                 {
                     b.Property<Guid>("SpaceConfigurationId")
@@ -496,21 +463,6 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("VenuePlatform.DAL.Persistence.BookingSpace", b =>
-                {
-                    b.HasOne("VenuePlatform.BLL.Domain.Bookings.Booking", null)
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VenuePlatform.BLL.Domain.Spaces.Space", null)
-                        .WithMany()
-                        .HasForeignKey("SpaceId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

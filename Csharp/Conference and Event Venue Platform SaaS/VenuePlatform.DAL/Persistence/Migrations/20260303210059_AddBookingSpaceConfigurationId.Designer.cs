@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VenuePlatform.DAL.Persistence;
 
@@ -10,9 +11,11 @@ using VenuePlatform.DAL.Persistence;
 namespace VenuePlatform.DAL.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260303210059_AddBookingSpaceConfigurationId")]
+    partial class AddBookingSpaceConfigurationId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -240,13 +243,6 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.Property<int>("AttendeeCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("CancelReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("CancelledUtc")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("ClientId")
                         .HasColumnType("TEXT");
 
@@ -267,9 +263,6 @@ namespace VenuePlatform.DAL.Persistence.Migrations
 
                     b.Property<DateTime>("StartUtc")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
                         .IsRequired()

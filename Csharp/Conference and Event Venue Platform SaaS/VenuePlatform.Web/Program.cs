@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using VenuePlatform.BLL.Domain.Auth;
+using VenuePlatform.BLL.Domain.Bookings;
 using VenuePlatform.BLL.Domain.Clients;
 using VenuePlatform.BLL.Domain.Companies;
 using VenuePlatform.BLL.Domain.Spaces;
 using VenuePlatform.BLL.Tenancy;
 using VenuePlatform.Contracts.Auth;
+using VenuePlatform.Contracts.Bookings;
 using VenuePlatform.Contracts.Companies;
 using VenuePlatform.Contracts.Spaces;
 using VenuePlatform.DAL.Persistence;
@@ -89,13 +91,13 @@ if (app.Environment.IsDevelopment())
         var slug = request.Slug.Trim().ToLowerInvariant();
         if (slug.Length < 2 || slug.Length > 64)
         {
-            return Results.BadRequest(new { error = "Slug must be 2-64 chars and contain only a-z, 0-9, and '-'" });
+            return Results.BadRequest(new { error = "Slug must be 2-64 chars and contain only a-z, 0-9, and '-" });
         }
         foreach (var c in slug)
         {
             if (!char.IsAsciiLetterLower(c) && !char.IsAsciiDigit(c) && c != '-')
             {
-                return Results.BadRequest(new { error = "Slug must be 2-64 chars and contain only a-z, 0-9, and '-'" });
+                return Results.BadRequest(new { error = "Slug must be 2-64 chars and contain only a-z, 0-9, and '-" });
             }
         }
 
@@ -533,6 +535,82 @@ tenantGroup.MapPost("/spaces/{id:guid}/deactivate", (ApplicationDbContext db, IT
 })
 .RequireAuthorization();
 
+// GET /{companySlug}/spaces/availability - Search available spaces for time range (requires auth + membership)
+tenantGroup.MapGet("/spaces/availability", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, DateTime startUtc, DateTime endUtc, int? minCapacity, bool? onlyActive) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Check membership
+    var isMember = db.UserCompanyMemberships
+        .AsNoTracking()
+        .Any(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (!isMember)
+    {
+        return Results.Forbid();
+    }
+
+    // Validate time range
+    if (startUtc >= endUtc)
+    {
+        return Results.BadRequest(new { error = "Start time must be before end time." });
+    }
+
+    // KISS safeguard: prevent absurdly large ranges (> 365 days)
+    var maxRangeDays = 365;
+    if ((endUtc - startUtc).TotalDays > maxRangeDays)
+    {
+        return Results.BadRequest(new { error = $"Time range cannot exceed {maxRangeDays} days." });
+    }
+
+    // Find "busy" space ids from overlapping non-cancelled bookings
+    // Overlap rule: requestStartUtc < existingEndUtc && requestEndUtc > existingStartUtc
+    var busySpaceIds = db.Bookings
+        .AsNoTracking()
+        .Where(b => !b.IsCancelled)
+        .Where(b => b.StartUtc < endUtc && b.EndUtc > startUtc)
+        .Join(db.BookingSpaces.AsNoTracking(), b => b.Id, bs => bs.BookingId, (b, bs) => bs.SpaceId)
+        .Distinct()
+        .ToList();
+
+    // Build base query for spaces
+    var query = db.Spaces.AsNoTracking();
+
+    // Apply onlyActive filter (default true)
+    var activeFilter = onlyActive ?? true;
+    if (activeFilter)
+    {
+        query = query.Where(s => s.IsActive);
+    }
+
+    // Apply minCapacity filter if provided
+    if (minCapacity.HasValue && minCapacity.Value > 0)
+    {
+        query = query.Where(s => s.Capacity >= minCapacity.Value);
+    }
+
+    // Return spaces NOT in busy list
+    var availableSpaces = query
+        .Where(s => !busySpaceIds.Contains(s.Id))
+        .OrderBy(s => s.Name)
+        .Select(s => new AvailableSpaceResponse(s.Id, s.Name, s.Capacity))
+        .ToList();
+
+    return Results.Ok(availableSpaces);
+})
+.RequireAuthorization();
+
 // SpaceConfiguration endpoints (foundation for combinable rooms)
 
 // GET /{companySlug}/space-configurations - Lists space configurations for current tenant (requires auth + membership)
@@ -781,6 +859,1397 @@ tenantGroup.MapPut("/space-configurations/{id:guid}/spaces", async (ApplicationD
         config.Name,
         SpaceIds = updatedSpaceIds
     });
+})
+.RequireAuthorization();
+
+// Booking endpoints
+
+// GET /{companySlug}/bookings - Lists bookings for current tenant (requires auth + any membership)
+tenantGroup.MapGet("/bookings", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, DateTime? startUtc, DateTime? endUtc, Guid? clientId, bool? includeCancelled) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Check membership
+    var isMember = db.UserCompanyMemberships
+        .AsNoTracking()
+        .Any(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (!isMember)
+    {
+        return Results.Forbid();
+    }
+
+    // Validate date range
+    if (startUtc.HasValue && endUtc.HasValue && startUtc.Value >= endUtc.Value)
+    {
+        return Results.BadRequest(new { error = "Start time must be before end time." });
+    }
+
+    // KISS safeguard: prevent absurdly large ranges (> 365 days)
+    if (startUtc.HasValue && endUtc.HasValue)
+    {
+        var maxRangeDays = 365;
+        if ((endUtc.Value - startUtc.Value).TotalDays > maxRangeDays)
+        {
+            return Results.BadRequest(new { error = $"Time range cannot exceed {maxRangeDays} days." });
+        }
+    }
+
+    // Build query with filters
+    var query = db.Bookings.AsNoTracking();
+
+    // Date range filtering (overlap detection)
+    if (startUtc.HasValue && endUtc.HasValue)
+    {
+        // Both provided: return bookings overlapping the range
+        query = query.Where(b => startUtc.Value < b.EndUtc && endUtc.Value > b.StartUtc);
+    }
+    else if (startUtc.HasValue)
+    {
+        // Only start provided: bookings ending after start
+        query = query.Where(b => b.EndUtc > startUtc.Value);
+    }
+    else if (endUtc.HasValue)
+    {
+        // Only end provided: bookings starting before end
+        query = query.Where(b => b.StartUtc < endUtc.Value);
+    }
+
+    // Client filter
+    if (clientId.HasValue)
+    {
+        query = query.Where(b => b.ClientId == clientId.Value);
+    }
+
+    // Status filter (default: exclude cancelled)
+    var includeCancelledBookings = includeCancelled ?? false;
+    if (!includeCancelledBookings)
+    {
+        query = query.Where(b => !b.IsCancelled);
+    }
+
+    // Sort: StartUtc ascending, then Title
+    var bookings = query
+        .OrderBy(b => b.StartUtc)
+        .ThenBy(b => b.Title)
+        .Select(b => new
+        {
+            b.Id,
+            b.ClientId,
+            b.Title,
+            b.StartUtc,
+            b.EndUtc,
+            b.AttendeeCount,
+            b.IsCancelled,
+            b.TotalAmount,
+            b.SpaceConfigurationId,
+            b.Status,
+            b.CancelledUtc,
+            b.CancelReason
+        })
+        .ToList();
+
+    // Get space IDs for all bookings in one query
+    var bookingIds = bookings.Select(b => b.Id).ToList();
+    var bookingSpaces = db.BookingSpaces
+        .AsNoTracking()
+        .Where(bs => bookingIds.Contains(bs.BookingId))
+        .ToList();
+
+    var spaceIdsByBooking = bookingSpaces
+        .GroupBy(bs => bs.BookingId)
+        .ToDictionary(g => g.Key, g => g.Select(bs => bs.SpaceId).ToList());
+
+    var response = bookings.Select(b => new BookingResponse(
+        b.Id,
+        b.ClientId,
+        b.Title,
+        b.StartUtc,
+        b.EndUtc,
+        b.AttendeeCount,
+        b.IsCancelled,
+        spaceIdsByBooking.TryGetValue(b.Id, out var spaceIds) ? spaceIds : new List<Guid>(),
+        b.TotalAmount,
+        b.SpaceConfigurationId,
+        b.Status,
+        b.CancelledUtc,
+        b.CancelReason));
+
+    return Results.Ok(response);
+})
+.RequireAuthorization();
+
+// POST /{companySlug}/bookings - Creates a new booking for current tenant (requires auth + Manager/Admin/Owner)
+tenantGroup.MapPost("/bookings", async (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, CreateBookingRequest request) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Query membership with role
+    var membership = db.UserCompanyMemberships
+        .AsNoTracking()
+        .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (membership is null)
+    {
+        return Results.Forbid();
+    }
+
+    // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+    var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+    if (!allowedRoles.Contains(membership.Role))
+    {
+        return Results.Forbid();
+    }
+
+    // Validate request
+    if (string.IsNullOrWhiteSpace(request.Title))
+    {
+        return Results.BadRequest(new { error = "Title is required." });
+    }
+    if (request.Title.Length > 200)
+    {
+        return Results.BadRequest(new { error = "Title cannot exceed 200 characters." });
+    }
+    if (request.StartUtc >= request.EndUtc)
+    {
+        return Results.BadRequest(new { error = "Start time must be before end time." });
+    }
+    if (request.AttendeeCount < 0)
+    {
+        return Results.BadRequest(new { error = "Attendee count cannot be negative." });
+    }
+
+    // Verify client exists and belongs to this tenant
+    var clientExists = db.Clients
+        .AsNoTracking()
+        .Any(c => c.Id == request.ClientId && c.CompanyId == tenant.CompanyId);
+
+    if (!clientExists)
+    {
+        return Results.BadRequest(new { error = "Client not found or does not belong to this tenant." });
+    }
+
+    // Validate SpaceConfigurationId if provided
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        var configExists = db.SpaceConfigurations
+            .AsNoTracking()
+            .Any(sc => sc.Id == request.SpaceConfigurationId.Value && sc.CompanyId == tenant.CompanyId && sc.IsActive);
+
+        if (!configExists)
+        {
+            return Results.BadRequest(new { error = "Space configuration not found, does not belong to this tenant, or is not active." });
+        }
+    }
+
+    // Validate minimum booking duration if SpaceConfiguration has override
+    var (durationOk, minMinutes) = await ValidateMinBookingDurationAsync(
+        request.SpaceConfigurationId,
+        request.StartUtc,
+        request.EndUtc,
+        db);
+
+    if (!durationOk)
+    {
+        return Results.BadRequest(new {
+            error = "Booking duration is below the minimum allowed.",
+            minMinutes = minMinutes
+        });
+    }
+
+    var booking = new Booking(tenant.CompanyId, request.ClientId, request.Title, request.StartUtc, request.EndUtc, request.AttendeeCount);
+
+    // Set SpaceConfigurationId if provided via type-safe setter
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        booking.SetSpaceConfigurationId(request.SpaceConfigurationId.Value);
+    }
+    
+    db.Bookings.Add(booking);
+    db.SaveChanges();
+
+    return Results.Created(
+        $"/{tenant.CompanySlug}/bookings/{booking.Id}",
+        new BookingResponse(booking.Id, booking.ClientId, booking.Title, booking.StartUtc, booking.EndUtc, booking.AttendeeCount, booking.IsCancelled, new List<Guid>(), booking.TotalAmount, booking.SpaceConfigurationId, booking.Status, booking.CancelledUtc, booking.CancelReason));
+})
+.RequireAuthorization();
+
+// POST /{companySlug}/bookings/with-spaces - Creates a new booking with spaces atomically (requires auth + Manager/Admin/Owner)
+tenantGroup.MapPost("/bookings/with-spaces", async (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, CreateBookingWithSpacesRequest request) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Query membership with role
+    var membership = db.UserCompanyMemberships
+        .AsNoTracking()
+        .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (membership is null)
+    {
+        return Results.Forbid();
+    }
+
+    // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+    var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+    if (!allowedRoles.Contains(membership.Role))
+    {
+        return Results.Forbid();
+    }
+
+    // 1) Validate basic fields
+    if (string.IsNullOrWhiteSpace(request.Title))
+    {
+        return Results.BadRequest(new { error = "Title is required." });
+    }
+    if (request.Title.Length > 200)
+    {
+        return Results.BadRequest(new { error = "Title cannot exceed 200 characters." });
+    }
+    if (request.StartUtc >= request.EndUtc)
+    {
+        return Results.BadRequest(new { error = "Start time must be before end time." });
+    }
+    if (request.AttendeeCount < 0)
+    {
+        return Results.BadRequest(new { error = "Attendee count cannot be negative." });
+    }
+
+    // 2) Validate Client exists in tenant
+    var clientExists = db.Clients
+        .AsNoTracking()
+        .Any(c => c.Id == request.ClientId && c.CompanyId == tenant.CompanyId);
+
+    if (!clientExists)
+    {
+        return Results.BadRequest(new { error = "Client not found or does not belong to this tenant." });
+    }
+
+    // 3) Validate SpaceConfigurationId if provided
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        var configExists = db.SpaceConfigurations
+            .AsNoTracking()
+            .Any(sc => sc.Id == request.SpaceConfigurationId.Value && sc.CompanyId == tenant.CompanyId && sc.IsActive);
+
+        if (!configExists)
+        {
+            return Results.BadRequest(new { error = "Space configuration not found, does not belong to this tenant, or is not active." });
+        }
+    }
+
+    // 4) Validate minimum booking duration
+    var (durationOk, minMinutes) = await ValidateMinBookingDurationAsync(
+        request.SpaceConfigurationId,
+        request.StartUtc,
+        request.EndUtc,
+        db);
+
+    if (!durationOk)
+    {
+        return Results.BadRequest(new {
+            error = "Booking duration is below the minimum allowed.",
+            minMinutes = minMinutes
+        });
+    }
+
+    // 5) Validate SpaceIds
+    if (request.SpaceIds.Count == 0)
+    {
+        return Results.BadRequest(new { error = "SpaceIds is required and must not be empty." });
+    }
+
+    // Deduplicate SpaceIds
+    var dedupedSpaceIds = request.SpaceIds.ToHashSet();
+
+    // Ensure all spaces exist in tenant
+    var existingSpaceIds = db.Spaces
+        .AsNoTracking()
+        .Where(s => dedupedSpaceIds.Contains(s.Id) && s.CompanyId == tenant.CompanyId)
+        .Select(s => s.Id)
+        .ToList();
+
+    if (existingSpaceIds.Count != dedupedSpaceIds.Count)
+    {
+        var missingIds = dedupedSpaceIds.Except(existingSpaceIds).ToList();
+        return Results.BadRequest(new { error = "One or more space IDs are invalid or do not belong to this tenant.", missingSpaceIds = missingIds });
+    }
+
+    // 6) Conflict detection
+    var (conflictingBookingIds, conflictingSpaceIds) = FindConflictingBookings(
+        db,
+        tenant.CompanyId,
+        request.StartUtc,
+        request.EndUtc,
+        dedupedSpaceIds,
+        null); // No booking to exclude for create
+
+    if (conflictingBookingIds.Count > 0)
+    {
+        return Results.Conflict(new BookingConflictResponse(
+            "Booking conflicts with existing bookings.",
+            conflictingBookingIds,
+            conflictingSpaceIds));
+    }
+
+    // 7) Create Booking
+    var booking = new Booking(tenant.CompanyId, request.ClientId, request.Title, request.StartUtc, request.EndUtc, request.AttendeeCount);
+
+    // Set SpaceConfigurationId if provided
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        booking.SetSpaceConfigurationId(request.SpaceConfigurationId.Value);
+    }
+
+    db.Bookings.Add(booking);
+
+    // 8) Create BookingSpaces rows
+    foreach (var spaceId in dedupedSpaceIds)
+    {
+        db.BookingSpaces.Add(new BookingSpace
+        {
+            BookingId = booking.Id,
+            SpaceId = spaceId
+        });
+    }
+
+    // 9) Calculate TotalAmount
+    // Load space hourly rates
+    var spaceHourlyRates = db.Spaces
+        .AsNoTracking()
+        .Where(s => dedupedSpaceIds.Contains(s.Id))
+        .Select(s => s.HourlyRate)
+        .ToList();
+
+    // Load space configuration override rate if set
+    decimal? overrideRate = null;
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        overrideRate = db.SpaceConfigurations
+            .AsNoTracking()
+            .Where(sc => sc.Id == request.SpaceConfigurationId.Value)
+            .Select(sc => sc.HourlyRateOverride)
+            .FirstOrDefault();
+    }
+
+    var totalAmount = CalculateBookingTotal(request.StartUtc, request.EndUtc, spaceHourlyRates, overrideRate);
+    booking.SetTotalAmount(totalAmount);
+
+    // 10) SaveChanges (atomic)
+    await db.SaveChangesAsync();
+
+    // 11) Return 201 Created with BookingResponse
+    return Results.Created(
+        $"/{tenant.CompanySlug}/bookings/{booking.Id}",
+        new BookingResponse(
+            booking.Id,
+            booking.ClientId,
+            booking.Title,
+            booking.StartUtc,
+            booking.EndUtc,
+            booking.AttendeeCount,
+            booking.IsCancelled,
+            dedupedSpaceIds.ToList(),
+            booking.TotalAmount,
+            booking.SpaceConfigurationId,
+            booking.Status,
+            booking.CancelledUtc,
+            booking.CancelReason));
+})
+.RequireAuthorization();
+
+// DELETE /{companySlug}/bookings/{id} - Soft cancel a booking (requires auth + Manager/Admin/Owner)
+tenantGroup.MapDelete("/bookings/{id:guid}", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id, string? reason = null) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Query membership with role
+    var membership = db.UserCompanyMemberships
+        .AsNoTracking()
+        .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (membership is null)
+    {
+        return Results.Forbid();
+    }
+
+    // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+    var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+    if (!allowedRoles.Contains(membership.Role))
+    {
+        return Results.Forbid();
+    }
+
+    var booking = db.Bookings
+        .FirstOrDefault(b => b.Id == id && b.CompanyId == tenant.CompanyId);
+
+    if (booking is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Idempotent: if already cancelled, just return 204 (do not overwrite existing metadata)
+    if (booking.IsCancelled)
+    {
+        return Results.NoContent();
+    }
+
+    booking.Cancel(reason, DateTime.UtcNow);
+    db.SaveChanges();
+
+    return Results.NoContent();
+})
+.RequireAuthorization();
+
+// POST /{companySlug}/bookings/{id}/confirm - Confirm a booking (requires auth + Manager/Admin/Owner)
+tenantGroup.MapPost("/bookings/{id:guid}/confirm", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Query membership with role
+    var membership = db.UserCompanyMemberships
+        .AsNoTracking()
+        .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (membership is null)
+    {
+        return Results.Forbid();
+    }
+
+    // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+    var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+    if (!allowedRoles.Contains(membership.Role))
+    {
+        return Results.Forbid();
+    }
+
+    var booking = db.Bookings
+        .FirstOrDefault(b => b.Id == id && b.CompanyId == tenant.CompanyId);
+
+    if (booking is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Cannot confirm cancelled bookings
+    if (booking.IsCancelled)
+    {
+        return Results.BadRequest(new { error = "Cancelled booking cannot be confirmed." });
+    }
+
+    // Idempotent: if already confirmed, return 204
+    if (booking.Status == BookingStatus.Confirmed)
+    {
+        return Results.NoContent();
+    }
+
+    booking.Confirm();
+    db.SaveChanges();
+
+    return Results.NoContent();
+})
+.RequireAuthorization();
+
+// GET /{companySlug}/bookings/{id} - Get a specific booking with space IDs (requires auth + membership)
+tenantGroup.MapGet("/bookings/{id:guid}", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Check membership
+    var isMember = db.UserCompanyMemberships
+        .AsNoTracking()
+        .Any(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (!isMember)
+    {
+        return Results.Forbid();
+    }
+
+    var booking = db.Bookings
+        .AsNoTracking()
+        .Select(b => new { b.Id, b.ClientId, b.Title, b.StartUtc, b.EndUtc, b.AttendeeCount, b.IsCancelled, b.CompanyId, b.TotalAmount, b.SpaceConfigurationId, b.Status, b.CancelledUtc, b.CancelReason })
+        .FirstOrDefault(b => b.Id == id && b.CompanyId == tenant.CompanyId);
+
+    if (booking is null)
+    {
+        return Results.NotFound();
+    }
+
+    var spaceIds = db.BookingSpaces
+        .AsNoTracking()
+        .Where(bs => bs.BookingId == id)
+        .Select(bs => bs.SpaceId)
+        .ToList();
+
+    return Results.Ok(new BookingResponse(
+        booking.Id,
+        booking.ClientId,
+        booking.Title,
+        booking.StartUtc,
+        booking.EndUtc,
+        booking.AttendeeCount,
+        booking.IsCancelled,
+        spaceIds,
+        booking.TotalAmount,
+        booking.SpaceConfigurationId,
+        booking.Status,
+        booking.CancelledUtc,
+        booking.CancelReason));
+})
+.RequireAuthorization();
+
+// GET /{companySlug}/bookings/{id}/details - Get detailed booking info including client name and space names (requires auth + membership)
+tenantGroup.MapGet("/bookings/{id:guid}/details", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Check membership
+    var isMember = db.UserCompanyMemberships
+        .AsNoTracking()
+        .Any(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (!isMember)
+    {
+        return Results.Forbid();
+    }
+
+    // Load booking (tenant-filtered)
+    var booking = db.Bookings
+        .AsNoTracking()
+        .Select(b => new { b.Id, b.ClientId, b.Title, b.StartUtc, b.EndUtc, b.AttendeeCount, b.IsCancelled, b.CompanyId, b.TotalAmount, b.SpaceConfigurationId, b.Status, b.CancelledUtc, b.CancelReason })
+        .FirstOrDefault(b => b.Id == id && b.CompanyId == tenant.CompanyId);
+
+    if (booking is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Load client name (tenant-filtered)
+    var clientName = db.Clients
+        .AsNoTracking()
+        .Where(c => c.Id == booking.ClientId && c.CompanyId == tenant.CompanyId)
+        .Select(c => c.Name)
+        .FirstOrDefault();
+
+    if (clientName is null)
+    {
+        // This shouldn't happen due to FK constraints, but handle gracefully
+        return Results.Problem("Booking client not found.", statusCode: 500);
+    }
+
+    // Load attached spaces (Ids + Names) via BookingSpaces join, ordered by Name
+    var spaces = db.BookingSpaces
+        .AsNoTracking()
+        .Where(bs => bs.BookingId == id)
+        .Join(
+            db.Spaces.AsNoTracking().Where(s => s.CompanyId == tenant.CompanyId),
+            bs => bs.SpaceId,
+            s => s.Id,
+            (bs, s) => new SpaceSummary(s.Id, s.Name))
+        .OrderBy(s => s.Name)
+        .ToList();
+
+    var response = new BookingDetailsResponse(
+        booking.Id,
+        booking.ClientId,
+        clientName,
+        booking.Title,
+        booking.StartUtc,
+        booking.EndUtc,
+        booking.AttendeeCount,
+        booking.IsCancelled,
+        booking.TotalAmount,
+        booking.SpaceConfigurationId,
+        spaces,
+        booking.Status,
+        booking.CancelledUtc,
+        booking.CancelReason);
+
+    return Results.Ok(response);
+})
+.RequireAuthorization();
+
+// Local helper: Find conflicting bookings for space-level conflict detection
+// Returns conflicting booking IDs and space IDs
+static (IReadOnlyList<Guid> BookingIds, IReadOnlyList<Guid> SpaceIds) FindConflictingBookings(
+    ApplicationDbContext db,
+    Guid companyId,
+    DateTime startUtc,
+    DateTime endUtc,
+    IEnumerable<Guid> targetSpaceIds,
+    Guid? excludeBookingId)
+{
+    var spaceIdSet = targetSpaceIds.ToHashSet();
+    if (spaceIdSet.Count == 0)
+    {
+        return (Array.Empty<Guid>(), Array.Empty<Guid>());
+    }
+
+    // Query: overlapping bookings sharing any of the target spaces
+    // Overlap rule: newStart < existingEnd && newEnd > existingStart
+    var query = db.Bookings
+        .AsNoTracking()
+        .Where(b => b.CompanyId == companyId)
+        .Where(b => !b.IsCancelled)
+        .Where(b => b.StartUtc < endUtc && b.EndUtc > startUtc)
+        .Where(b => db.BookingSpaces.AsNoTracking().Any(bs => bs.BookingId == b.Id && spaceIdSet.Contains(bs.SpaceId)));
+
+    if (excludeBookingId.HasValue)
+    {
+        query = query.Where(b => b.Id != excludeBookingId.Value);
+    }
+
+    var conflictingBookings = query
+        .Select(b => new { b.Id })
+        .ToList();
+
+    if (conflictingBookings.Count == 0)
+    {
+        return (Array.Empty<Guid>(), Array.Empty<Guid>());
+    }
+
+    var conflictingBookingIds = conflictingBookings.Select(b => b.Id).ToList();
+
+    // Find which specific spaces conflict
+    var conflictingSpaceIds = db.BookingSpaces
+        .AsNoTracking()
+        .Where(bs => conflictingBookingIds.Contains(bs.BookingId) && spaceIdSet.Contains(bs.SpaceId))
+        .Select(bs => bs.SpaceId)
+        .Distinct()
+        .ToList();
+
+    return (conflictingBookingIds, conflictingSpaceIds);
+}
+
+// Local helper: Validate minimum booking duration against SpaceConfiguration override
+// Returns (ok, minMinutes) - if ok is false, minMinutes contains the required minimum
+static async Task<(bool ok, int? minMinutes)> ValidateMinBookingDurationAsync(
+    Guid? spaceConfigurationId,
+    DateTime startUtc,
+    DateTime endUtc,
+    ApplicationDbContext db)
+{
+    // If no SpaceConfiguration selected, no minimum duration rule applies
+    if (spaceConfigurationId == null)
+    {
+        return (true, null);
+    }
+
+    // Load SpaceConfiguration using existing tenant filtering
+    var config = await db.SpaceConfigurations
+        .AsNoTracking()
+        .FirstOrDefaultAsync(sc => sc.Id == spaceConfigurationId.Value);
+
+    // If config not found or override not set, no validation
+    if (config?.MinBookingMinutesOverride == null || config.MinBookingMinutesOverride <= 0)
+    {
+        return (true, null);
+    }
+
+    var minMinutes = config.MinBookingMinutesOverride.Value;
+    var durationMinutes = (endUtc - startUtc).TotalMinutes;
+
+    // Validate actual duration (not billing duration)
+    if (durationMinutes < minMinutes)
+    {
+        return (false, minMinutes);
+    }
+
+    return (true, null);
+}
+
+// Local helper: Calculate booking total amount based on duration and space rates
+// - Minutes rounded UP to nearest 15 (ceiling)
+// - Convert to hours as decimal
+// - If overrideRate is set, use that for ALL spaces
+// - Otherwise, use each space's hourly rate
+// - Round to 2 decimals using MidpointRounding.AwayFromZero
+static decimal CalculateBookingTotal(
+    DateTime startUtc,
+    DateTime endUtc,
+    IReadOnlyList<decimal> spaceHourlyRates,
+    decimal? bookingWideOverrideHourlyRate = null)
+{
+    var durationMinutes = (endUtc - startUtc).TotalMinutes;
+    if (durationMinutes <= 0 || spaceHourlyRates.Count == 0)
+        return 0;
+
+    // Round UP to nearest 15 minutes
+    var billingUnits = (int)Math.Ceiling(durationMinutes / 15.0);
+    var billedMinutes = billingUnits * 15;
+    var billedHours = billedMinutes / 60m;
+
+    decimal total;
+
+    // If override rate is provided, use it for all spaces
+    if (bookingWideOverrideHourlyRate.HasValue)
+    {
+        total = bookingWideOverrideHourlyRate.Value * billedHours * spaceHourlyRates.Count;
+    }
+    else
+    {
+        // Sum rates * hours per space
+        total = spaceHourlyRates.Sum(rate => rate * billedHours);
+    }
+
+    // Round to 2 decimals
+    return Math.Round(total, 2, MidpointRounding.AwayFromZero);
+}
+
+// PUT /{companySlug}/bookings/{id} - Update booking details (requires auth + Manager/Admin/Owner)
+tenantGroup.MapPut("/bookings/{id:guid}", async (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id, UpdateBookingRequest request) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Query membership with role
+    var membership = db.UserCompanyMemberships
+        .AsNoTracking()
+        .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (membership is null)
+    {
+        return Results.Forbid();
+    }
+
+    // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+    var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+    if (!allowedRoles.Contains(membership.Role))
+    {
+        return Results.Forbid();
+    }
+
+    // Load booking
+    var booking = db.Bookings
+        .FirstOrDefault(b => b.Id == id && b.CompanyId == tenant.CompanyId);
+
+    if (booking is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Reject updates to cancelled bookings
+    if (booking.IsCancelled)
+    {
+        return Results.BadRequest(new { error = "Cancelled booking cannot be modified." });
+    }
+
+    // Reject updates to confirmed bookings
+    if (booking.Status == BookingStatus.Confirmed)
+    {
+        return Results.BadRequest(new { error = "Confirmed booking cannot be modified." });
+    }
+
+    // Validate request (same as create)
+    if (string.IsNullOrWhiteSpace(request.Title))
+    {
+        return Results.BadRequest(new { error = "Title is required." });
+    }
+    if (request.Title.Length > 200)
+    {
+        return Results.BadRequest(new { error = "Title cannot exceed 200 characters." });
+    }
+    if (request.StartUtc >= request.EndUtc)
+    {
+        return Results.BadRequest(new { error = "Start time must be before end time." });
+    }
+    if (request.AttendeeCount < 0)
+    {
+        return Results.BadRequest(new { error = "Attendee count cannot be negative." });
+    }
+
+    // Validate SpaceConfigurationId if provided
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        var configExists = db.SpaceConfigurations
+            .AsNoTracking()
+            .Any(sc => sc.Id == request.SpaceConfigurationId.Value && sc.CompanyId == tenant.CompanyId && sc.IsActive);
+
+        if (!configExists)
+        {
+            return Results.BadRequest(new { error = "Space configuration not found, does not belong to this tenant, or is not active." });
+        }
+    }
+
+    // Validate minimum booking duration if SpaceConfiguration has override
+    // Use the request's SpaceConfigurationId (may be changing) and request's time values
+    var (durationOk, minMinutes) = await ValidateMinBookingDurationAsync(
+        request.SpaceConfigurationId,
+        request.StartUtc,
+        request.EndUtc,
+        db);
+
+    if (!durationOk)
+    {
+        return Results.BadRequest(new {
+            error = "Booking duration is below the minimum allowed.",
+            minMinutes = minMinutes
+        });
+    }
+
+    // Get existing spaces attached to this booking
+    var existingSpaceIds = db.BookingSpaces
+        .AsNoTracking()
+        .Where(bs => bs.BookingId == id)
+        .Select(bs => bs.SpaceId)
+        .ToList();
+
+    // Run conflict detection if booking has spaces
+    if (existingSpaceIds.Count > 0)
+    {
+        var (conflictingBookingIds, conflictingSpaceIds) = FindConflictingBookings(
+            db,
+            tenant.CompanyId,
+            request.StartUtc,
+            request.EndUtc,
+            existingSpaceIds,
+            id); // Exclude current booking
+
+        if (conflictingBookingIds.Count > 0)
+        {
+            return Results.Conflict(new BookingConflictResponse(
+                "Booking conflicts with existing bookings.",
+                conflictingBookingIds,
+                conflictingSpaceIds));
+        }
+    }
+
+    // Update booking fields using type-safe domain method
+    booking.UpdateDetails(request.Title, request.StartUtc, request.EndUtc, request.AttendeeCount);
+
+    // Update SpaceConfigurationId via type-safe setter
+    booking.SetSpaceConfigurationId(request.SpaceConfigurationId);
+
+    // Recalculate TotalAmount if booking has spaces
+    if (existingSpaceIds.Count > 0)
+    {
+        // Load space hourly rates
+        var spaceHourlyRates = db.Spaces
+            .AsNoTracking()
+            .Where(s => existingSpaceIds.Contains(s.Id))
+            .Select(s => s.HourlyRate)
+            .ToList();
+
+        // Load space configuration override rate if set
+        decimal? overrideRate = null;
+        if (request.SpaceConfigurationId.HasValue)
+        {
+            overrideRate = db.SpaceConfigurations
+                .AsNoTracking()
+                .Where(sc => sc.Id == request.SpaceConfigurationId.Value)
+                .Select(sc => sc.HourlyRateOverride)
+                .FirstOrDefault();
+        }
+
+        var totalAmount = CalculateBookingTotal(request.StartUtc, request.EndUtc, spaceHourlyRates, overrideRate);
+        booking.SetTotalAmount(totalAmount);
+    }
+
+    await db.SaveChangesAsync();
+
+    // Return updated space IDs
+    var updatedSpaceIds = db.BookingSpaces
+        .AsNoTracking()
+        .Where(bs => bs.BookingId == id)
+        .Select(bs => bs.SpaceId)
+        .ToList();
+
+    return Results.Ok(new BookingResponse(
+        booking.Id,
+        booking.ClientId,
+        booking.Title,
+        booking.StartUtc,
+        booking.EndUtc,
+        booking.AttendeeCount,
+        booking.IsCancelled,
+        updatedSpaceIds,
+        booking.TotalAmount,
+        booking.SpaceConfigurationId,
+        booking.Status,
+        booking.CancelledUtc,
+        booking.CancelReason));
+})
+.RequireAuthorization();
+
+// PUT /{companySlug}/bookings/{id}/spaces - Replace spaces for a booking (requires auth + Manager/Admin/Owner)
+tenantGroup.MapPut("/bookings/{id:guid}/spaces", async (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id, SetBookingSpacesRequest request) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var parsedUserId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Query membership with role
+    var membership = db.UserCompanyMemberships
+        .AsNoTracking()
+        .FirstOrDefault(m => m.UserId == parsedUserId && m.CompanyId == tenant.CompanyId);
+
+    if (membership is null)
+    {
+        return Results.Forbid();
+    }
+
+    // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+    var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+    if (!allowedRoles.Contains(membership.Role))
+    {
+        return Results.Forbid();
+    }
+
+    // Load booking (tenant-filtered)
+    var booking = db.Bookings
+        .FirstOrDefault(b => b.Id == id && b.CompanyId == tenant.CompanyId);
+
+    if (booking is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Reject updates to cancelled bookings
+    if (booking.IsCancelled)
+    {
+        return Results.BadRequest(new { error = "Cancelled booking cannot be modified." });
+    }
+
+    // Reject updates to confirmed bookings
+    if (booking.Status == BookingStatus.Confirmed)
+    {
+        return Results.BadRequest(new { error = "Confirmed booking cannot be modified." });
+    }
+
+    // If requested SpaceIds is empty -> clear and return (no conflict check needed)
+    if (request.SpaceIds.Count == 0)
+    {
+        // Remove existing associations
+        var existingAssociations = db.BookingSpaces
+            .Where(bs => bs.BookingId == id)
+            .ToList();
+
+        db.BookingSpaces.RemoveRange(existingAssociations);
+
+        // Set TotalAmount to 0 when clearing spaces
+        booking.SetTotalAmount(0);
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new BookingResponse(
+            booking.Id,
+            booking.ClientId,
+            booking.Title,
+            booking.StartUtc,
+            booking.EndUtc,
+            booking.AttendeeCount,
+            booking.IsCancelled,
+            new List<Guid>(),
+            booking.TotalAmount,
+            booking.SpaceConfigurationId,
+            booking.Status,
+            booking.CancelledUtc,
+            booking.CancelReason));
+    }
+
+    // Validate that all space IDs exist and belong to this tenant
+    var requestedSpaceIds = request.SpaceIds.ToHashSet();
+    var existingSpaces = db.Spaces
+        .AsNoTracking()
+        .Where(s => requestedSpaceIds.Contains(s.Id) && s.CompanyId == tenant.CompanyId)
+        .Select(s => s.Id)
+        .ToList();
+
+    if (existingSpaces.Count != requestedSpaceIds.Count)
+    {
+        var missingIds = requestedSpaceIds.Except(existingSpaces);
+        return Results.BadRequest(new { error = "One or more space IDs are invalid or do not belong to this tenant.", missingIds });
+    }
+
+    // Run conflict detection using booking's time range and requested spaces
+    var (conflictingBookingIds, conflictingSpaceIds) = FindConflictingBookings(
+        db,
+        tenant.CompanyId,
+        booking.StartUtc,
+        booking.EndUtc,
+        requestedSpaceIds,
+        id); // Exclude current booking
+
+    if (conflictingBookingIds.Count > 0)
+    {
+        return Results.Conflict(new BookingConflictResponse(
+            "Booking conflicts with existing bookings.",
+            conflictingBookingIds,
+            conflictingSpaceIds));
+    }
+
+    // Remove existing associations
+    var existingAssoc = db.BookingSpaces
+        .Where(bs => bs.BookingId == id)
+        .ToList();
+
+    db.BookingSpaces.RemoveRange(existingAssoc);
+
+    // Add new associations
+    foreach (var spaceId in request.SpaceIds)
+    {
+        db.BookingSpaces.Add(new BookingSpace
+        {
+            BookingId = id,
+            SpaceId = spaceId
+        });
+    }
+
+    // Load space hourly rates and calculate TotalAmount
+    var spaceHourlyRates = db.Spaces
+        .AsNoTracking()
+        .Where(s => requestedSpaceIds.Contains(s.Id))
+        .Select(s => s.HourlyRate)
+        .ToList();
+
+    // Load space configuration override rate if set
+    decimal? overrideRate = null;
+    if (booking.SpaceConfigurationId.HasValue)
+    {
+        overrideRate = db.SpaceConfigurations
+            .AsNoTracking()
+            .Where(sc => sc.Id == booking.SpaceConfigurationId.Value)
+            .Select(sc => sc.HourlyRateOverride)
+            .FirstOrDefault();
+    }
+
+    var totalAmount = CalculateBookingTotal(booking.StartUtc, booking.EndUtc, spaceHourlyRates, overrideRate);
+    booking.SetTotalAmount(totalAmount);
+
+    await db.SaveChangesAsync();
+
+    // Return updated space IDs
+    var updatedSpaceIds = db.BookingSpaces
+        .AsNoTracking()
+        .Where(bs => bs.BookingId == id)
+        .Select(bs => bs.SpaceId)
+        .ToList();
+
+    return Results.Ok(new BookingResponse(
+        booking.Id,
+        booking.ClientId,
+        booking.Title,
+        booking.StartUtc,
+        booking.EndUtc,
+        booking.AttendeeCount,
+        booking.IsCancelled,
+        updatedSpaceIds,
+        booking.TotalAmount,
+        booking.SpaceConfigurationId,
+        booking.Status,
+        booking.CancelledUtc,
+        booking.CancelReason));
+})
+.RequireAuthorization();
+
+// PUT /{companySlug}/bookings/{id}/with-spaces - Update booking fields and replace spaces atomically (requires auth + Manager/Admin/Owner)
+tenantGroup.MapPut("/bookings/{id:guid}/with-spaces", async (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id, UpdateBookingWithSpacesRequest request) =>
+{
+    // Extract userId from "sub" claim
+    var userIdClaim = user.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var tenant = tenantContext.Current;
+    if (tenant is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Query membership with role
+    var membership = db.UserCompanyMemberships
+        .AsNoTracking()
+        .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+    if (membership is null)
+    {
+        return Results.Forbid();
+    }
+
+    // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+    var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+    if (!allowedRoles.Contains(membership.Role))
+    {
+        return Results.Forbid();
+    }
+
+    // 1) Load booking (tenant-filtered)
+    var booking = db.Bookings
+        .FirstOrDefault(b => b.Id == id && b.CompanyId == tenant.CompanyId);
+
+    if (booking is null)
+    {
+        return Results.NotFound();
+    }
+
+    // Reject updates to cancelled bookings
+    if (booking.IsCancelled)
+    {
+        return Results.BadRequest(new { error = "Cancelled booking cannot be modified." });
+    }
+
+    // Reject updates to confirmed bookings
+    if (booking.Status == BookingStatus.Confirmed)
+    {
+        return Results.BadRequest(new { error = "Confirmed booking cannot be modified." });
+    }
+
+    // 2) Validate basic fields
+    if (string.IsNullOrWhiteSpace(request.Title))
+    {
+        return Results.BadRequest(new { error = "Title is required." });
+    }
+    if (request.Title.Length > 200)
+    {
+        return Results.BadRequest(new { error = "Title cannot exceed 200 characters." });
+    }
+    if (request.StartUtc >= request.EndUtc)
+    {
+        return Results.BadRequest(new { error = "Start time must be before end time." });
+    }
+    if (request.AttendeeCount < 0)
+    {
+        return Results.BadRequest(new { error = "Attendee count cannot be negative." });
+    }
+
+    // 3) Validate SpaceConfigurationId if provided
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        var configExists = db.SpaceConfigurations
+            .AsNoTracking()
+            .Any(sc => sc.Id == request.SpaceConfigurationId.Value && sc.CompanyId == tenant.CompanyId && sc.IsActive);
+
+        if (!configExists)
+        {
+            return Results.BadRequest(new { error = "Space configuration not found, does not belong to this tenant, or is not active." });
+        }
+    }
+
+    // 4) Validate minimum booking duration
+    var (durationOk, minMinutes) = await ValidateMinBookingDurationAsync(
+        request.SpaceConfigurationId,
+        request.StartUtc,
+        request.EndUtc,
+        db);
+
+    if (!durationOk)
+    {
+        return Results.BadRequest(new {
+            error = "Booking duration is below the minimum allowed.",
+            minMinutes = minMinutes
+        });
+    }
+
+    // 5) Validate SpaceIds
+    if (request.SpaceIds.Count == 0)
+    {
+        return Results.BadRequest(new { error = "SpaceIds is required and must not be empty." });
+    }
+
+    // Deduplicate SpaceIds
+    var dedupedSpaceIds = request.SpaceIds.ToHashSet();
+
+    // Ensure all spaces exist in tenant
+    var existingSpaceIds = db.Spaces
+        .AsNoTracking()
+        .Where(s => dedupedSpaceIds.Contains(s.Id) && s.CompanyId == tenant.CompanyId)
+        .Select(s => s.Id)
+        .ToList();
+
+    if (existingSpaceIds.Count != dedupedSpaceIds.Count)
+    {
+        var missingIds = dedupedSpaceIds.Except(existingSpaceIds).ToList();
+        return Results.BadRequest(new { error = "One or more space IDs are invalid or do not belong to this tenant.", missingSpaceIds = missingIds });
+    }
+
+    // 6) Conflict detection (exclude current booking)
+    var (conflictingBookingIds, conflictingSpaceIds) = FindConflictingBookings(
+        db,
+        tenant.CompanyId,
+        request.StartUtc,
+        request.EndUtc,
+        dedupedSpaceIds,
+        id); // Exclude current booking
+
+    if (conflictingBookingIds.Count > 0)
+    {
+        return Results.Conflict(new BookingConflictResponse(
+            "Booking conflicts with existing bookings.",
+            conflictingBookingIds,
+            conflictingSpaceIds));
+    }
+
+    // 7) Replace spaces: load existing join rows, compute toRemove/toAdd
+    var existingBookingSpaceIds = db.BookingSpaces
+        .Where(bs => bs.BookingId == id)
+        .Select(bs => bs.SpaceId)
+        .ToHashSet();
+
+    var toRemove = existingBookingSpaceIds.Except(dedupedSpaceIds).ToList();
+    var toAdd = dedupedSpaceIds.Except(existingBookingSpaceIds).ToList();
+
+    // Remove associations no longer needed
+    if (toRemove.Count > 0)
+    {
+        var removeAssociations = db.BookingSpaces
+            .Where(bs => bs.BookingId == id && toRemove.Contains(bs.SpaceId))
+            .ToList();
+        db.BookingSpaces.RemoveRange(removeAssociations);
+    }
+
+    // Add new associations
+    foreach (var spaceId in toAdd)
+    {
+        db.BookingSpaces.Add(new BookingSpace
+        {
+            BookingId = id,
+            SpaceId = spaceId
+        });
+    }
+
+    // 8) Update booking fields using type-safe domain method
+    booking.UpdateDetails(request.Title, request.StartUtc, request.EndUtc, request.AttendeeCount);
+
+    // Update SpaceConfigurationId via type-safe setter
+    booking.SetSpaceConfigurationId(request.SpaceConfigurationId);
+
+    // 9) Recalculate TotalAmount
+    // Load hourly rates for requested spaces
+    var spaceHourlyRates = db.Spaces
+        .AsNoTracking()
+        .Where(s => dedupedSpaceIds.Contains(s.Id))
+        .Select(s => s.HourlyRate)
+        .ToList();
+
+    // Load override hourly rate from SpaceConfiguration if set
+    decimal? overrideRate = null;
+    if (request.SpaceConfigurationId.HasValue)
+    {
+        overrideRate = db.SpaceConfigurations
+            .AsNoTracking()
+            .Where(sc => sc.Id == request.SpaceConfigurationId.Value)
+            .Select(sc => sc.HourlyRateOverride)
+            .FirstOrDefault();
+    }
+
+    var totalAmount = CalculateBookingTotal(request.StartUtc, request.EndUtc, spaceHourlyRates, overrideRate);
+    booking.SetTotalAmount(totalAmount);
+
+    // 10) SaveChangesAsync (single call for atomicity)
+    await db.SaveChangesAsync();
+
+    // 11) Return 200 OK with BookingResponse
+    return Results.Ok(new BookingResponse(
+        booking.Id,
+        booking.ClientId,
+        booking.Title,
+        booking.StartUtc,
+        booking.EndUtc,
+        booking.AttendeeCount,
+        booking.IsCancelled,
+        dedupedSpaceIds.ToList(),
+        booking.TotalAmount,
+        booking.SpaceConfigurationId,
+        booking.Status,
+        booking.CancelledUtc,
+        booking.CancelReason));
 })
 .RequireAuthorization();
 

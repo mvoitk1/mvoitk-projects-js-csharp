@@ -1,5 +1,30 @@
+<<<<<<< .gitignore
+
+# macOS
+.DS_Store
+
+# Node / JS
+node_modules/
+dist/
+build/
+
+# C#
+bin/
+obj/
+
+# VS Code
+.vscode/
+
+# Rider / IntelliJ
+.idea/
+
+# Logs
+*.log
+
 bin/
 obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+>>>>>>> .gitignore

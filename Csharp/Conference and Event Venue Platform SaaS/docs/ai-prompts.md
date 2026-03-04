@@ -1147,3 +1147,356 @@ if (app.Environment.IsDevelopment())
 ```
 
 ---
+
+## 2026-03-03T23:51:19Z
+
+**Summary:** Phase 7.0: Added Invoice + InvoiceItem and create-invoice-from-booking endpoints (KISS).
+
+### Prompt Text
+
+```
+# Coder Mode — Phase 7.0: Invoicing foundation (Invoice + InvoiceItem) from Booking (KISS)
+
+## Goal
+Introduce minimal invoicing that can be generated from a Booking:
+- Create an Invoice for a Booking (snapshot totals)
+- Store line items (one per space)
+- Read invoices
+
+This is **not** payments, subscriptions, or billing automation yet.
+
+---
+
+## Hard constraints
+- net10.0
+- Minimal APIs only
+- No Controllers/MVC
+- No MediatR/CQRS/AutoMapper
+- No new repositories/services unless already present patterns require them
+- Keep changes minimal and explicit
+- Tenant isolation via CompanyId must be enforced
+- Avoid overengineering (no tax/discount engines, no PDF generation, no payment providers)
+
+---
+
+## Logging
+Append this prompt to `docs/ai-prompts.md` with date/time placeholder + summary:
+"Phase 7.0: Added Invoice + InvoiceItem and create-invoice-from-booking endpoints (KISS)."
+
+---
+
+# Business rules (KISS)
+
+1) An Invoice belongs to a tenant (`CompanyId`).
+2) An Invoice is linked to exactly one Booking (`BookingId`).
+3) You can only generate an invoice if:
+   - Booking exists in tenant
+   - Booking is **Confirmed**
+   - Booking is **not cancelled**
+   - Booking has at least one Space attached
+4) One invoice per booking:
+   - If invoice already exists for that booking -> return 409 (or 400). Prefer **409 Conflict** with simple message.
+5) Invoice is a snapshot:
+   - Store `SubtotalAmount` (decimal 18,2)
+   - Store line items at time of creation (do not recompute later)
+
+No taxes, no discounts, no payments, no status lifecycle beyond Draft.
+
+---
+
+# Step 1 — BLL domain entities (minimal)
+
+Create folder:
+`VenuePlatform.BLL/Domain/Billing/`
+
+Create:
+`VenuePlatform.BLL/Domain/Billing/Invoice.cs`
+
+Properties:
+- Guid Id
+- Guid CompanyId
+- Guid BookingId
+- DateTime CreatedUtc
+- Guid CreatedByUserId
+- decimal SubtotalAmount
+- string Currency (3 letters, default "EUR")  // keep simple
+- string Status (default "Draft")            // string to avoid enum churn for now
+
+Create:
+`VenuePlatform.BLL/Domain/Billing/InvoiceItem.cs`
+
+Properties:
+- Guid Id
+- Guid CompanyId
+- Guid InvoiceId
+- string Description (max 200)
+- int Quantity (>= 1)
+- decimal UnitPrice (decimal 18,2)
+- decimal LineTotal (decimal 18,2)
+
+Rules:
+- LineTotal = Quantity * UnitPrice
+- SubtotalAmount = sum(LineTotal)
+- Keep constructors minimal + basic validation (no negative values)
+- No navigation props required for now
+
+---
+
+# Step 2 — DAL: DbSets + EF mapping + query filters
+
+Edit:
+`VenuePlatform.DAL/Persistence/ApplicationDbContext.cs`
+
+Add DbSets:
+- `DbSet<Invoice> Invoices`
+- `DbSet<InvoiceItem> InvoiceItems`
+
+Mapping:
+## Invoice
+- Table: "Invoices"
+- Key: Id
+- Required: CompanyId, BookingId, CreatedUtc, CreatedByUserId, SubtotalAmount, Currency, Status
+- Currency max length 3
+- Status max length 20
+- Unique index on (CompanyId, BookingId)  // ensures one invoice per booking per tenant
+- Tenant query filter like other tenant-scoped entities (`CompanyId == CurrentCompanyId`)
+
+## InvoiceItem
+- Table: "InvoiceItems"
+- Key: Id
+- Required: CompanyId, InvoiceId, Description, Quantity, UnitPrice, LineTotal
+- Description max length 200
+- Decimal precision 18,2 for money fields
+- FK InvoiceId -> Invoices(Id) cascade delete
+- Tenant query filter (`CompanyId == CurrentCompanyId`)
+
+---
+
+# Step 3 — Migration
+
+Create migration:
+
+- `dotnet ef migrations add AddInvoices -p VenuePlatform.DAL -s VenuePlatform.Web`
+- `dotnet ef database update -p VenuePlatform.DAL -s VenuePlatform.Web`
+
+---
+
+# Step 4 — Contracts (DTOs)
+
+Create:
+`VenuePlatform.Contracts/Billing/InvoiceResponse.cs`
+
+Fields:
+- Guid Id
+- Guid BookingId
+- DateTime CreatedUtc
+- Guid CreatedByUserId
+- string Currency
+- string Status
+- decimal SubtotalAmount
+- IReadOnlyList<InvoiceItemResponse> Items
+
+Create:
+`VenuePlatform.Contracts/Billing/InvoiceItemResponse.cs`
+
+Fields:
+- Guid Id
+- string Description
+- int Quantity
+- decimal UnitPrice
+- decimal LineTotal
+
+No create DTO needed if invoice is always generated from booking.
+
+---
+
+# Step 5 — Web endpoints (Minimal APIs, in endpoint modules)
+
+Add endpoints under tenant route group:
+
+## A) POST /{companySlug}/bookings/{id:guid}/invoice
+Access:
+- Auth required
+- Role: CompanyManager / CompanyAdmin / CompanyOwner
+
+Flow:
+1) Load booking (tenant-filtered)
+   - 404 if not found
+   - 400 if cancelled
+   - 400 if Status != Confirmed
+2) Ensure booking has spaces (BookingSpaces)
+   - 400 if none
+3) Check if invoice already exists for booking
+   - if exists -> 409 Conflict
+4) Load:
+   - attached Spaces (Names) + their hourly rates used for pricing snapshot:
+     - if booking has SpaceConfigurationId and override is set -> use override as unit price
+     - else use each Space.HourlyRate
+   - duration billed hours should match existing pricing logic:
+     - 15-min ceiling rounding
+5) Create Invoice (CreatedByUserId = current user sub)
+6) Create InvoiceItems:
+   - One item per attached space:
+     - Description: "Space: {SpaceName}"
+     - Quantity: billedMinutes (or billedHours?)  KISS choice:
+       - Use **billedHours as quantity is awkward**
+       - Prefer Quantity = 1 and UnitPrice = (spaceRate * billedHours) and LineTotal = same
+       - Keep it simple and readable on invoices
+7) Set Invoice.SubtotalAmount = sum(LineTotal)
+8) SaveChanges
+9) Return 201 Created with InvoiceResponse (including items)
+
+Note:
+- Do NOT change Booking.TotalAmount here. Invoice is a snapshot based on current booking.
+
+## B) GET /{companySlug}/invoices
+Access:
+- Auth required
+- Any membership
+
+Return list of invoices (no items to keep payload small), ordered by CreatedUtc desc.
+Create an `InvoiceListItemResponse` if needed; otherwise return InvoiceResponse with Items = empty list.
+Prefer a dedicated list DTO for KISS payload size:
+
+Create:
+`VenuePlatform.Contracts/Billing/InvoiceListItemResponse.cs`
+Fields: Id, BookingId, CreatedUtc, Status, Currency, SubtotalAmount
+
+## C) GET /{companySlug}/invoices/{id:guid}
+Access:
+- Auth required
+- Any membership
+
+Return InvoiceResponse with items.
+404 if not found.
+
+Implementation notes:
+- Use AsNoTracking()
+- Avoid N+1 (query invoice + query items)
+
+---
+
+# Step 6 — Acceptance criteria
+
+- Confirmed, non-cancelled booking with spaces can create invoice -> 201
+- Cancelled booking -> 400
+- Pending booking -> 400
+- Booking without spaces -> 400
+- Second invoice for same booking -> 409
+- GET invoices returns tenant-only invoices
+- GET invoice/{id} returns items
+- Tenant isolation intact
+- Build passes (0 warnings, 0 errors)
+
+STOP AFTER IMPLEMENTING.
+Do NOT implement:
+- taxes/VAT
+- discounts
+- payments
+- subscriptions
+- PDF generation
+- email sending
+- invoice numbering scheme (we'll do next)
+```
+
+### Summary of Response
+
+Phase 7.0: Added Invoice + InvoiceItem and create-invoice-from-booking endpoints (KISS).
+
+**Implementation Complete:**
+
+**New Domain Entities:**
+
+1. **`VenuePlatform.BLL/Domain/Billing/Invoice.cs`**:
+   - Properties: Id, CompanyId, BookingId, CreatedUtc, CreatedByUserId, SubtotalAmount, Currency, Status
+   - Constructor with validation (no empty Guids, no negative amounts, currency must be 3 letters)
+   - `SetSubtotalAmount()` method for calculated total
+
+2. **`VenuePlatform.BLL/Domain/Billing/InvoiceItem.cs`**:
+   - Properties: Id, CompanyId, InvoiceId, Description, Quantity, UnitPrice, LineTotal
+   - Constructor with validation (Description max 200, Quantity >= 1, no negative prices)
+   - Static `Create()` factory method that calculates LineTotal as Quantity * UnitPrice
+
+**DAL Changes:**
+
+**Changes to `VenuePlatform.DAL/Persistence/ApplicationDbContext.cs`:**
+- Added `DbSet<Invoice> Invoices`
+- Added `DbSet<InvoiceItem> InvoiceItems`
+- Added Invoice EF configuration:
+  - Table "Invoices" with required fields
+  - Unique index on (CompanyId, BookingId) for one-invoice-per-booking constraint
+  - Tenant query filter on CompanyId
+  - Decimal precision 18,2 for SubtotalAmount
+- Added InvoiceItem EF configuration:
+  - Table "InvoiceItems" with required fields
+  - FK to Invoices with Cascade delete
+  - Tenant query filter on CompanyId
+  - Decimal precision 18,2 for money fields
+
+**Migration Files Created:**
+- `20260303235251_AddInvoices.cs` - Creates Invoices and InvoiceItems tables with indexes
+- `20260303235251_AddInvoices.Designer.cs` - Migration designer file
+- Updated `ApplicationDbContextModelSnapshot.cs` - Added Invoice and InvoiceItem entities
+
+**New Contracts/DTOs:**
+
+1. **`VenuePlatform.Contracts/Billing/InvoiceItemResponse.cs`**:
+   - Record with Id, Description, Quantity, UnitPrice, LineTotal
+
+2. **`VenuePlatform.Contracts/Billing/InvoiceResponse.cs`**:
+   - Record with Id, BookingId, CreatedUtc, CreatedByUserId, Currency, Status, SubtotalAmount, Items
+
+3. **`VenuePlatform.Contracts/Billing/InvoiceListItemResponse.cs`**:
+   - Lightweight record for list view: Id, BookingId, CreatedUtc, Status, Currency, SubtotalAmount
+
+**New Web Endpoint Module:**
+
+**`VenuePlatform.Web/Endpoints/InvoiceEndpoints.cs`**:
+1. `POST /{companySlug}/bookings/{id:guid}/invoice` - Create invoice from booking:
+   - Requires authentication + Manager/Admin/Owner role
+   - Validates booking exists (404 if not found)
+   - Validates booking is not cancelled (400)
+   - Validates booking is Confirmed (400)
+   - Validates booking has spaces (400)
+   - Checks for existing invoice (409 Conflict if exists)
+   - Calculates billed duration using 15-min ceiling (same as booking pricing)
+   - Loads spaces with hourly rates
+   - Checks for SpaceConfiguration HourlyRateOverride
+   - Creates Invoice with Draft status
+   - Creates one InvoiceItem per space with calculated line total
+   - Returns 201 Created with InvoiceResponse
+
+2. `GET /{companySlug}/invoices` - List invoices:
+   - Requires authentication + any membership
+   - Returns tenant-filtered invoices ordered by CreatedUtc desc
+   - Returns InvoiceListItemResponse (lightweight, no items)
+
+3. `GET /{companySlug}/invoices/{id:guid}` - Get invoice details:
+   - Requires authentication + any membership
+   - Returns InvoiceResponse with full item list
+   - Uses AsNoTracking() for read efficiency
+
+**Changes to `VenuePlatform.Web/Program.cs`:**
+- Added `tenantGroup.MapInvoiceEndpoints()` to register invoice endpoints
+
+**Build Status:** Verified successful (0 warnings, 0 errors)
+
+**Target Framework:** net10.0 confirmed
+
+**Business Rules Enforced:**
+- One invoice per booking per tenant (enforced by unique database index)
+- Invoice only created for confirmed, non-cancelled bookings with spaces
+- Invoice is a snapshot (prices calculated at creation time, not recomputed later)
+- Line items: one per space with Description "Space: {Name}", Quantity=1, UnitPrice=rate*billedHours
+- Tenant isolation enforced via query filters and explicit CompanyId checks
+
+**NOT Implemented (as per spec):**
+- Taxes/VAT
+- Discounts
+- Payments
+- Subscriptions
+- PDF generation
+- Email sending
+- Invoice numbering scheme
+
+---

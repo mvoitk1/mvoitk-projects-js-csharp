@@ -6,6 +6,7 @@ using VenuePlatform.BLL.Domain.Clients;
 using VenuePlatform.BLL.Domain.Auth;
 using VenuePlatform.BLL.Domain.Spaces;
 using VenuePlatform.BLL.Domain.Bookings;
+using VenuePlatform.BLL.Domain.Billing;
 
 namespace VenuePlatform.DAL.Persistence;
 
@@ -34,6 +35,8 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
     public DbSet<SpaceConfigurationSpace> SpaceConfigurationSpaces => Set<SpaceConfigurationSpace>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BookingSpace> BookingSpaces => Set<BookingSpace>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -288,5 +291,84 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
 
         // Index on SpaceId for fast lookups (useful for conflict detection)
         bookingSpace.HasIndex(x => x.SpaceId);
+
+        // Invoice configuration with tenant query filter
+        var invoice = modelBuilder.Entity<Invoice>();
+
+        invoice.ToTable("Invoices");
+
+        invoice.HasKey(i => i.Id);
+
+        invoice.Property(i => i.CompanyId)
+            .IsRequired();
+
+        invoice.Property(i => i.BookingId)
+            .IsRequired();
+
+        invoice.Property(i => i.CreatedUtc)
+            .IsRequired();
+
+        invoice.Property(i => i.CreatedByUserId)
+            .IsRequired();
+
+        invoice.Property(i => i.SubtotalAmount)
+            .IsRequired()
+            .HasPrecision(18, 2);
+
+        invoice.Property(i => i.Currency)
+            .IsRequired()
+            .HasMaxLength(3);
+
+        invoice.Property(i => i.Status)
+            .IsRequired()
+            .HasMaxLength(20);
+
+        // Unique index: one invoice per booking per tenant
+        invoice.HasIndex(i => new { i.CompanyId, i.BookingId })
+            .IsUnique();
+
+        invoice.HasIndex(i => new { i.CompanyId, i.CreatedUtc });
+
+        // Tenant query filter for Invoice
+        invoice.HasQueryFilter(i => companyId != null && i.CompanyId == companyId);
+
+        // InvoiceItem configuration with tenant query filter
+        var invoiceItem = modelBuilder.Entity<InvoiceItem>();
+
+        invoiceItem.ToTable("InvoiceItems");
+
+        invoiceItem.HasKey(ii => ii.Id);
+
+        invoiceItem.Property(ii => ii.CompanyId)
+            .IsRequired();
+
+        invoiceItem.Property(ii => ii.InvoiceId)
+            .IsRequired();
+
+        invoiceItem.Property(ii => ii.Description)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        invoiceItem.Property(ii => ii.Quantity)
+            .IsRequired();
+
+        invoiceItem.Property(ii => ii.UnitPrice)
+            .IsRequired()
+            .HasPrecision(18, 2);
+
+        invoiceItem.Property(ii => ii.LineTotal)
+            .IsRequired()
+            .HasPrecision(18, 2);
+
+        // Foreign key to Invoices with Cascade delete
+        invoiceItem.HasOne<Invoice>()
+            .WithMany()
+            .HasForeignKey(ii => ii.InvoiceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        invoiceItem.HasIndex(ii => ii.InvoiceId);
+
+        // Tenant query filter for InvoiceItem
+        invoiceItem.HasQueryFilter(ii => companyId != null && ii.CompanyId == companyId);
     }
 }

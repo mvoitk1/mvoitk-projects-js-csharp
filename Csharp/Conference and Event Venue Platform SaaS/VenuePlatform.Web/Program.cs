@@ -96,6 +96,7 @@ tenantGroup.MapClientEndpoints();
 tenantGroup.MapSpaceEndpoints();
 tenantGroup.MapSpaceConfigurationEndpoints();
 tenantGroup.MapBookingEndpoints();
+tenantGroup.MapInvoiceEndpoints();
 
 // Apply migrations and seed minimal data
 using (var scope = app.Services.CreateScope())

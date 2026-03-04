@@ -49,9 +49,6 @@ const App = (function() {
     elements.headerTitle = document.getElementById('header-title');
     elements.searchInput = document.getElementById('search-input');
     elements.totalBadge = document.getElementById('total-badge');
-    elements.pendingBadge = document.getElementById('pending-badge');
-    elements.progressBadge = document.getElementById('progress-badge');
-    elements.completedBadge = document.getElementById('completed-badge');
     
     // Stats
     elements.statTotal = document.getElementById('stat-total');
@@ -102,16 +99,6 @@ const App = (function() {
     // Navigation
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
       item.addEventListener('click', () => switchView(item.dataset.view));
-    });
-
-    // Quick filters in sidebar
-    document.querySelectorAll('.filter-nav').forEach(item => {
-      item.addEventListener('click', () => {
-        currentFilter = item.dataset.filter;
-        currentStatusFilter = item.dataset.filter;
-        switchView('tasks');
-        updateFilterButtons();
-      });
     });
 
     // View all link
@@ -211,8 +198,7 @@ const App = (function() {
     // Update nav items
     document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.remove('active');
-      if (item.dataset.view === viewName || 
-          (item.dataset.filter === currentFilter && viewName === 'tasks')) {
+      if (item.dataset.view === viewName) {
         item.classList.add('active');
       }
     });
@@ -276,10 +262,7 @@ const App = (function() {
       completed: tasks.filter(t => t.status === 'completed').length
     };
 
-    elements.totalBadge.textContent = tasks.length;
-    elements.pendingBadge.textContent = byStatus.pending;
-    elements.progressBadge.textContent = byStatus['in-progress'];
-    elements.completedBadge.textContent = byStatus.completed;
+    if (elements.totalBadge) elements.totalBadge.textContent = tasks.length;
 
     elements.statTotal.textContent = tasks.length;
     elements.statPending.textContent = byStatus.pending;
@@ -340,15 +323,10 @@ const App = (function() {
       );
     }
 
-    // Apply persistent filter (from sidebar)
-    if (currentFilter) {
-      tasks = tasks.filter(t => t.status === currentFilter);
-    }
-
     elements.allTasks.innerHTML = tasks.length > 0
       ? tasks.map(task => renderTaskCard(task)).join('')
-      : renderEmptyState('No tasks found', currentFilter || currentSearchQuery 
-          ? 'Try adjusting your filters or search query' 
+      : renderEmptyState('No tasks found', currentSearchQuery
+          ? 'Try adjusting your search query'
           : 'Create your first task to get started');
 
     attachTaskCardHandlers(elements.allTasks);

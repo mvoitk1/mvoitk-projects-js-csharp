@@ -3,7 +3,68 @@ import { ApiError, ApiErrorResponse } from '../types/apiTypes'
 // Re-export ApiError so it can be imported from apiClient
 export { ApiError }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5002'
+// Use || instead of ?? to catch empty strings too
+const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002') as string
+
+// Validate and normalize base URL
+function normalizeBaseUrl(url: string): string {
+  const trimmed = url.trim()
+  if (!trimmed) {
+    throw new Error('API_BASE_URL is empty')
+  }
+  // Remove trailing slash to avoid double slashes when concatenating with paths
+  return trimmed.replace(/\/$/, '')
+}
+
+const API_BASE_URL = normalizeBaseUrl(rawBaseUrl)
+
+// ==================== Safe URL Builder ====================
+
+/**
+ * Safely builds a URL from base URL and endpoint path.
+ * Guards against invalid URL construction that causes Safari errors.
+ */
+function buildApiUrl(baseUrl: string, endpoint: string): string {
+  try {
+    const trimmedEndpoint = endpoint.trim()
+    
+    // Ensure endpoint starts with /
+    const normalizedPath = trimmedEndpoint.startsWith('/') 
+      ? trimmedEndpoint 
+      : `/${trimmedEndpoint}`
+    
+    // In dev mode, log the URL construction for debugging
+    if (import.meta.env.DEV) {
+      console.log('[apiClient] Building URL:', { baseUrl, endpoint, normalizedPath })
+    }
+    
+    // Validate base URL looks like a valid URL
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      throw new Error(`Invalid base URL scheme: ${baseUrl}`)
+    }
+    
+    const finalUrl = `${baseUrl}${normalizedPath}`
+    
+    // Try to construct URL to catch any invalid patterns (Safari will throw here)
+    // This validates the URL; void operator prevents "unused variable" warning
+    void new URL(finalUrl)
+    
+    return finalUrl
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown URL error'
+    console.error('[apiClient] URL construction failed:', {
+      baseUrl,
+      endpoint,
+      error: errorMessage,
+    })
+    throw new ApiError(
+      'config_error',
+      `Invalid API URL configuration: ${errorMessage}`,
+      { baseUrl: [baseUrl], endpoint: [endpoint] },
+      0
+    )
+  }
+}
 
 // Storage keys
 const TOKEN_KEY = 'venue_platform_token'
@@ -132,7 +193,8 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const { method = 'GET', body, skipAuth = false } = options
   
-  const url = `${API_BASE_URL}${endpoint}`
+  // Use safe URL builder to prevent Safari "string did not match expected pattern" errors
+  const url = buildApiUrl(API_BASE_URL, endpoint)
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -216,7 +278,7 @@ export const api = {
    * Use for form-urlencoded endpoints.
    */
   postForm: async <T>(endpoint: string, formData: URLSearchParams): Promise<T> => {
-    const url = `${API_BASE_URL}${endpoint}`
+    const url = buildApiUrl(API_BASE_URL, endpoint)
     
     const headers: Record<string, string> = {
       // Don't set Content-Type - browser will set it with boundary for form data

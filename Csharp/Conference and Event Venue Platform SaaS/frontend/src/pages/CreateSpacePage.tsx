@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { SpaceForm } from '../components/spaces/SpaceForm'
 import { createSpace } from '../api/spacesApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
@@ -30,7 +29,7 @@ export function CreateSpacePage() {
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <button
@@ -55,7 +54,7 @@ export function CreateSpacePage() {
           submitLabel="Create Space"
         />
       </div>
-    </Layout>
+    
   )
 }
 

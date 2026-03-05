@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { ProtectedRoute } from './ProtectedRoute'
+import { SessionGate } from '../auth/SessionGate'
+import { AppLayout } from '../layout/AppLayout'
 import { LoginPage } from '../pages/LoginPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { DashboardPage } from '../pages/DashboardPage'
@@ -21,15 +23,23 @@ import { BillingPlanPage } from '../pages/BillingPlanPage'
 import { RevenueReportPage } from '../pages/RevenueReportPage'
 import { OccupancyReportPage } from '../pages/OccupancyReportPage'
 import { DevBootstrapPage } from '../pages/DevBootstrapPage'
+import { SelectCompanyPage } from '../pages/SelectCompanyPage'
+import { CustomerHomePage } from '../pages/CustomerHomePage'
+import { BecomeVenuePage } from '../pages/BecomeVenuePage'
+import { CustomerVenuesPage } from '../pages/CustomerVenuesPage'
+import { CustomerVenueDetailsPage } from '../pages/CustomerVenueDetailsPage'
 
 function RootRedirect() {
-  const { isAuthenticated, companySlug } = useAuth()
+  const { isAuthenticated } = useAuth()
   
-  if (isAuthenticated && companySlug) {
-    return <Navigate to={`/${companySlug}/dashboard`} replace />
+  // If not authenticated, go to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
   }
   
-  return <Navigate to="/login" replace />
+  // Authenticated users hitting root should go through SessionGate
+  // to determine correct routing based on company membership
+  return <Navigate to="/session" replace />
 }
 
 export function AppRouter() {
@@ -45,12 +55,74 @@ export function AppRouter() {
           <Route path="/dev/bootstrap" element={<DevBootstrapPage />} />
         )}
         
-        {/* Protected routes */}
+        {/* Global protected routes (no company slug required) */}
+        <Route
+          path="/session"
+          element={
+            <ProtectedRoute>
+              <SessionGate />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/select-company"
+          element={
+            <ProtectedRoute>
+              <AppLayout mode="customer">
+                <SelectCompanyPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer"
+          element={
+            <ProtectedRoute>
+              <AppLayout mode="customer">
+                <CustomerHomePage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/become-a-venue"
+          element={
+            <ProtectedRoute>
+              <AppLayout mode="customer">
+                <BecomeVenuePage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/venues"
+          element={
+            <ProtectedRoute>
+              <AppLayout mode="customer">
+                <CustomerVenuesPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/venues/:companySlug"
+          element={
+            <ProtectedRoute>
+              <AppLayout mode="customer">
+                <CustomerVenueDetailsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected tenant routes (require company slug) */}
         <Route
           path="/:companySlug/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <AppLayout mode="tenant">
+                <DashboardPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -58,7 +130,9 @@ export function AppRouter() {
           path="/:companySlug/spaces"
           element={
             <ProtectedRoute>
-              <SpacesPage />
+              <AppLayout mode="tenant">
+                <SpacesPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -66,7 +140,9 @@ export function AppRouter() {
           path="/:companySlug/spaces/new"
           element={
             <ProtectedRoute>
-              <CreateSpacePage />
+              <AppLayout mode="tenant">
+                <CreateSpacePage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -74,7 +150,9 @@ export function AppRouter() {
           path="/:companySlug/spaces/:id"
           element={
             <ProtectedRoute>
-              <SpaceDetailsPage />
+              <AppLayout mode="tenant">
+                <SpaceDetailsPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -82,7 +160,9 @@ export function AppRouter() {
           path="/:companySlug/spaces/:id/edit"
           element={
             <ProtectedRoute>
-              <EditSpacePage />
+              <AppLayout mode="tenant">
+                <EditSpacePage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -90,7 +170,9 @@ export function AppRouter() {
           path="/:companySlug/clients"
           element={
             <ProtectedRoute>
-              <ClientsPage />
+              <AppLayout mode="tenant">
+                <ClientsPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -98,7 +180,9 @@ export function AppRouter() {
           path="/:companySlug/clients/new"
           element={
             <ProtectedRoute>
-              <CreateClientPage />
+              <AppLayout mode="tenant">
+                <CreateClientPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -106,7 +190,9 @@ export function AppRouter() {
           path="/:companySlug/clients/:id"
           element={
             <ProtectedRoute>
-              <ClientDetailsPage />
+              <AppLayout mode="tenant">
+                <ClientDetailsPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -114,7 +200,9 @@ export function AppRouter() {
           path="/:companySlug/clients/:id/edit"
           element={
             <ProtectedRoute>
-              <EditClientPage />
+              <AppLayout mode="tenant">
+                <EditClientPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -122,7 +210,9 @@ export function AppRouter() {
           path="/:companySlug/bookings"
           element={
             <ProtectedRoute>
-              <BookingsPage />
+              <AppLayout mode="tenant">
+                <BookingsPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -130,7 +220,9 @@ export function AppRouter() {
           path="/:companySlug/bookings/new"
           element={
             <ProtectedRoute>
-              <CreateBookingPage />
+              <AppLayout mode="tenant">
+                <CreateBookingPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -138,7 +230,9 @@ export function AppRouter() {
           path="/:companySlug/bookings/:id"
           element={
             <ProtectedRoute>
-              <BookingDetailsPage />
+              <AppLayout mode="tenant">
+                <BookingDetailsPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -146,7 +240,9 @@ export function AppRouter() {
           path="/:companySlug/invoices"
           element={
             <ProtectedRoute>
-              <InvoicesPage />
+              <AppLayout mode="tenant">
+                <InvoicesPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -154,7 +250,9 @@ export function AppRouter() {
           path="/:companySlug/invoices/:id"
           element={
             <ProtectedRoute>
-              <InvoiceDetailsPage />
+              <AppLayout mode="tenant">
+                <InvoiceDetailsPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -162,7 +260,9 @@ export function AppRouter() {
           path="/:companySlug/billing"
           element={
             <ProtectedRoute>
-              <BillingPlanPage />
+              <AppLayout mode="tenant">
+                <BillingPlanPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -170,7 +270,9 @@ export function AppRouter() {
           path="/:companySlug/reports/revenue"
           element={
             <ProtectedRoute>
-              <RevenueReportPage />
+              <AppLayout mode="tenant">
+                <RevenueReportPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -178,7 +280,9 @@ export function AppRouter() {
           path="/:companySlug/reports/occupancy"
           element={
             <ProtectedRoute>
-              <OccupancyReportPage />
+              <AppLayout mode="tenant">
+                <OccupancyReportPage />
+              </AppLayout>
             </ProtectedRoute>
           }
         />

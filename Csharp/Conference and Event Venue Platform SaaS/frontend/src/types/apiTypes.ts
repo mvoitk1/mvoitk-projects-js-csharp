@@ -14,10 +14,10 @@ export interface LoginResponse {
 export interface RegisterRequest {
   email: string
   password: string
-  mode: 'Owner' | 'User'
-  companyName?: string    // Required when mode === 'Owner'
-  companySlug: string     // Required for both modes
-  role?: string           // Optional, only honored internally
+  mode?: 'Owner' | 'User' | null  // Omit for account-only signup
+  companyName?: string            // Required when mode === 'Owner'
+  companySlug?: string            // Required when mode === 'Owner' or mode === 'User'
+  role?: string                   // Optional, only honored internally
 }
 
 export interface RegisterResponse {
@@ -25,6 +25,56 @@ export interface RegisterResponse {
   email: string
   companySlug: string | null
   membershipRole: string | null
+}
+
+// ==================== Me/Profile Types ====================
+
+export interface UserCompanyDto {
+  companySlug: string
+  companyName: string
+  role: string
+}
+
+export interface MeResponse {
+  userId: string
+  email: string
+  hasCompanies: boolean
+  companies: UserCompanyDto[]
+}
+
+// ==================== Create Company Types ====================
+
+export interface CreateCompanyRequest {
+  name: string
+  slug: string
+}
+
+export interface CreateCompanyResponse {
+  companyId: string
+  companyName: string
+  companySlug: string
+  role: string
+}
+
+// ==================== Public Companies (Venue Directory) Types ====================
+
+export interface PublicCompanyDto {
+  companySlug: string
+  companyName: string
+  plan: CompanyPlan
+}
+
+export interface PublicCompaniesResponse {
+  companies: PublicCompanyDto[]
+}
+
+// ==================== Public Spaces Types ====================
+
+export interface PublicSpaceDto {
+  id: string
+  name: string
+  capacity: number
+  notes: string | null
 }
 
 // ==================== Billing Types ====================

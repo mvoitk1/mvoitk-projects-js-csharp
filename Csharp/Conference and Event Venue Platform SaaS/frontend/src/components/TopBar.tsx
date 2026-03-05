@@ -1,10 +1,16 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 
 export function TopBar() {
   const { companySlug: authCompanySlug, logout } = useAuth()
   const { companySlug: urlCompanySlug } = useParams<{ companySlug: string }>()
+  const location = useLocation()
   const companySlug = urlCompanySlug || authCompanySlug
+  
+  // Determine which navigation context we're in
+  const isOnGlobalRoute = ['/customer', '/select-company', '/become-a-venue'].includes(location.pathname)
+  const isOnTenantRoute = !!urlCompanySlug
+  const showTenantNav = isOnTenantRoute && companySlug
   
   const handleLogout = () => {
     logout()
@@ -13,35 +19,49 @@ export function TopBar() {
   return (
     <header style={styles.header}>
       <div style={styles.left}>
-        <Link to={companySlug ? `/${companySlug}/dashboard` : '/'} style={styles.logoLink}>
+        <Link to={companySlug ? `/${companySlug}/dashboard` : '/customer'} style={styles.logoLink}>
           <span style={styles.logo}>VenuePlatform</span>
         </Link>
-        {companySlug && (
-          <span style={styles.companySlug}>/{companySlug}</span>
+        
+        {showTenantNav && (
+          <>
+            <span style={styles.companySlug}>/{companySlug}</span>
+            <nav style={styles.nav}>
+              <Link to={`/${companySlug}/dashboard`} style={styles.navLink}>
+                Dashboard
+              </Link>
+              <Link to={`/${companySlug}/spaces`} style={styles.navLink}>
+                Spaces
+              </Link>
+              <Link to={`/${companySlug}/clients`} style={styles.navLink}>
+                Clients
+              </Link>
+              <Link to={`/${companySlug}/bookings`} style={styles.navLink}>
+                Bookings
+              </Link>
+              <Link to={`/${companySlug}/invoices`} style={styles.navLink}>
+                Invoices
+              </Link>
+              <Link to={`/${companySlug}/reports/revenue`} style={styles.navLink}>
+                Reports
+              </Link>
+              <Link to={`/${companySlug}/billing`} style={styles.navLink}>
+                Billing
+              </Link>
+            </nav>
+          </>
         )}
         
-        {companySlug && (
-          <nav style={styles.nav}>
-            <Link to={`/${companySlug}/dashboard`} style={styles.navLink}>
-              Dashboard
+        {isOnGlobalRoute && (
+          <nav style={styles.globalNav}>
+            <Link to="/customer" style={styles.navLink}>
+              Customer
             </Link>
-            <Link to={`/${companySlug}/spaces`} style={styles.navLink}>
-              Spaces
+            <Link to="/select-company" style={styles.navLink}>
+              Select Company
             </Link>
-            <Link to={`/${companySlug}/clients`} style={styles.navLink}>
-              Clients
-            </Link>
-            <Link to={`/${companySlug}/bookings`} style={styles.navLink}>
-              Bookings
-            </Link>
-            <Link to={`/${companySlug}/invoices`} style={styles.navLink}>
-              Invoices
-            </Link>
-            <Link to={`/${companySlug}/reports/revenue`} style={styles.navLink}>
-              Reports
-            </Link>
-            <Link to={`/${companySlug}/billing`} style={styles.navLink}>
-              Billing
+            <Link to="/become-a-venue" style={styles.navLink}>
+              Become a Venue
             </Link>
           </nav>
         )}
@@ -85,6 +105,14 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#666',
   },
   nav: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    marginLeft: '24px',
+    paddingLeft: '24px',
+    borderLeft: '1px solid #e0e0e0',
+  },
+  globalNav: {
     display: 'flex',
     alignItems: 'center',
     gap: '4px',

@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { PlanUsageWidget } from '../components/PlanUsageWidget'
 import { api } from '../api/apiClient'
 import { PlanUsageResponse } from '../types/apiTypes'
@@ -18,8 +17,7 @@ export function DashboardPage() {
   })
   
   return (
-    <Layout>
-      <div style={styles.container}>
+    <div style={styles.container}>
         <h1 style={styles.title}>Dashboard</h1>
         
         {isLoading && (
@@ -48,7 +46,6 @@ export function DashboardPage() {
           </div>
         )}
       </div>
-    </Layout>
   )
 }
 

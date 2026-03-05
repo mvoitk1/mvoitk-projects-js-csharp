@@ -1,7 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Layout } from '../components/Layout'
 import { SpaceForm } from '../components/spaces/SpaceForm'
 import { getSpace, updateSpace } from '../api/spacesApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
@@ -45,17 +44,17 @@ export function EditSpacePage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.loading}>Loading space...</div>
         </div>
-      </Layout>
+      
     )
   }
 
   if (isError || !space) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.errorBanner}>
             Failed to load space. Please try again.
@@ -67,12 +66,12 @@ export function EditSpacePage() {
             Back to Spaces
           </button>
         </div>
-      </Layout>
+      
     )
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <div>
@@ -110,7 +109,7 @@ export function EditSpacePage() {
           </button>
         </div>
       </div>
-    </Layout>
+    
   )
 }
 

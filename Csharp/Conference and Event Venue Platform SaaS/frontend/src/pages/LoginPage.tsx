@@ -44,11 +44,6 @@ function getLoginErrorMessage(normalized: NormalizedError): string {
     return 'Backend not reachable. Check API base URL and that backend is running.'
   }
   
-  // Company not found (from ProtectedRoute or tenant resolution)
-  if (status === 404) {
-    return 'Company not found. Check company slug.'
-  }
-  
   // Invalid credentials
   if (status === 401 && code === 'invalid_credentials') {
     return 'Invalid email or password.'
@@ -57,11 +52,6 @@ function getLoginErrorMessage(normalized: NormalizedError): string {
   // General unauthorized (token expired, etc)
   if (status === 401) {
     return 'Session expired. Please log in again.'
-  }
-  
-  // Forbidden - membership issue
-  if (status === 403) {
-    return 'You do not have access to this company.'
   }
   
   // Use the error message from backend or fallback
@@ -73,7 +63,6 @@ export function LoginPage() {
   const location = useLocation()
   const { login } = useAuth()
 
-  const [companySlug, setCompanySlug] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -86,14 +75,19 @@ export function LoginPage() {
 
   // Handle state passed from registration
   useEffect(() => {
-    const state = location.state as { registeredEmail?: string; companySlug?: string } | null
-    if (state?.registeredEmail) {
+    const state = location.state as { registrationSuccess?: boolean; email?: string; registeredEmail?: string } | null
+    
+    // Support new format: { registrationSuccess: true, email }
+    if (state?.registrationSuccess && state?.email) {
+      setEmail(state.email)
+      setSuccessMessage('Account created successfully! Please sign in.')
+      // Clear state so message doesn't persist on refresh
+      window.history.replaceState({}, document.title)
+    }
+    // Support legacy format: { registeredEmail }
+    else if (state?.registeredEmail) {
       setEmail(state.registeredEmail)
       setSuccessMessage('Account created successfully! Please sign in.')
-      if (state.companySlug) {
-        setCompanySlug(state.companySlug)
-      }
-      // Clear state so message doesn't persist on refresh
       window.history.replaceState({}, document.title)
     }
   }, [location.state])
@@ -115,11 +109,11 @@ export function LoginPage() {
         throw new Error('Login failed: invalid response')
       }
       
-      // Store token via AuthContext
-      login({ email, password }, companySlug.toLowerCase())
+      // Store token via AuthContext (login without company slug)
+      login({ email, password }, '')
       
-      // Navigate to company dashboard
-      navigate(`/${companySlug.toLowerCase()}/dashboard`)
+      // Redirect to SessionGate for routing decision
+      navigate('/session')
     } catch (err: unknown) {
       const normalized = normalizeApiError(err)
       setNormalizedError(normalized)
@@ -139,7 +133,7 @@ export function LoginPage() {
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
     }}>
       <h1 style={{ marginBottom: '8px', fontSize: '24px' }}>Venue Platform</h1>
-      <p style={{ color: '#666', marginBottom: '24px' }}>Sign in to your company workspace</p>
+      <p style={{ color: '#666', marginBottom: '24px' }}>Sign in to your account</p>
 
       {successMessage && (
         <div style={{
@@ -205,27 +199,6 @@ export function LoginPage() {
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
-            Company Slug
-          </label>
-          <input
-            type="text"
-            value={companySlug}
-            onChange={(e) => setCompanySlug(e.target.value)}
-            placeholder="your-company"
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px',
-              boxSizing: 'border-box'
-            }}
-            required
-          />
-        </div>
-        
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
             Email
           </label>
           <input
@@ -288,7 +261,7 @@ export function LoginPage() {
       {/* Register link */}
       <div style={{ marginTop: '24px', textAlign: 'center' }}>
         <p style={{ fontSize: '14px', color: '#6b7280' }}>
-          Don&apos;t have an account?{' '}
+          Don't have an account?{' '}
           <Link
             to="/register"
             style={{

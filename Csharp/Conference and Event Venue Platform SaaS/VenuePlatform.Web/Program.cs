@@ -105,12 +105,10 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Tenant resolution middleware - must be before endpoints
-app.UseMiddleware<TenantResolutionMiddleware>();
-
 // Platform-level endpoints (no tenant required)
 app.MapPlatformDiagnosticsEndpoints();
 app.MapAuthEndpoints(builder.Configuration);
+app.MapCompanyEndpoints();
 
 // DEV-only endpoints (must be in Development environment)
 if (app.Environment.IsDevelopment())
@@ -130,6 +128,10 @@ tenantGroup.MapBookingEndpoints();
 tenantGroup.MapInvoiceEndpoints(builder.Configuration);
 tenantGroup.MapBillingEndpoints();
 tenantGroup.MapReportEndpoints();
+
+// Tenant resolution middleware - runs AFTER endpoint mapping so routing is already resolved
+// This allows the middleware to check if a route is exempt before attempting tenant resolution
+app.UseMiddleware<TenantResolutionMiddleware>();
 
 // Apply migrations and seed minimal data
 using (var scope = app.Services.CreateScope())

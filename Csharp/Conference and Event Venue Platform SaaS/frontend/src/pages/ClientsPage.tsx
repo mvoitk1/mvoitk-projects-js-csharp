@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getClients } from '../api/clientsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
@@ -22,7 +21,7 @@ export function ClientsPage() {
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.title}>Clients</h1>
@@ -95,7 +94,7 @@ export function ClientsPage() {
           </div>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

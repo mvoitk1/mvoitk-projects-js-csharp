@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { ClientForm } from '../components/clients/ClientForm'
 import { createClient } from '../api/clientsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
@@ -30,7 +29,7 @@ export function CreateClientPage() {
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <button
@@ -55,7 +54,7 @@ export function CreateClientPage() {
           submitLabel="Create Client"
         />
       </div>
-    </Layout>
+    
   )
 }
 

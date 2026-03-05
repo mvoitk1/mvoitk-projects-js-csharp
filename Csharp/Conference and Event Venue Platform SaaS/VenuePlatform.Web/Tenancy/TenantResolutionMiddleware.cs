@@ -58,11 +58,49 @@ public class TenantResolutionMiddleware
     {
         var pathValue = path.Value?.ToLowerInvariant() ?? string.Empty;
 
-        return pathValue == "/health"
-               || pathValue.StartsWith("/swagger")
-               || pathValue == "/dev"
-               || pathValue.StartsWith("/dev/")
-               || pathValue == "/auth"
-               || pathValue.StartsWith("/auth/");
+        // Health, docs, and dev endpoints
+        if (pathValue == "/health"
+            || pathValue.StartsWith("/swagger")
+            || pathValue.StartsWith("/openapi")
+            || pathValue == "/dev"
+            || pathValue.StartsWith("/dev/"))
+        {
+            return true;
+        }
+
+        // Auth endpoints (global, non-tenant)
+        if (pathValue == "/auth" || pathValue.StartsWith("/auth/"))
+        {
+            return true;
+        }
+
+        // Global API endpoints (non-tenant)
+        if (pathValue == "/companies" || pathValue.StartsWith("/companies/"))
+        {
+            return true;
+        }
+
+        // Frontend global routes that should not be treated as tenant slugs
+        // These are handled by the frontend router, not API endpoints
+        // but we exempt them to avoid 404s from the middleware
+        var globalPrefixes = new[]
+        {
+            "/login",
+            "/register",
+            "/customer",
+            "/session",
+            "/select-company",
+            "/become-a-venue"
+        };
+
+        foreach (var prefix in globalPrefixes)
+        {
+            if (pathValue == prefix || pathValue.StartsWith(prefix + "/"))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

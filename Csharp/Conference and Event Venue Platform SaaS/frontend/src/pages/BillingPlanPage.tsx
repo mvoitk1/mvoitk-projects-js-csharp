@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getBillingPlan } from '../api/billingApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 import type { CompanyPlan } from '../types/apiTypes'
@@ -46,7 +45,7 @@ export function BillingPlanPage() {
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.title}>Billing Plan</h1>
@@ -137,7 +136,7 @@ export function BillingPlanPage() {
           </div>
         ) : null}
       </div>
-    </Layout>
+    
   )
 }
 

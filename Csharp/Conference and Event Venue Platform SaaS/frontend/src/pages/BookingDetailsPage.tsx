@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import {
   getBookingDetails,
   confirmBooking,
@@ -129,17 +128,17 @@ export function BookingDetailsPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.loading}>Loading booking details...</div>
         </div>
-      </Layout>
+      
     )
   }
 
   if (!booking) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.errorBanner}>Booking not found</div>
           <button
@@ -149,12 +148,12 @@ export function BookingDetailsPage() {
             Back to Bookings
           </button>
         </div>
-      </Layout>
+      
     )
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <div>
@@ -296,7 +295,7 @@ export function BookingDetailsPage() {
           </div>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

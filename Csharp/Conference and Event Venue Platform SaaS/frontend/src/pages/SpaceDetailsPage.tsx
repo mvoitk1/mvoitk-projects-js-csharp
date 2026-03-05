@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getSpace, deactivateSpace } from '../api/spacesApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
@@ -51,17 +50,17 @@ export function SpaceDetailsPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.loading}>Loading space details...</div>
         </div>
-      </Layout>
+      
     )
   }
 
   if (isError || !space) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.errorBanner}>{isError ? getErrorMessage() : 'Space not found'}</div>
           <button
@@ -71,12 +70,12 @@ export function SpaceDetailsPage() {
             Back to Spaces
           </button>
         </div>
-      </Layout>
+      
     )
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <div>
@@ -133,7 +132,7 @@ export function SpaceDetailsPage() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   )
 }
 

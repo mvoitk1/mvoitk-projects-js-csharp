@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getOccupancyReport, getOccupancyDaily } from '../api/reportsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
@@ -118,7 +117,7 @@ export function OccupancyReportPage() {
   }, [dailyData])
   
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <h1 style={styles.title}>Occupancy Report</h1>
         
@@ -220,7 +219,7 @@ export function OccupancyReportPage() {
           </>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

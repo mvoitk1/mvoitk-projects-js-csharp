@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Layout } from '../components/Layout'
 import { getInvoice, issueInvoice, markInvoiceSent, voidInvoice, markInvoicePaid, getInvoicePayments, recordInvoicePayment } from '../api/invoicesApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 import type { InvoiceStatus } from '../types/apiTypes'
@@ -206,17 +205,17 @@ export function InvoiceDetailsPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.loading}>Loading invoice details...</div>
         </div>
-      </Layout>
+      
     )
   }
 
   if (isError || !invoice) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.errorBanner}>{isError ? getErrorMessage() : 'Invoice not found'}</div>
           <button
@@ -226,12 +225,12 @@ export function InvoiceDetailsPage() {
             Back to Invoices
           </button>
         </div>
-      </Layout>
+      
     )
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <div>
@@ -553,7 +552,7 @@ export function InvoiceDetailsPage() {
           )}
         </div>
       </div>
-    </Layout>
+    
   )
 }
 

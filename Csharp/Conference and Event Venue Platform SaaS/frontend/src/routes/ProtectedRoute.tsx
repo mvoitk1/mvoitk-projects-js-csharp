@@ -20,6 +20,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     // Only check membership when authenticated and company slug is available
     if (!isAuthenticated || authLoading) return
     
+    // Skip membership check for non-tenant routes (no companySlug in URL)
+    // Global routes like /session, /customer, /select-company don't need tenant verification
+    if (!companySlug) {
+      setMembershipStatus('valid')
+      return
+    }
+    
     const checkMembership = async () => {
       setMembershipStatus('loading')
       

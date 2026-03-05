@@ -1,5 +1,5 @@
 import { api } from './apiClient'
-import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../types/apiTypes'
+import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, MeResponse } from '../types/apiTypes'
 
 /**
  * Login a user with email and password
@@ -16,4 +16,12 @@ export async function loginUser(credentials: LoginRequest): Promise<LoginRespons
  */
 export async function registerUser(payload: RegisterRequest): Promise<RegisterResponse> {
   return api.post<RegisterResponse>('/auth/register', payload)
+}
+
+/**
+ * Get current user info with company memberships
+ * Calls GET /auth/me (requires auth)
+ */
+export async function getMe(): Promise<MeResponse> {
+  return api.get<MeResponse>('/auth/me')
 }

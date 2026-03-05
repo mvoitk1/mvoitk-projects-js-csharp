@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getSpaces, deactivateSpace } from '../api/spacesApi'
 import { ApiError } from '../types/apiTypes'
 import { useCompanySlug } from '../hooks/useCompanySlug'
@@ -41,7 +40,7 @@ export function SpacesPage() {
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.title}>Spaces</h1>
@@ -123,7 +122,7 @@ export function SpacesPage() {
           </div>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

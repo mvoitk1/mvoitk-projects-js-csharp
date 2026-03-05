@@ -8,7 +8,7 @@ import {
   setUserId,
   clearAuthData,
   getCompanySlug,
-  setCompanySlug,
+  setCompanySlug as setStoredCompanySlug,
 } from '../api/apiClient'
 
 export interface AuthState {
@@ -20,8 +20,9 @@ export interface AuthState {
 }
 
 export interface AuthContextType extends AuthState {
-  login: (credentials: LoginRequest, companySlug: string) => Promise<void>
+  login: (credentials: LoginRequest, companySlug?: string) => Promise<void>
   logout: () => void
+  setCompanySlug: (companySlug: string) => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  const login = useCallback(async (credentials: LoginRequest, companySlug: string) => {
+  const login = useCallback(async (credentials: LoginRequest, companySlug?: string) => {
     // Login endpoint is at /auth/login (global, not tenant-scoped)
     const response = await api.post<LoginResponse>(
       `/auth/login`,
@@ -60,12 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Store auth data
     setToken(response.token)
     setUserId(response.userId)
-    setCompanySlug(companySlug)
+    if (companySlug) {
+      setStoredCompanySlug(companySlug)
+    }
     
     setState({
       token: response.token,
       userId: response.userId,
-      companySlug,
+      companySlug: companySlug || null,
       isAuthenticated: true,
       isLoading: false,
     })
@@ -83,8 +86,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  const setCompanySlug = useCallback((companySlug: string) => {
+    setStoredCompanySlug(companySlug)
+    setState(prev => ({
+      ...prev,
+      companySlug,
+    }))
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, logout, setCompanySlug }}>
       {children}
     </AuthContext.Provider>
   )

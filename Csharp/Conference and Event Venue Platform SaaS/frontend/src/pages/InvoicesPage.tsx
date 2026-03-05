@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getInvoices } from '../api/invoicesApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 import type { InvoiceStatus } from '../types/apiTypes'
@@ -51,8 +50,7 @@ export function InvoicesPage() {
   }
 
   return (
-    <Layout>
-      <div style={styles.container}>
+    <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.title}>Invoices</h1>
         </div>
@@ -115,7 +113,6 @@ export function InvoicesPage() {
           </div>
         )}
       </div>
-    </Layout>
   )
 }
 

@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getRevenueReport, getRevenueDaily } from '../api/reportsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
@@ -76,7 +75,7 @@ export function RevenueReportPage() {
   }, [summaryData])
   
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <h1 style={styles.title}>Revenue Report</h1>
         
@@ -178,7 +177,7 @@ export function RevenueReportPage() {
           </>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

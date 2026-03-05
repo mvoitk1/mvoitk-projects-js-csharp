@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { getBookings, confirmBooking, cancelBooking } from '../api/bookingsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
@@ -104,8 +103,7 @@ export function BookingsPage() {
   }
 
   return (
-    <Layout>
-      <div style={styles.container}>
+    <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.title}>Bookings</h1>
           <button
@@ -224,7 +222,6 @@ export function BookingsPage() {
           </div>
         )}
       </div>
-    </Layout>
   )
 }
 

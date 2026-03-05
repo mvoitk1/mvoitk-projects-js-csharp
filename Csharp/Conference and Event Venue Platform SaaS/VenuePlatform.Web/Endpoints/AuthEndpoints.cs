@@ -5,6 +5,7 @@ using VenuePlatform.BLL.Domain.Companies;
 using VenuePlatform.Contracts.Auth;
 using VenuePlatform.DAL.Persistence;
 using VenuePlatform.Web.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 namespace VenuePlatform.Web.Endpoints;
 
@@ -38,10 +39,10 @@ public static class AuthEndpoints
             var token = tokenService.GenerateToken(user);
             var expiresAt = DateTime.UtcNow.AddMinutes(int.Parse(configuration["Jwt:ExpiresMinutes"]!));
 
-            return Results.Ok(new LoginResponse(token, expiresAt, user.Email!));
+            return Results.Ok(new LoginResponse(token, expiresAt, user.Email!, user.Id));
         });
 
-        // POST /auth/register - Register new user (Owner or User mode)
+        // POST /auth/register - Register new user (account-only, Owner, or User mode)
         app.MapPost("/auth/register", async (
             RegisterRequest request,
             UserManager<IdentityUser<Guid>> userManager,
@@ -53,27 +54,6 @@ public static class AuthEndpoints
                 return Results.BadRequest(new { error = "Email and Password are required." });
             }
 
-            if (string.IsNullOrWhiteSpace(request.Mode) ||
-                !(request.Mode.Equals("Owner", StringComparison.OrdinalIgnoreCase) ||
-                  request.Mode.Equals("User", StringComparison.OrdinalIgnoreCase)))
-            {
-                return Results.BadRequest(new { error = "Mode must be 'Owner' or 'User'." });
-            }
-
-            if (string.IsNullOrWhiteSpace(request.CompanySlug))
-            {
-                return Results.BadRequest(new { error = "CompanySlug is required." });
-            }
-
-            var normalizedSlug = request.CompanySlug.Trim().ToLowerInvariant();
-            var isOwnerMode = request.Mode.Equals("Owner", StringComparison.OrdinalIgnoreCase);
-
-            // Owner mode requires CompanyName
-            if (isOwnerMode && string.IsNullOrWhiteSpace(request.CompanyName))
-            {
-                return Results.BadRequest(new { error = "CompanyName is required for Owner registration." });
-            }
-
             // Check if email already exists
             var existingUser = await userManager.FindByEmailAsync(request.Email);
             if (existingUser is not null)
@@ -81,13 +61,37 @@ public static class AuthEndpoints
                 return Results.Conflict(new { error = "Email already registered." });
             }
 
+            // Determine mode: null/empty = account-only signup
+            var isAccountOnly = string.IsNullOrWhiteSpace(request.Mode);
+            var isOwnerMode = !isAccountOnly && request.Mode!.Equals("Owner", StringComparison.OrdinalIgnoreCase);
+            var isUserMode = !isAccountOnly && request.Mode!.Equals("User", StringComparison.OrdinalIgnoreCase);
+
+            // Validate mode if provided
+            if (!isAccountOnly && !isOwnerMode && !isUserMode)
+            {
+                return Results.BadRequest(new { error = "Mode must be 'Owner', 'User', or omitted for account-only signup." });
+            }
+
+            // Validate company fields based on mode
+            if (isOwnerMode && string.IsNullOrWhiteSpace(request.CompanyName))
+            {
+                return Results.BadRequest(new { error = "CompanyName is required for Owner registration." });
+            }
+
+            if ((isOwnerMode || isUserMode) && string.IsNullOrWhiteSpace(request.CompanySlug))
+            {
+                return Results.BadRequest(new { error = "CompanySlug is required for Owner or User registration." });
+            }
+
+            string? normalizedSlug = isAccountOnly ? null : request.CompanySlug!.Trim().ToLowerInvariant();
+
             // Execute in transaction for atomicity
             await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                Guid companyId;
-                string membershipRole;
+                Guid? companyId = null;
+                string? membershipRole = null;
 
                 if (isOwnerMode)
                 {
@@ -101,14 +105,14 @@ public static class AuthEndpoints
                         return Results.Conflict(new { error = "Company slug already exists." });
                     }
 
-                    var company = new Company(request.CompanyName!, normalizedSlug);
+                    var company = new Company(request.CompanyName!, normalizedSlug!);
                     dbContext.Companies.Add(company);
                     await dbContext.SaveChangesAsync();
 
                     companyId = company.Id;
                     membershipRole = TenantRoles.CompanyOwner;
                 }
-                else
+                else if (isUserMode)
                 {
                     // User mode: join existing company
                     var company = await dbContext.Companies
@@ -124,6 +128,7 @@ public static class AuthEndpoints
                     // Default to Employee; ignore any requested role from public signup
                     membershipRole = TenantRoles.CompanyEmployee;
                 }
+                // Account-only mode: companyId and membershipRole remain null
 
                 // Create Identity user
                 var user = new IdentityUser<Guid>
@@ -141,10 +146,13 @@ public static class AuthEndpoints
                     return Results.BadRequest(new { error = $"Failed to create user: {errors}" });
                 }
 
-                // Create membership
-                var membership = new UserCompanyMembership(user.Id, companyId, membershipRole);
-                dbContext.UserCompanyMemberships.Add(membership);
-                await dbContext.SaveChangesAsync();
+                // Create membership only if companyId is set (Owner or User mode)
+                if (companyId.HasValue && membershipRole is not null)
+                {
+                    var membership = new UserCompanyMembership(user.Id, companyId.Value, membershipRole);
+                    dbContext.UserCompanyMemberships.Add(membership);
+                    await dbContext.SaveChangesAsync();
+                }
 
                 await transaction.CommitAsync();
 
@@ -162,6 +170,45 @@ public static class AuthEndpoints
                 await transaction.RollbackAsync();
                 return Results.Problem($"Registration failed: {ex.Message}");
             }
+        });
+
+        // GET /auth/me - Get current user info with company memberships (requires auth)
+        app.MapGet("/auth/me", [Authorize] async (
+            IUserContext userContext,
+            UserManager<IdentityUser<Guid>> userManager,
+            ApplicationDbContext dbContext) =>
+        {
+            var userId = userContext.UserId;
+            if (!userId.HasValue)
+            {
+                return Results.Unauthorized();
+            }
+
+            var user = await userManager.FindByIdAsync(userId.Value.ToString());
+            if (user is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            // Query memberships joined with companies
+            var memberships = await dbContext.UserCompanyMemberships
+                .AsNoTracking()
+                .Where(m => m.UserId == userId.Value)
+                .Join(
+                    dbContext.Companies.AsNoTracking(),
+                    m => m.CompanyId,
+                    c => c.Id,
+                    (m, c) => new UserCompanyDto(c.Slug, c.Name, m.Role))
+                .ToListAsync();
+
+            var response = new MeResponse(
+                userId.Value,
+                user.Email!,
+                memberships.Count > 0,
+                memberships
+            );
+
+            return Results.Ok(response);
         });
 
         return app;

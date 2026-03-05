@@ -43,14 +43,9 @@ function getRegisterErrorMessage(normalized: NormalizedError): string {
     return 'Backend not reachable. Check API base URL and that backend is running.'
   }
 
-  // Conflict - email or company slug already exists
+  // Conflict - email already exists
   if (status === 409) {
-    return message || 'Email or company slug already exists.'
-  }
-
-  // Not found - company not found for User mode
-  if (status === 404) {
-    return message || 'Company not found.'
+    return message || 'Email already registered.'
   }
 
   // Bad request - validation errors
@@ -62,16 +57,11 @@ function getRegisterErrorMessage(normalized: NormalizedError): string {
   return message || 'Unexpected error. Please try again.'
 }
 
-type RegistrationMode = 'Owner' | 'User'
-
 export function RegisterPage() {
   const navigate = useNavigate()
 
-  const [mode, setMode] = useState<RegistrationMode>('Owner')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [companyName, setCompanyName] = useState('')
-  const [companySlug, setCompanySlug] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -86,37 +76,20 @@ export function RegisterPage() {
       const result = await registerUser({
         email,
         password,
-        mode,
-        companyName: mode === 'Owner' ? companyName : undefined,
-        companySlug: companySlug.toLowerCase().trim(),
+        // mode omitted - creates user account only (no company)
       })
 
       setSuccess(true)
 
       // Navigate to login after a brief delay to show success message
       setTimeout(() => {
-        navigate('/login', { state: { registeredEmail: result.email, companySlug: result.companySlug } })
+        navigate('/login', { state: { registrationSuccess: true, email: result.email } })
       }, 1500)
     } catch (err: unknown) {
       const normalized = normalizeApiError(err)
       setError(getRegisterErrorMessage(normalized))
     } finally {
       setLoading(false)
-    }
-  }
-
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-  }
-
-  const handleCompanyNameChange = (value: string) => {
-    setCompanyName(value)
-    // Auto-generate slug if in Owner mode and slug hasn't been manually modified
-    if (mode === 'Owner' && companySlug === generateSlug(companyName)) {
-      setCompanySlug(generateSlug(value))
     }
   }
 
@@ -158,61 +131,6 @@ export function RegisterPage() {
         </div>
       )}
 
-      {/* Mode Toggle */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{
-          display: 'flex',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          overflow: 'hidden'
-        }}>
-          <button
-            type="button"
-            onClick={() => setMode('Owner')}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: mode === 'Owner' ? '#2563eb' : '#f9fafb',
-              color: mode === 'Owner' ? 'white' : '#374151',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 500,
-              transition: 'all 0.2s'
-            }}
-          >
-            Create Company
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('User')}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: mode === 'User' ? '#2563eb' : '#f9fafb',
-              color: mode === 'User' ? 'white' : '#374151',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 500,
-              transition: 'all 0.2s'
-            }}
-          >
-            Join Company
-          </button>
-        </div>
-        <p style={{
-          marginTop: '8px',
-          fontSize: '12px',
-          color: '#6b7280',
-          textAlign: 'center'
-        }}>
-          {mode === 'Owner'
-            ? 'Create a new company workspace and become the owner'
-            : 'Join an existing company with a company slug'}
-        </p>
-      </div>
-
       <form onSubmit={handleSubmit}>
         {/* Email */}
         <div style={{ marginBottom: '16px' }}>
@@ -237,7 +155,7 @@ export function RegisterPage() {
         </div>
 
         {/* Password */}
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '24px' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
             Password
           </label>
@@ -259,57 +177,6 @@ export function RegisterPage() {
           />
           <p style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
             Minimum 6 characters
-          </p>
-        </div>
-
-        {/* Company Name (Owner mode only) */}
-        {mode === 'Owner' && (
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
-              Company Name
-            </label>
-            <input
-              type="text"
-              value={companyName}
-              onChange={(e) => handleCompanyNameChange(e.target.value)}
-              placeholder="Acme Venue"
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
-              required={mode === 'Owner'}
-            />
-          </div>
-        )}
-
-        {/* Company Slug */}
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
-            Company Slug
-          </label>
-          <input
-            type="text"
-            value={companySlug}
-            onChange={(e) => setCompanySlug(e.target.value.toLowerCase())}
-            placeholder={mode === 'Owner' ? 'acme-venue' : 'existing-company'}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px',
-              boxSizing: 'border-box'
-            }}
-            required
-          />
-          <p style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
-            {mode === 'Owner'
-              ? 'Used in URLs: venueplatform.com/your-slug'
-              : 'The unique identifier for the company you want to join'}
           </p>
         </div>
 

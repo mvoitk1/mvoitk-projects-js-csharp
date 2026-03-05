@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Layout } from '../components/Layout'
 import { getClient, deleteClient } from '../api/clientsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
@@ -52,17 +51,17 @@ export function ClientDetailsPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.loading}>Loading client details...</div>
         </div>
-      </Layout>
+      
     )
   }
 
   if (isError || !client) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.errorBanner}>{isError ? getErrorMessage() : 'Client not found'}</div>
           <button
@@ -72,12 +71,12 @@ export function ClientDetailsPage() {
             Back to Clients
           </button>
         </div>
-      </Layout>
+      
     )
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <div>
@@ -173,7 +172,7 @@ export function ClientDetailsPage() {
           </div>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Layout } from '../components/Layout'
 import { createBookingWithSpaces } from '../api/bookingsApi'
 import { getClients } from '../api/clientsApi'
 import { getSpaces } from '../api/spacesApi'
@@ -115,7 +114,7 @@ export function CreateBookingPage() {
   const isLoading = isLoadingClients || isLoadingSpaces
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.title}>New Booking</h1>
@@ -262,7 +261,7 @@ export function CreateBookingPage() {
           </form>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

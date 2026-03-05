@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Layout } from '../components/Layout'
 import { ClientForm } from '../components/clients/ClientForm'
 import { getClient, updateClient } from '../api/clientsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
@@ -45,17 +44,17 @@ export function EditClientPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.loading}>Loading client...</div>
         </div>
-      </Layout>
+      
     )
   }
 
   if (isError || !client) {
     return (
-      <Layout>
+      
         <div style={styles.container}>
           <div style={styles.errorBanner}>
             Failed to load client. Please try again.
@@ -67,12 +66,12 @@ export function EditClientPage() {
             Back to Clients
           </button>
         </div>
-      </Layout>
+      
     )
   }
 
   return (
-    <Layout>
+    
       <div style={styles.container}>
         <div style={styles.header}>
           <div>
@@ -109,7 +108,7 @@ export function EditClientPage() {
           </button>
         </div>
       </div>
-    </Layout>
+    
   )
 }
 

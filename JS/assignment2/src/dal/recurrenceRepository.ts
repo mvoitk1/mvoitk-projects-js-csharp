@@ -6,6 +6,10 @@ import type {
   ITaskDto,
 } from "./types";
 
+// What these next lines do:
+// Small assert helper for readable validation errors.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const ensure = (condition: boolean, message: string): void => {
   if (!condition) {
     throw new Error(message);
@@ -14,13 +18,25 @@ const ensure = (condition: boolean, message: string): void => {
 
 const cloneRule = (rule: IRecurrenceRuleDto): IRecurrenceRuleDto => ({ ...rule });
 
+// What these next lines do:
+// Standard timestamp format used by this layer.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const nowIsoString = (): string => new Date().toISOString();
 
+// What these next lines do:
+// Load valid task IDs so recurrence rules only target existing tasks.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const loadTaskIds = (): Set<EntityId> => {
   const tasks = loadEnvelope<ITaskDto>("tasks").items;
   return new Set(tasks.map((t) => t.id));
 };
 
+// What these next lines do:
+// Basic recurrence rule validation.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateRule = (rule: IRecurrenceRuleDto, taskIds: Set<EntityId>): void => {
   ensure(!!rule.id, "recurrenceRule.id is required");
   ensure(!!rule.taskId, "recurrenceRule.taskId is required");
@@ -28,11 +44,19 @@ const validateRule = (rule: IRecurrenceRuleDto, taskIds: Set<EntityId>): void =>
   ensure(taskIds.has(rule.taskId), `recurrenceRule.taskId ${rule.taskId} does not exist`);
 };
 
+// What these next lines do:
+// Prevent deleting rules that tasks still point to.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const isRuleReferencedByTasks = (ruleId: EntityId): boolean => {
   const tasks = loadEnvelope<ITaskDto>("tasks").items;
   return tasks.some((task) => task.recurrenceRuleId === ruleId);
 };
 
+// What these next lines do:
+// CRUD repository for recurrence rules.
+// Why this matters in this project:
+// Encapsulating this logic in a class keeps related state and behavior together, which makes the flow easier to maintain.
 class RecurrenceRepository implements IRecurrenceRepository {
   private items: IRecurrenceRuleDto[];
   private version: number;
@@ -43,6 +67,10 @@ class RecurrenceRepository implements IRecurrenceRepository {
     this.version = envelope.version;
   }
 
+  // What these next lines do:
+  // Persist collection with optimistic version check.
+  // Why this matters in this project:
+  // The version check avoids overwriting newer writes from another operation or tab.
   private async persist(next: IRecurrenceRuleDto[]): Promise<void> {
     const envelope = saveEnvelope<IRecurrenceRuleDto>("recurrence", next, this.version);
     this.items = envelope.items.map(cloneRule);

@@ -6,9 +6,15 @@
 const Validator = (function() {
   'use strict';
 
-  // Error code definitions
+  // What these next lines do:
+  // Stable error codes so UI/CLI can react predictably.
+  // Why this matters in this project:
+  // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
   const ERROR_CODES = {
+    // What these next lines do:
     // Validation Errors
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Validation Errors.
     VALIDATION_TITLE_REQUIRED: 'VALIDATION_TITLE_REQUIRED',
     VALIDATION_TITLE_LENGTH: 'VALIDATION_TITLE_LENGTH',
     VALIDATION_TITLE_INVALID: 'VALIDATION_TITLE_INVALID',
@@ -22,29 +28,44 @@ const Validator = (function() {
     VALIDATION_TAG_LENGTH: 'VALIDATION_TAG_LENGTH',
     VALIDATION_TAG_COUNT: 'VALIDATION_TAG_COUNT',
     
+    // What these next lines do:
     // Operation Errors
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Operation Errors.
     TASK_NOT_FOUND: 'TASK_NOT_FOUND',
     STORAGE_ERROR: 'STORAGE_ERROR',
     COMMAND_INVALID: 'COMMAND_INVALID',
     COMMAND_ARGS_INVALID: 'COMMAND_ARGS_INVALID',
     
+    // What these next lines do:
     // System Errors
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: System Errors.
     STORAGE_QUOTA_EXCEEDED: 'STORAGE_QUOTA_EXCEEDED',
     DATA_CORRUPTION: 'DATA_CORRUPTION'
   };
 
-  // Allowed values
+  // What these next lines do:
+  // Allowed enum-like values.
+  // Why this matters in this project:
+  // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
   const ALLOWED_STATUSES = ['pending', 'in-progress', 'completed', 'cancelled'];
   const ALLOWED_PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 
-  // Validation patterns
+  // What these next lines do:
+  // Regex patterns for accepted inputs.
+  // Why this matters in this project:
+  // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
   const PATTERNS = {
     title: /^[\w\s\.,!\-?()\[\]'":;]+$/,
     tag: /^[\w\-]+$/,
     uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   };
 
-  // Length limits
+  // What these next lines do:
+  // Length limits used by field validators.
+  // Why this matters in this project:
+  // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
   const LIMITS = {
     title: { min: 1, max: 100 },
     description: { max: 1000 },
@@ -125,7 +146,10 @@ const Validator = (function() {
       };
     }
 
+    // What these next lines do:
     // Check for invalid characters (but allow common punctuation)
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Check for invalid characters (but allow common punctuation).
     if (!PATTERNS.title.test(trimmed)) {
       return {
         valid: false,
@@ -150,7 +174,10 @@ const Validator = (function() {
       return { valid: true, value: '' };
     }
 
+    // What these next lines do:
     // Strip HTML tags
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const sanitized = Utils.stripHtmlTags(description);
     const trimmed = Utils.trimText(sanitized);
 
@@ -175,7 +202,10 @@ const Validator = (function() {
    */
   function validateStatus(status) {
     if (!status) {
+      // What these next lines do:
       // Default status
+      // Why this matters in this project:
+      // Returning this value here defines the output contract of the helper and keeps callers predictable.
       return { valid: true, value: 'pending' };
     }
 
@@ -202,7 +232,10 @@ const Validator = (function() {
    */
   function validatePriority(priority) {
     if (!priority) {
+      // What these next lines do:
       // Default priority
+      // Why this matters in this project:
+      // Returning this value here defines the output contract of the helper and keeps callers predictable.
       return { valid: true, value: 'medium' };
     }
 
@@ -237,7 +270,10 @@ const Validator = (function() {
 
     const trimmed = Utils.trimText(dueDate);
 
+    // What these next lines do:
     // Check format
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(trimmed)) {
       return {
@@ -250,7 +286,10 @@ const Validator = (function() {
       };
     }
 
+    // What these next lines do:
     // Check valid date
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const date = Utils.parseDate(trimmed);
     if (!date) {
       return {
@@ -263,7 +302,10 @@ const Validator = (function() {
       };
     }
 
-    // Check if in past (unless force flag is set)
+    // What these next lines do:
+    // By default we block past due dates unless caller passes force=true.
+    // Why this matters in this project:
+    // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
     if (!force && Utils.isDateInPast(trimmed)) {
       return {
         valid: false,
@@ -284,7 +326,10 @@ const Validator = (function() {
    * @returns {Object} Validation result
    */
   function validateTags(tags) {
+    // What these next lines do:
     // Handle string input (comma or space separated)
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Handle string input (comma or space separated).
     let tagArray = tags;
     if (typeof tags === 'string') {
       tagArray = Utils.parseTags(tags);
@@ -294,10 +339,16 @@ const Validator = (function() {
       tagArray = [];
     }
 
+    // What these next lines do:
     // Remove duplicates and empty values
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const uniqueTags = [...new Set(tagArray.map(t => Utils.trimText(t)))].filter(t => t.length > 0);
 
+    // What these next lines do:
     // Check count
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Check count.
     if (uniqueTags.length > LIMITS.tags.max) {
       return {
         valid: false,
@@ -309,9 +360,15 @@ const Validator = (function() {
       };
     }
 
+    // What these next lines do:
     // Validate each tag
+    // Why this matters in this project:
+    // Validation here stops bad input early so broken data does not spread to storage or UI.
     for (const tag of uniqueTags) {
+      // What these next lines do:
       // Check length
+      // Why this matters in this project:
+      // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Check length.
       if (tag.length < LIMITS.tag.min || tag.length > LIMITS.tag.max) {
         return {
           valid: false,
@@ -323,7 +380,10 @@ const Validator = (function() {
         };
       }
 
+      // What these next lines do:
       // Check pattern
+      // Why this matters in this project:
+      // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Check pattern.
       if (!PATTERNS.tag.test(tag)) {
         return {
           valid: false,
@@ -346,10 +406,17 @@ const Validator = (function() {
    * @returns {Object} Validation result with validated data
    */
   function validateTask(taskData, options = {}) {
+    // What these next lines do:
+    // Collect all field errors so caller gets full feedback at once.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const errors = [];
     const validated = {};
 
+    // What these next lines do:
     // Validate title (required)
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const titleResult = validateTitle(taskData.title);
     if (!titleResult.valid) {
       errors.push(titleResult.error);
@@ -357,7 +424,10 @@ const Validator = (function() {
       validated.title = titleResult.value;
     }
 
+    // What these next lines do:
     // Validate description (optional)
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const descResult = validateDescription(taskData.description);
     if (!descResult.valid) {
       errors.push(descResult.error);
@@ -365,7 +435,10 @@ const Validator = (function() {
       validated.description = descResult.value;
     }
 
+    // What these next lines do:
     // Validate status
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const statusResult = validateStatus(taskData.status);
     if (!statusResult.valid) {
       errors.push(statusResult.error);
@@ -373,7 +446,10 @@ const Validator = (function() {
       validated.status = statusResult.value;
     }
 
+    // What these next lines do:
     // Validate priority
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const priorityResult = validatePriority(taskData.priority);
     if (!priorityResult.valid) {
       errors.push(priorityResult.error);
@@ -381,7 +457,10 @@ const Validator = (function() {
       validated.priority = priorityResult.value;
     }
 
+    // What these next lines do:
     // Validate due date
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const dueDateResult = validateDueDate(taskData.dueDate, options);
     if (!dueDateResult.valid) {
       errors.push(dueDateResult.error);
@@ -389,7 +468,10 @@ const Validator = (function() {
       validated.dueDate = dueDateResult.value;
     }
 
+    // What these next lines do:
     // Validate tags
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const tagsResult = validateTags(taskData.tags);
     if (!tagsResult.valid) {
       errors.push(tagsResult.error);
@@ -422,6 +504,10 @@ const Validator = (function() {
    * @returns {Object} Validation result
    */
   function validateQuery(query) {
+    // What these next lines do:
+    // Query validation is lighter but still checks known field formats.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const errors = [];
 
     if (query.status) {
@@ -459,7 +545,10 @@ const Validator = (function() {
       }
     }
 
+    // What these next lines do:
     // Tags are validated differently in filters (any tag is acceptable)
+    // Why this matters in this project:
+    // Validation here stops bad input early so broken data does not spread to storage or UI.
     if (query.tags) {
       const tagsResult = validateTags(query.tags);
       if (!tagsResult.valid) {
@@ -481,6 +570,10 @@ const Validator = (function() {
    * @returns {Object} Validation result
    */
   function validateCommand(command, args) {
+    // What these next lines do:
+    // Command-level validation catches missing required arguments early.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const errors = [];
     const validCommands = ['add', 'list', 'update', 'delete', 'filter', 'search', 'help', 'export', 'import', 'clear'];
 
@@ -495,7 +588,10 @@ const Validator = (function() {
       };
     }
 
+    // What these next lines do:
     // Add command requires title
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Add command requires title.
     if (command === 'add') {
       if (!args.title || Utils.trimText(args.title).length === 0) {
         errors.push(new ValidationError(
@@ -506,7 +602,10 @@ const Validator = (function() {
       }
     }
 
+    // What these next lines do:
     // Update command requires ID
+    // Why this matters in this project:
+    // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
     if (command === 'update') {
       if (!args.id || !validateId(args.id)) {
         errors.push(new ValidationError(
@@ -517,7 +616,10 @@ const Validator = (function() {
       }
     }
 
+    // What these next lines do:
     // Delete command requires ID
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Delete command requires ID.
     if (command === 'delete') {
       if (!args.id || !validateId(args.id)) {
         errors.push(new ValidationError(
@@ -528,7 +630,10 @@ const Validator = (function() {
       }
     }
 
+    // What these next lines do:
     // Search command requires query
+    // Why this matters in this project:
+    // Search behavior directly affects discoverability, so this logic must be predictable.
     if (command === 'search') {
       if (!args.query || Utils.trimText(args.query).length === 0) {
         errors.push(new ValidationError(
@@ -546,7 +651,10 @@ const Validator = (function() {
     return { valid: true };
   }
 
+  // What these next lines do:
   // Public API
+  // Why this matters in this project:
+  // Returning this value here defines the output contract of the helper and keeps callers predictable.
   return {
     ValidationError,
     ERROR_CODES,
@@ -566,7 +674,10 @@ const Validator = (function() {
   };
 })();
 
+// What these next lines do:
 // Export for Node.js/CommonJS environments
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = Validator;
 }

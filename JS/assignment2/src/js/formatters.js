@@ -6,25 +6,37 @@
 const Formatters = (function() {
   'use strict';
 
-  // Color codes for CLI-style output (HTML spans)
+  // What these next lines do:
+  // Reusable inline span styles to keep formatter output consistent.
+  // Why this matters in this project:
+  // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
   const COLORS = {
     reset: '</span>',
     bold: '<span style="font-weight: bold;">',
     dim: '<span style="opacity: 0.7;">',
     
+    // What these next lines do:
     // Status colors
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Status colors.
     statusPending: '<span style="color: #f59e0b;">',
     statusInProgress: '<span style="color: #3b82f6;">',
     statusCompleted: '<span style="color: #10b981;">',
     statusCancelled: '<span style="color: #6b7280;">',
     
+    // What these next lines do:
     // Priority colors
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Priority colors.
     priorityLow: '<span style="color: #9ca3af;">',
     priorityMedium: '<span style="color: #3b82f6;">',
     priorityHigh: '<span style="color: #f59e0b;">',
     priorityUrgent: '<span style="color: #ef4444;">',
     
+    // What these next lines do:
     // Other colors
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Other colors.
     error: '<span style="color: #ef4444;">',
     success: '<span style="color: #10b981;">',
     info: '<span style="color: #3b82f6;">',
@@ -97,6 +109,10 @@ const Formatters = (function() {
    * @returns {string} Formatted task row
    */
   function formatTaskRow(task, options = {}) {
+    // What these next lines do:
+    // Build one row with preformatted pieces (status, priority, due date, tags).
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const { showId = true, showDescription = false } = options;
     
     const id = showId ? formatId(truncate(task.id, 8)) : '';
@@ -184,6 +200,10 @@ const Formatters = (function() {
     html += `<span class="col-tags">Tags</span>`;
     html += `</div>`;
 
+    // What these next lines do:
+    // Render each task row in order received.
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Render each task row in order received.
     tasks.forEach(task => {
       html += formatTaskRow(task, options);
     });
@@ -367,6 +387,10 @@ const Formatters = (function() {
    * @returns {string} Formatted command output
    */
   function formatCommandOutput(command, output) {
+    // What these next lines do:
+    // Wrap command output with a timestamped header like a terminal log.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const timestamp = new Date().toLocaleTimeString();
     return `<div class="command-output">`;
     if (command) {
@@ -473,7 +497,10 @@ ${COLORS.bold}help${COLORS.reset} [command]
       return `<pre class="help-text">${helpTexts[command]}</pre>`;
     }
 
+    // What these next lines do:
     // General help
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: General help.
     let help = `<div class="help-list">`;
     help += `${COLORS.bold}Available Commands:${COLORS.reset}\n\n`;
     help += `${COLORS.info}add${COLORS.reset}       - Create a new task\n`;
@@ -491,7 +518,10 @@ ${COLORS.bold}help${COLORS.reset} [command]
     return help;
   }
 
+  // What these next lines do:
   // Public API
+  // Why this matters in this project:
+  // Returning this value here defines the output contract of the helper and keeps callers predictable.
   return {
     COLORS,
     formatStatus,
@@ -516,7 +546,10 @@ ${COLORS.bold}help${COLORS.reset} [command]
   };
 })();
 
+// What these next lines do:
 // Export for Node.js/CommonJS environments
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = Formatters;
 }

@@ -8,6 +8,10 @@ import type {
   ITaskDto,
 } from "./types";
 
+// What these next lines do:
+// Small assert helper for readable validation errors.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const ensure = (condition: boolean, message: string): void => {
   if (!condition) {
     throw new Error(message);
@@ -17,8 +21,16 @@ const ensure = (condition: boolean, message: string): void => {
 const cloneCategory = (category: ICategoryDto): ICategoryDto => ({ ...category });
 const clonePriority = (priority: IPriorityDto): IPriorityDto => ({ ...priority });
 
+// What these next lines do:
+// Standard timestamp format used by this layer.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const nowIsoString = (): string => new Date().toISOString();
 
+// What these next lines do:
+// Basic required-field checks.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateCategory = (category: ICategoryDto): void => {
   ensure(!!category.id, "category.id is required");
   ensure(!!category.name, "category.name is required");
@@ -30,11 +42,19 @@ const validatePriority = (priority: IPriorityDto): void => {
   ensure(!!priority.value, "priority.value is required");
 };
 
+// What these next lines do:
+// Prevent deleting values that tasks still use.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const tasksReferencing = (field: "categoryId" | "priorityId", id: EntityId): boolean => {
   const tasks = loadEnvelope<ITaskDto>("tasks").items;
   return tasks.some((task) => task[field] === id);
 };
 
+// What these next lines do:
+// CRUD repository for categories.
+// Why this matters in this project:
+// Encapsulating this logic in a class keeps related state and behavior together, which makes the flow easier to maintain.
 class CategoriesRepository implements ICategoriesRepository {
   private items: ICategoryDto[];
   private version: number;
@@ -45,6 +65,10 @@ class CategoriesRepository implements ICategoriesRepository {
     this.version = envelope.version;
   }
 
+  // What these next lines do:
+  // Persist category list with optimistic version check.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Persist category list with optimistic version check.
   private async persist(next: ICategoryDto[]): Promise<void> {
     const envelope = saveEnvelope<ICategoryDto>("categories", next, this.version);
     this.items = envelope.items.map(cloneCategory);
@@ -102,6 +126,10 @@ class CategoriesRepository implements ICategoriesRepository {
   }
 }
 
+// What these next lines do:
+// CRUD repository for priorities.
+// Why this matters in this project:
+// Encapsulating this logic in a class keeps related state and behavior together, which makes the flow easier to maintain.
 class PrioritiesRepository implements IPrioritiesRepository {
   private items: IPriorityDto[];
   private version: number;
@@ -112,6 +140,10 @@ class PrioritiesRepository implements IPrioritiesRepository {
     this.version = envelope.version;
   }
 
+  // What these next lines do:
+  // Persist priority list with optimistic version check.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Persist priority list with optimistic version check.
   private async persist(next: IPriorityDto[]): Promise<void> {
     const envelope = saveEnvelope<IPriorityDto>("priorities", next, this.version);
     this.items = envelope.items.map(clonePriority);

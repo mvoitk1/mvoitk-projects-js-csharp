@@ -7,8 +7,16 @@ import {
 } from "../localStorageGateway";
 import type { IStorageEnvelope } from "../types";
 
+// What these next lines do:
+// Clear browser localStorage so each test starts from a blank state.
+// Why this matters in this project:
+// Storage tests are stateful, so leftover keys from previous tests would cause false failures.
 const clear = (): void => localStorage.clear();
 
+// What these next lines do:
+// Insert a full envelope object into the exact storage key used by the gateway.
+// Why this matters in this project:
+// Tests can simulate version conflicts/corrupt data precisely, without calling higher layers.
 const seed = <T>(collection: StorageCollection, envelope: IStorageEnvelope<T>): void => {
   localStorage.setItem(`tm.${collection}`, JSON.stringify(envelope));
 };

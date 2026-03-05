@@ -6,6 +6,10 @@ import type {
   ITaskDto,
 } from "./types";
 
+// What these next lines do:
+// Small assert helper for readable validation errors.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const ensure = (condition: boolean, message: string): void => {
   if (!condition) {
     throw new Error(message);
@@ -14,13 +18,25 @@ const ensure = (condition: boolean, message: string): void => {
 
 const cloneDependency = (dep: IDependencyDto): IDependencyDto => ({ ...dep });
 
+// What these next lines do:
+// Standard timestamp format used by this layer.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const nowIsoString = (): string => new Date().toISOString();
 
+// What these next lines do:
+// Load valid task IDs so dependencies cannot point to missing tasks.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const loadTaskIds = (): Set<EntityId> => {
   const tasks = loadEnvelope<ITaskDto>("tasks").items;
   return new Set(tasks.map((t) => t.id));
 };
 
+// What these next lines do:
+// Build graph adjacency list: task -> tasks it depends on.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const buildAdjacency = (edges: IDependencyDto[]): Map<EntityId, EntityId[]> => {
   const adjacency = new Map<EntityId, EntityId[]>();
   edges.forEach((edge) => {
@@ -31,6 +47,10 @@ const buildAdjacency = (edges: IDependencyDto[]): Map<EntityId, EntityId[]> => {
   return adjacency;
 };
 
+// What these next lines do:
+// DFS cycle check so dependencies cannot become circular.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const hasCycle = (edges: IDependencyDto[]): boolean => {
   const adjacency = buildAdjacency(edges);
   const visiting = new Set<EntityId>();
@@ -55,6 +75,10 @@ const hasCycle = (edges: IDependencyDto[]): boolean => {
   return false;
 };
 
+// What these next lines do:
+// Validate one dependency edge.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateEdge = (edge: IDependencyDto, taskIds: Set<EntityId>): void => {
   ensure(!!edge.id, "dependency.id is required");
   ensure(!!edge.taskId, "dependency.taskId is required");
@@ -65,6 +89,10 @@ const validateEdge = (edge: IDependencyDto, taskIds: Set<EntityId>): void => {
   ensure(taskIds.has(edge.dependsOnId), `dependency.dependsOnId ${edge.dependsOnId} does not exist`);
 };
 
+// What these next lines do:
+// CRUD repository for dependency edges.
+// Why this matters in this project:
+// Encapsulating this logic in a class keeps related state and behavior together, which makes the flow easier to maintain.
 class DependenciesRepository implements IDependenciesRepository {
   private items: IDependencyDto[];
   private version: number;
@@ -75,6 +103,10 @@ class DependenciesRepository implements IDependenciesRepository {
     this.version = envelope.version;
   }
 
+  // What these next lines do:
+  // Persist collection with optimistic version check.
+  // Why this matters in this project:
+  // The version check avoids overwriting newer writes from another operation or tab.
   private async persist(next: IDependencyDto[]): Promise<void> {
     const envelope = saveEnvelope<IDependencyDto>("dependencies", next, this.version);
     this.items = envelope.items.map(cloneDependency);

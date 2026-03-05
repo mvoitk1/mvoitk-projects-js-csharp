@@ -6,7 +6,10 @@
 const App = (function() {
   'use strict';
 
-  // State
+  // What these next lines do:
+  // UI state shared across views.
+  // Why this matters in this project:
+  // This state coordinates filters/search/calendar across screens so user actions stay consistent.
   let currentView = 'dashboard';
   let currentFilter = null;
   let currentStatusFilter = 'all';
@@ -17,7 +20,10 @@ const App = (function() {
   let modalMode = 'create';
   let dataAdapter = null;
 
-  // DOM Elements
+  // What these next lines do:
+  // Cached DOM nodes so we do not query repeatedly.
+  // Why this matters in this project:
+  // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
   const elements = {};
 
   /**
@@ -38,11 +44,17 @@ const App = (function() {
     cacheElements();
     setupEventListeners();
     
-    // Initialize data adapter
+    // What these next lines do:
+    // Data adapter is the bridge between UI and storage/business logic.
+    // Why this matters in this project:
+    // Being explicit about storage behavior prevents corruption and makes recovery paths clearer.
     dataAdapter = TaskDataAdapter.getAdapter();
     await dataAdapter.init();
     
+    // What these next lines do:
     // Load initial data
+    // Why this matters in this project:
+    // Running this at startup ensures the UI shows real saved tasks instead of an empty placeholder screen.
     await refreshAll();
   }
 
@@ -57,23 +69,35 @@ const App = (function() {
     elements.progressBadge = document.getElementById('progress-badge');
     elements.completedBadge = document.getElementById('completed-badge');
     
+    // What these next lines do:
     // Stats
+    // Why this matters in this project:
+    // These element references are used to update count badges quickly whenever task data changes.
     elements.statTotal = document.getElementById('stat-total');
     elements.statPending = document.getElementById('stat-pending');
     elements.statProgress = document.getElementById('stat-progress');
     elements.statCompleted = document.getElementById('stat-completed');
     
+    // What these next lines do:
     // Views
+    // Why this matters in this project:
+    // Keeping view references cached makes section switching fast and avoids repeated DOM lookups.
     elements.dashboardView = document.getElementById('dashboard-view');
     elements.tasksView = document.getElementById('tasks-view');
     elements.calendarView = document.getElementById('calendar-view');
     
+    // What these next lines do:
     // Task containers
+    // Why this matters in this project:
+    // These containers are where rendered task cards are injected, so list updates appear immediately.
     elements.recentTasks = document.getElementById('recent-tasks');
     elements.upcomingTasks = document.getElementById('upcoming-tasks');
     elements.allTasks = document.getElementById('all-tasks');
     
+    // What these next lines do:
     // Modal
+    // Why this matters in this project:
+    // These references control create/edit/view dialogs, which are core to task CRUD actions.
     elements.modal = document.getElementById('task-modal');
     elements.modalTitle = document.getElementById('modal-title');
     elements.taskForm = document.getElementById('task-form');
@@ -95,7 +119,10 @@ const App = (function() {
     elements.modalClose = document.getElementById('modal-close');
     elements.addTaskBtn = document.getElementById('add-task-btn');
     
+    // What these next lines do:
     // Calendar
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Calendar.
     elements.calendarMonth = document.getElementById('calendar-month');
     elements.calendarGrid = document.getElementById('calendar-grid');
     elements.prevMonth = document.getElementById('prev-month');
@@ -107,12 +134,18 @@ const App = (function() {
    * Set up event listeners
    */
   function setupEventListeners() {
+    // What these next lines do:
     // Navigation
+    // Why this matters in this project:
+    // Navigation wiring determines which view is visible and keeps sidebar/header state in sync.
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
       item.addEventListener('click', () => switchView(item.dataset.view));
     });
 
+    // What these next lines do:
     // Quick filters in sidebar
+    // Why this matters in this project:
+    // Applying this filter here ensures users only see tasks matching the chosen criteria.
     document.querySelectorAll('.filter-nav').forEach(item => {
       item.addEventListener('click', () => {
         currentFilter = item.dataset.filter;
@@ -122,12 +155,18 @@ const App = (function() {
       });
     });
 
+    // What these next lines do:
     // View all link
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: View all link.
     document.querySelectorAll('.section-link[data-view]').forEach(item => {
       item.addEventListener('click', () => switchView(item.dataset.view));
     });
 
+    // What these next lines do:
     // Task filters
+    // Why this matters in this project:
+    // Applying this filter here ensures users only see tasks matching the chosen criteria.
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         currentStatusFilter = btn.dataset.status;
@@ -136,16 +175,25 @@ const App = (function() {
       });
     });
 
+    // What these next lines do:
     // Search
+    // Why this matters in this project:
+    // Search behavior directly affects discoverability, so this logic must be predictable.
     elements.searchInput.addEventListener('input', debounce((e) => {
       currentSearchQuery = e.target.value;
       loadTasks();
     }, 300));
 
+    // What these next lines do:
     // Add task button
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Add task button.
     elements.addTaskBtn.addEventListener('click', () => openTaskModal());
 
+    // What these next lines do:
     // Modal events
+    // Why this matters in this project:
+    // Clear event handling keeps user interactions predictable and avoids duplicate side effects.
     elements.modalClose.addEventListener('click', closeTaskModal);
     elements.cancelBtn.addEventListener('click', closeTaskModal);
     elements.saveTaskBtn.addEventListener('click', saveTask);
@@ -157,7 +205,10 @@ const App = (function() {
       }
     });
 
+    // What these next lines do:
     // Tags input
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Tags input.
     elements.tagsInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -168,7 +219,10 @@ const App = (function() {
       }
     });
 
+    // What these next lines do:
     // Checklist input
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Checklist input.
     elements.checklistInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -180,7 +234,10 @@ const App = (function() {
       addChecklistItem(elements.checklistInput.value);
     });
 
+    // What these next lines do:
     // Calendar navigation
+    // Why this matters in this project:
+    // Navigation wiring determines which view is visible and keeps sidebar/header state in sync.
     elements.prevMonth.addEventListener('click', () => {
       currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
       renderCalendar();
@@ -196,7 +253,10 @@ const App = (function() {
       renderCalendar();
     });
 
+    // What these next lines do:
     // Keyboard shortcuts
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Keyboard shortcuts.
     document.addEventListener('keydown', handleKeyboard);
   }
 
@@ -204,18 +264,27 @@ const App = (function() {
    * Handle keyboard shortcuts
    */
   function handleKeyboard(e) {
+    // What these next lines do:
     // Escape to close modal
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Escape to close modal.
     if (e.key === 'Escape' && elements.modal.classList.contains('active')) {
       closeTaskModal();
     }
     
+    // What these next lines do:
     // Ctrl/Cmd + N for new task
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Ctrl/Cmd + N for new task.
     if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
       e.preventDefault();
       openTaskModal();
     }
     
+    // What these next lines do:
     // Ctrl/Cmd + F for search
+    // Why this matters in this project:
+    // Search behavior directly affects discoverability, so this logic must be predictable.
     if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
       e.preventDefault();
       elements.searchInput.focus();
@@ -228,7 +297,10 @@ const App = (function() {
   function switchView(viewName) {
     currentView = viewName;
     
+    // What these next lines do:
     // Update nav items
+    // Why this matters in this project:
+    // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
     document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.remove('active');
       if (item.dataset.view === viewName || 
@@ -237,7 +309,10 @@ const App = (function() {
       }
     });
 
+    // What these next lines do:
     // Update views
+    // Why this matters in this project:
+    // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
     document.querySelectorAll('.view').forEach(view => {
       view.classList.remove('active');
     });
@@ -247,7 +322,10 @@ const App = (function() {
       viewElement.classList.add('active');
     }
 
+    // What these next lines do:
     // Update header title
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const titles = {
       dashboard: 'Dashboard',
       tasks: 'All Tasks',
@@ -255,7 +333,10 @@ const App = (function() {
     };
     elements.headerTitle.textContent = titles[viewName] || 'Dashboard';
 
+    // What these next lines do:
     // Load view data
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Load view data.
     loadViewData(viewName);
   }
 
@@ -313,13 +394,19 @@ const App = (function() {
   async function loadDashboard() {
     const tasks = await dataAdapter.getAllTasks();
     
+    // What these next lines do:
     // Recent tasks (last 5)
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const recent = tasks.slice(0, 5);
     elements.recentTasks.innerHTML = recent.length > 0 
       ? recent.map(task => renderTaskCard(task)).join('')
       : renderEmptyState('No tasks yet', 'Create your first task to get started');
 
+    // What these next lines do:
     // Upcoming deadlines (next 7 days, not completed)
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const today = Utils.formatDate(new Date());
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
@@ -334,7 +421,10 @@ const App = (function() {
       ? upcoming.map(task => renderTaskCard(task)).join('')
       : renderEmptyState('No upcoming deadlines', 'Tasks due in the next 7 days will appear here');
 
+    // What these next lines do:
     // Attach click handlers
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Attach click handlers.
     attachTaskCardHandlers(elements.recentTasks);
     attachTaskCardHandlers(elements.upcomingTasks);
   }
@@ -345,12 +435,18 @@ const App = (function() {
   async function loadTasks() {
     let tasks = await dataAdapter.getAllTasks();
     
+    // What these next lines do:
     // Apply status filter
+    // Why this matters in this project:
+    // Applying this filter here ensures users only see tasks matching the chosen criteria.
     if (currentStatusFilter !== 'all') {
       tasks = tasks.filter(t => t.status === currentStatusFilter);
     }
     
+    // What these next lines do:
     // Apply search filter
+    // Why this matters in this project:
+    // Applying this filter here ensures users only see tasks matching the chosen criteria.
     if (currentSearchQuery) {
       const query = currentSearchQuery.toLowerCase();
       tasks = tasks.filter(t => 
@@ -360,7 +456,10 @@ const App = (function() {
       );
     }
 
-    // Apply persistent filter (from sidebar)
+    // What these next lines do:
+    // Apply persistent filter (from sidebar quick filters).
+    // Why this matters in this project:
+    // Applying this filter here ensures users only see tasks matching the chosen criteria.
     if (currentFilter) {
       tasks = tasks.filter(t => t.status === currentFilter);
     }
@@ -378,6 +477,10 @@ const App = (function() {
    * Render task card HTML
    */
   function renderTaskCard(task) {
+    // What these next lines do:
+    // Helper values drive "overdue/today" text and checklist badge.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const dueDateClass = getDueDateClass(task.dueDate, task.status);
     const daysUntil = task.dueDate ? Utils.getDaysUntil(task.dueDate) : null;
     const checklistProgress = getChecklistProgress(task);
@@ -455,6 +558,10 @@ const App = (function() {
    * Attach event handlers to task cards
    */
   function attachTaskCardHandlers(container) {
+    // What these next lines do:
+    // Bind handlers for each action icon on each visible card.
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Bind handlers for each action icon on each visible card.
     container.querySelectorAll('.task-card').forEach(card => {
       const id = card.dataset.id;
 
@@ -561,12 +668,19 @@ const App = (function() {
    * Open task modal
    */
   function openTaskModal(task = null, mode = 'create') {
+    // What these next lines do:
+    // Reset temporary modal data each time modal opens.
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Reset temporary modal data each time modal opens.
     taskTags = [];
     taskChecklist = [];
     modalMode = mode;
 
     if (task && mode === 'view') {
+      // What these next lines do:
       // View mode
+      // Why this matters in this project:
+      // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: View mode.
       elements.modalTitle.textContent = 'Task Details';
       elements.taskId.value = task.id;
       elements.taskTitle.value = task.title;
@@ -577,7 +691,10 @@ const App = (function() {
       taskTags = [...(task.tags || [])];
       taskChecklist = normalizeChecklist(task.checklist);
     } else if (task) {
+      // What these next lines do:
       // Edit mode
+      // Why this matters in this project:
+      // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Edit mode.
       elements.modalTitle.textContent = 'Edit Task';
       elements.taskId.value = task.id;
       elements.taskTitle.value = task.title;
@@ -589,7 +706,10 @@ const App = (function() {
       taskTags = [...(task.tags || [])];
       taskChecklist = normalizeChecklist(task.checklist);
     } else {
+      // What these next lines do:
       // Create mode
+      // Why this matters in this project:
+      // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Create mode.
       elements.modalTitle.textContent = 'New Task';
       elements.taskForm.reset();
       elements.taskId.value = '';
@@ -604,6 +724,10 @@ const App = (function() {
   }
 
   function applyModalMode() {
+    // What these next lines do:
+    // View mode = read-only; edit/create mode = interactive.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const isView = modalMode === 'view';
     const hasTask = !!elements.taskId.value;
 
@@ -658,6 +782,10 @@ const App = (function() {
    * Render tags
    */
   function renderTags() {
+    // What these next lines do:
+    // View mode shows static tags; edit mode shows removable chips + input.
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: View mode shows static tags; edit mode shows removable chips + input.
     if (modalMode === 'view') {
       elements.tagsContainer.innerHTML = taskTags.length > 0
         ? taskTags.map(tag => `<span class="tag-item">${Utils.escapeHtml(tag)}</span>`).join('')
@@ -676,7 +804,10 @@ const App = (function() {
       <input type="text" class="tags-input" id="tags-input" placeholder="${taskTags.length === 0 ? 'Add tags (press Enter)' : ''}">
     `;
 
+    // What these next lines do:
     // Re-attach events
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const newTagsInput = document.getElementById('tags-input');
     newTagsInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -688,7 +819,10 @@ const App = (function() {
       }
     });
 
+    // What these next lines do:
     // Tag remove buttons
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Tag remove buttons.
     elements.tagsContainer.querySelectorAll('.tag-remove').forEach(btn => {
       btn.addEventListener('click', () => removeTag(parseInt(btn.dataset.index, 10)));
     });
@@ -835,10 +969,16 @@ const App = (function() {
 
     try {
       if (id) {
-        // Update existing
+        // What these next lines do:
+        // Existing ID means edit flow.
+        // Why this matters in this project:
+        // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Existing ID means edit flow.
         await dataAdapter.updateTask(id, taskData);
       } else {
-        // Create new
+        // What these next lines do:
+        // No ID means create flow.
+        // Why this matters in this project:
+        // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: No ID means create flow.
         await dataAdapter.createTask(taskData);
       }
 
@@ -872,12 +1012,18 @@ const App = (function() {
     const year = currentCalendarDate.getFullYear();
     const month = currentCalendarDate.getMonth();
     
+    // What these next lines do:
     // Update month display
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'];
     elements.calendarMonth.textContent = `${monthNames[month]} ${year}`;
 
+    // What these next lines do:
     // Get tasks
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const tasks = await dataAdapter.getAllTasks();
     const tasksByDate = {};
     tasks.forEach(task => {
@@ -889,7 +1035,10 @@ const App = (function() {
       }
     });
 
-    // Generate calendar grid
+    // What these next lines do:
+    // Build a fixed 6-week (42-cell) grid so month layout stays stable.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
@@ -926,7 +1075,10 @@ const App = (function() {
 
     elements.calendarGrid.innerHTML = html;
 
+    // What these next lines do:
     // Attach click handlers for calendar tasks
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Attach click handlers for calendar tasks.
     elements.calendarGrid.querySelectorAll('.calendar-task-dot[data-id]').forEach(dot => {
       dot.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -950,7 +1102,10 @@ const App = (function() {
     };
   }
 
+  // What these next lines do:
   // Public API
+  // Why this matters in this project:
+  // Returning this value here defines the output contract of the helper and keeps callers predictable.
   return {
     init,
     openTaskModal,
@@ -958,5 +1113,8 @@ const App = (function() {
   };
 })();
 
+// What these next lines do:
 // Auto-initialize
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Auto-initialize.
 App.init();

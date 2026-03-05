@@ -20,6 +20,10 @@ import {
   type EntityId,
 } from "../types";
 
+// What these next lines do:
+// Build a fake "allowed IDs" context so mapper functions can validate foreign keys.
+// Why this matters in this project:
+// We can unit-test mapper validation rules without depending on real repositories/storage.
 const fk: IForeignKeyContext = {
   taskIds: new Set<EntityId>(["t1", "t2"]),
   categoryIds: new Set<EntityId>(["c1"]),
@@ -32,6 +36,10 @@ const fk: IForeignKeyContext = {
   reminderIds: new Set<EntityId>(["rm1"]),
 };
 
+// What these next lines do:
+// Create one fully valid task object used as the safe baseline in tests.
+// Why this matters in this project:
+// Each test can override only one field, so failures clearly point to one rule at a time.
 const makeBaseTask = () => ({
   id: "t1",
   title: "Task",

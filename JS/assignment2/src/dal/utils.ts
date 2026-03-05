@@ -2,6 +2,10 @@ import type { EntityId, ICrudRepository } from "./types";
 
 type Equality<T> = (a: T, b: T) => boolean;
 
+// What these next lines do:
+// Lightweight clone used to avoid returning direct internal references.
+// Why this matters in this project:
+// The generic type parameter lets one helper work with many data shapes while still preserving compile-time type checks.
 const shallowClone = <T>(value: T): T => {
   if (Array.isArray(value)) {
     return [...value] as unknown as T;
@@ -12,6 +16,10 @@ const shallowClone = <T>(value: T): T => {
   return value;
 };
 
+// What these next lines do:
+// Config for building a generic in-memory CRUD repository.
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Config for building a generic in-memory CRUD repository.
 export interface CrudRepositoryOptions<TDto, TId extends EntityId = EntityId> {
   getId: (dto: TDto) => TId;
   initialItems?: TDto[];
@@ -19,6 +27,10 @@ export interface CrudRepositoryOptions<TDto, TId extends EntityId = EntityId> {
   persist?: (items: TDto[]) => Promise<void> | void;
 }
 
+// What these next lines do:
+// Build a comparator that sorts by multiple fields in order.
+// Why this matters in this project:
+// Using `export` makes this function available to other files, `const` keeps the function binding stable, and the generic type parameter keeps item types safe across different collections.
 export const compareByFields = <T>(
   fields: { selector: (item: T) => unknown; direction?: "asc" | "desc" }[],
 ): ((a: T, b: T) => number) => {
@@ -38,12 +50,20 @@ export const compareByFields = <T>(
   };
 };
 
+// What these next lines do:
+// Describes adds/updates/deletes relative to a base list.
+// Why this matters in this project:
+// Standardizing date handling avoids subtle bugs when comparing or displaying time values.
 export interface Changeset<TDto, TId> {
   created?: TDto[];
   updated?: TDto[];
   deleted?: TId[];
 }
 
+// What these next lines do:
+// Tiny wrappers to standardize mapper call signatures.
+// Why this matters in this project:
+// Exporting this constant/function exposes a single shared implementation so other modules do not duplicate logic.
 export const mapDtoToDomain = <TDto, TDomain, TContext = unknown>(
   dto: TDto,
   mapper: (dto: TDto, context?: TContext) => TDomain,
@@ -56,6 +76,10 @@ export const mapDomainToDto = <TDomain, TDto, TContext = unknown>(
   context?: TContext,
 ): TDto => mapper(domain, context);
 
+// What these next lines do:
+// Build a fast lookup map by one property key.
+// Why this matters in this project:
+// Exporting this constant/function exposes a single shared implementation so other modules do not duplicate logic.
 export const buildIndex = <TItem, TKey extends keyof TItem>(
   items: TItem[],
   key: TKey,
@@ -67,6 +91,10 @@ export const buildIndex = <TItem, TKey extends keyof TItem>(
   return index;
 };
 
+// What these next lines do:
+// Apply a changeset to a base list (update, create, delete).
+// Why this matters in this project:
+// Exporting this constant/function exposes a single shared implementation so other modules do not duplicate logic.
 export const applyChangeset = <TDto, TId>(
   base: TDto[],
   getId: (dto: TDto) => TId,
@@ -92,6 +120,10 @@ export const applyChangeset = <TDto, TId>(
   return Array.from(next.values());
 };
 
+// What these next lines do:
+// Factory for a reusable in-memory CRUD repository implementation.
+// Why this matters in this project:
+// Exporting this constant/function exposes a single shared implementation so other modules do not duplicate logic.
 export const createCrudRepository = <TDto, TId extends EntityId = EntityId>({
   getId,
   initialItems = [],

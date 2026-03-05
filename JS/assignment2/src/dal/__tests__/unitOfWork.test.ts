@@ -3,8 +3,16 @@ import { createUnitOfWork } from "../unitOfWork";
 import { ETaskStatus, type EntityId } from "../types";
 import type { StorageCollection } from "../localStorageGateway";
 
+// What these next lines do:
+// Define one fixed timestamp reused by all test records in this file.
+// Why this matters in this project:
+// Predictable timestamps keep commit/cascade assertions deterministic.
 const iso = new Date(0).toISOString();
 
+// What these next lines do:
+// Store a full envelope for a collection (items + version + updatedAt).
+// Why this matters in this project:
+// UnitOfWork tests need exact control of baseline snapshots and versions.
 const seedEnvelope = <T>(collection: StorageCollection, items: T[], version = 1): void => {
   localStorage.setItem(
     `tm.${collection}`,
@@ -12,6 +20,10 @@ const seedEnvelope = <T>(collection: StorageCollection, items: T[], version = 1)
   );
 };
 
+// What these next lines do:
+// Rewrite only the tasks envelope version after staged operations.
+// Why this matters in this project:
+// Some tests isolate commit behavior and don't want pre-commit writes to trigger conflicts.
 const resetTasksVersion = (version = 1): void => {
   const raw = localStorage.getItem("tm.tasks");
   const parsed = raw ? JSON.parse(raw) : { items: [] };
@@ -21,17 +33,29 @@ const resetTasksVersion = (version = 1): void => {
   );
 };
 
+// What these next lines do:
+// Read back only the `items` payload from one stored envelope.
+// Why this matters in this project:
+// Assertions stay focused on data outcomes instead of envelope metadata noise.
 const readItems = (collection: StorageCollection): unknown[] => {
   const raw = localStorage.getItem(`tm.${collection}`);
   const parsed = raw ? JSON.parse(raw) : null;
   return parsed?.items ?? [];
 };
 
+// What these next lines do:
+// Seed minimal category/priority rows required for task validity checks.
+// Why this matters in this project:
+// Tests can focus on UnitOfWork commit/cascade behavior, not FK setup errors.
 const seedBaseFks = (): void => {
   seedEnvelope("categories", [{ id: "c1", name: "Cat" }]);
   seedEnvelope("priorities", [{ id: "p1", label: "P1", value: "high" }]);
 };
 
+// What these next lines do:
+// Produce a valid default task and let each test override specific fields.
+// Why this matters in this project:
+// Reduces repeated setup and makes each scenario easier to understand.
 const makeTask = (id: EntityId, overrides: Record<string, unknown> = {}) => ({
   id,
   title: id,
@@ -117,7 +141,10 @@ describe("UnitOfWork commit and cascades", () => {
     expect(result.success).toBe(false);
     expect(result.validationErrors?.length).toBeGreaterThan(0);
 
-    // original data preserved
+    // What these next lines do:
+    // Verify rollback kept original category/task records after failed commit.
+    // Why this matters in this project:
+    // UnitOfWork must be atomic: invalid commits cannot partially mutate storage.
     expect(readItems("categories").map((c: any) => c.id)).toEqual(["c1"]);
     expect(readItems("tasks").map((t: any) => t.id)).toEqual(["t1"]);
   });
@@ -128,7 +155,10 @@ describe("UnitOfWork commit and cascades", () => {
 
     const uow = createUnitOfWork();
 
-    // simulate external writer bumping version
+    // What these next lines do:
+    // Simulate another writer changing the tasks version behind this UnitOfWork.
+    // Why this matters in this project:
+    // Confirms optimistic concurrency stops stale commits from overwriting newer data.
     localStorage.setItem(
       "tm.tasks",
       JSON.stringify({ version: 2, updatedAt: iso, items: [] }),

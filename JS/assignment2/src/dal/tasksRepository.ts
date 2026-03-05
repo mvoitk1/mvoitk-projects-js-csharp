@@ -13,6 +13,10 @@ import type {
   ITasksRepository,
 } from "./types";
 
+// What these next lines do:
+// Numeric weight used to sort priorities consistently.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const PRIORITY_VALUE_ORDER: Record<string, number> = {
   low: 1,
   medium: 2,
@@ -27,6 +31,10 @@ type ForeignKeySets = {
   dependencyById: Map<EntityId, IDependencyDto>;
 };
 
+// What these next lines do:
+// Defensive copy so callers cannot mutate repository internals.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const cloneTask = (task: ITaskDto): ITaskDto => ({
   ...task,
   dependencyIds: [...(task.dependencyIds ?? [])],
@@ -38,12 +46,20 @@ const cloneTask = (task: ITaskDto): ITaskDto => ({
   assigneeIds: [...(task.assigneeIds ?? [])],
 });
 
+// What these next lines do:
+// Small assert helper to throw clear validation errors.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const ensure = (condition: boolean, message: string): void => {
   if (!condition) {
     throw new Error(message);
   }
 };
 
+// What these next lines do:
+// Load foreign-key collections once for validation checks.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const buildFkSets = (): ForeignKeySets => {
   const categories = loadEnvelope<ICategoryDto>("categories").items;
   const priorities = loadEnvelope<IPriorityDto>("priorities").items;
@@ -58,6 +74,10 @@ const buildFkSets = (): ForeignKeySets => {
   };
 };
 
+// What these next lines do:
+// Fill missing fields and timestamps when creating/updating a task.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const hydrateTask = (incoming: ITaskDto, fallback: ITaskDto | undefined): ITaskDto => {
   const now = new Date().toISOString();
   const base = fallback ? cloneTask(fallback) : undefined;
@@ -77,6 +97,10 @@ const hydrateTask = (incoming: ITaskDto, fallback: ITaskDto | undefined): ITaskD
   };
 };
 
+// What these next lines do:
+// Enforce required fields and foreign-key integrity.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateTask = (task: ITaskDto, fk: ForeignKeySets): void => {
   ensure(!!task.id, "task.id is required");
   ensure(!!task.title, "task.title is required");
@@ -102,6 +126,10 @@ const validateTask = (task: ITaskDto, fk: ForeignKeySets): void => {
    });
 };
 
+// What these next lines do:
+// Task repository with in-memory indexes for faster reads and stats.
+// Why this matters in this project:
+// Exporting the class allows other modules to catch or construct it, which keeps behavior and error handling consistent.
 export class TasksRepository implements ITasksRepository {
   private items: ITaskDto[];
   private version: number;
@@ -122,6 +150,10 @@ export class TasksRepository implements ITasksRepository {
   private recurrenceRulesByTask = new Map<EntityId, IRecurrenceRuleDto>();
   private priorityWeights = new Map<EntityId, number>();
 
+  // What these next lines do:
+  // Rebuild indexes only when underlying versions changed.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Rebuild indexes only when underlying versions changed.
   private buildIndexes(): void {
     const dependencyEnvelope = loadEnvelope<IDependencyDto>("dependencies");
     const recurrenceEnvelope = loadEnvelope<IRecurrenceRuleDto>("recurrence");
@@ -217,6 +249,10 @@ export class TasksRepository implements ITasksRepository {
     this.indexesBuilt = true;
   }
 
+  // What these next lines do:
+  // Mark indexes stale after any state change.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Mark indexes stale after any state change.
   private invalidateIndexes(): void {
     this.indexesBuilt = false;
   }
@@ -228,6 +264,10 @@ export class TasksRepository implements ITasksRepository {
     this.invalidateIndexes();
   }
 
+  // What these next lines do:
+  // Persist task collection and refresh local cache/version.
+  // Why this matters in this project:
+  // Caching this value reduces repeated work and keeps the app responsive.
   private async persist(next: ITaskDto[]): Promise<void> {
     const envelope = saveEnvelope<ITaskDto>("tasks", next, this.version);
     this.items = envelope.items.map(cloneTask);
@@ -292,6 +332,10 @@ export class TasksRepository implements ITasksRepository {
     await this.persist(next);
   }
 
+  // What these next lines do:
+  // A task is blocked if it depends on another unfinished task.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: A task is blocked if it depends on another unfinished task.
   private isBlocked(task: ITaskDto, dependencyLookup: Map<EntityId, ITaskDto>): boolean {
     const edges = this.dependenciesByTask.get(task.id) ?? [];
     if (edges.length === 0) return false;
@@ -303,6 +347,10 @@ export class TasksRepository implements ITasksRepository {
     });
   }
 
+  // What these next lines do:
+  // Move a recurrence date forward by its interval unit.
+  // Why this matters in this project:
+  // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
   private addInterval(base: Date, frequency: IRecurrenceRuleDto["frequency"], interval: number): Date {
     const next = new Date(base);
     switch (frequency) {
@@ -324,6 +372,10 @@ export class TasksRepository implements ITasksRepository {
     return next;
   }
 
+  // What these next lines do:
+  // Check if a recurrence rule has any instance in a date window.
+  // Why this matters in this project:
+  // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
   private hasRecurrenceInstanceInWindow(
     rule: IRecurrenceRuleDto,
     windowStart?: string,
@@ -361,6 +413,10 @@ export class TasksRepository implements ITasksRepository {
     }
   }
 
+  // What these next lines do:
+  // Recurring tasks use recurrence start as their effective due date.
+  // Why this matters in this project:
+  // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
   private getEffectiveDueDate(task: ITaskDto): string | undefined {
     const recurrence = this.recurrenceRulesByTask.get(task.id);
     if (recurrence?.startDate) {
@@ -369,6 +425,10 @@ export class TasksRepository implements ITasksRepository {
     return task.dueDate;
   }
 
+  // What these next lines do:
+  // Apply all supported filter options.
+  // Why this matters in this project:
+  // Applying this filter here ensures users only see tasks matching the chosen criteria.
   private applyFilter(tasks: ITaskDto[], filter?: ITaskFilter): ITaskDto[] {
     if (!filter) return tasks;
 
@@ -410,6 +470,10 @@ export class TasksRepository implements ITasksRepository {
     });
   }
 
+  // What these next lines do:
+  // Apply multi-field sorting with special handling for dueDate/priority.
+  // Why this matters in this project:
+  // Sorting at this step guarantees a consistent order in UI views and command outputs.
   private applySort(tasks: ITaskDto[], sorts?: ITaskSortDescriptor[]): ITaskDto[] {
     if (!sorts || sorts.length === 0) return tasks;
     const comparator = compareByFields<ITaskDto>(
@@ -433,6 +497,10 @@ export class TasksRepository implements ITasksRepository {
     return [...tasks].sort(comparator);
   }
 
+  // What these next lines do:
+  // Query = filter then sort.
+  // Why this matters in this project:
+  // Applying this filter here ensures users only see tasks matching the chosen criteria.
   async query(filter?: ITaskFilter, sorts?: ITaskSortDescriptor[]): Promise<ITaskDto[]> {
     this.buildIndexes();
     const filtered = this.applyFilter(this.items, filter);
@@ -440,6 +508,10 @@ export class TasksRepository implements ITasksRepository {
     return sorted.map(cloneTask);
   }
 
+  // What these next lines do:
+  // Calculate dashboard metrics from the current task snapshot.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Calculate dashboard metrics from the current task snapshot.
   async stats(now: string, upcomingWindowDays = 7): Promise<ITaskStats> {
     this.buildIndexes();
     const nowDate = new Date(now).toISOString();
@@ -508,12 +580,17 @@ export class TasksRepository implements ITasksRepository {
 
 export const createTasksRepository = (): ITasksRepository => new TasksRepository();
 
-// Adapter that lets the UnitOfWork reuse the same logic with supplied initial items
+// What these next lines do:
+// Adapter that lets UnitOfWork reuse task logic with a provided snapshot.
+// Why this matters in this project:
+// Exporting the class allows other modules to catch or construct it, which keeps behavior and error handling consistent.
 export class TasksRepositoryAdapter extends TasksRepository {
   constructor(initial: ITaskDto[]) {
     super();
-    // override loaded items/version with provided snapshot without persisting
-    // (used only inside UnitOfWork where snapshots are already loaded)
+    // What these next lines do:
+    // Override loaded items/version with provided snapshot without persisting.
+    // Why this matters in this project:
+    // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Override loaded items/version with provided snapshot without persisting.
     (this as unknown as { items: ITaskDto[] }).items = initial.map(cloneTask);
   }
 }

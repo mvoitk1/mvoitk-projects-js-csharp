@@ -18,6 +18,10 @@ const TaskDataAdapter = (function() {
   /** @type {ITaskDataAdapter|null} */
   let activeAdapter = null;
 
+  // What these next lines do:
+  // Safety check: adapter must expose all methods App expects.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Safety check: adapter must expose all methods App expects.
   function validateAdapter(candidate) {
     const required = [
       'init',
@@ -41,6 +45,10 @@ const TaskDataAdapter = (function() {
     return candidate;
   }
 
+  // What these next lines do:
+  // Wrap old TaskManager API so UI can call a stable adapter interface.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Wrap old TaskManager API so UI can call a stable adapter interface.
   function createLegacyAdapter(taskManager) {
     validateAdapter(taskManager);
     return {
@@ -53,6 +61,10 @@ const TaskDataAdapter = (function() {
     };
   }
 
+  // What these next lines do:
+  // Lazy default: if app did not set a custom adapter, use TaskManager.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Lazy default: if app did not set a custom adapter, use TaskManager.
   function ensureDefaultAdapter() {
     if (activeAdapter) return;
 
@@ -61,10 +73,18 @@ const TaskDataAdapter = (function() {
     }
   }
 
+  // What these next lines do:
+  // Allow swapping in a different backend adapter later.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Allow swapping in a different backend adapter later.
   function setAdapter(adapter) {
     activeAdapter = validateAdapter(adapter);
   }
 
+  // What these next lines do:
+  // Always return a usable adapter or fail with clear error.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Always return a usable adapter or fail with clear error.
   function getAdapter() {
     ensureDefaultAdapter();
 

@@ -11,6 +11,10 @@ const TaskManager = (function() {
    */
   class TaskManagerClass {
     constructor() {
+      // What these next lines do:
+      // In-memory cache mirrored from Storage.
+      // Why this matters in this project:
+      // Caching this value reduces repeated work and keeps the app responsive.
       this.tasks = [];
       this.persistentFilter = null;
       this.initialized = false;
@@ -41,7 +45,10 @@ const TaskManager = (function() {
      * @throws {ValidationError} If validation fails
      */
     async createTask(taskData, options = {}) {
-      // Validate task data
+      // What these next lines do:
+      // Validate and normalize incoming user data first.
+      // Why this matters in this project:
+      // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
       const validation = Validator.validateTask(taskData, options);
       if (!validation.valid) {
         throw validation.errors[0];
@@ -77,11 +84,17 @@ const TaskManager = (function() {
      * @returns {Promise<Object|null>} Task or null
      */
     async getTask(id) {
-      // Try to find in memory first
+      // What these next lines do:
+      // Read from memory first (faster), then fallback to storage.
+      // Why this matters in this project:
+      // Being explicit about storage behavior prevents corruption and makes recovery paths clearer.
       let task = this.tasks.find(t => t.id === id);
       
       if (!task) {
+        // What these next lines do:
         // Try storage
+        // Why this matters in this project:
+        // Being explicit about storage behavior prevents corruption and makes recovery paths clearer.
         try {
           task = await Storage.getTask(id);
         } catch (error) {
@@ -97,10 +110,16 @@ const TaskManager = (function() {
      * @returns {Promise<Object[]>} All tasks sorted by createdAt descending
      */
     async getAllTasks() {
+      // What these next lines do:
       // Ensure tasks are loaded
+      // Why this matters in this project:
+      // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Ensure tasks are loaded.
       await this.init();
       
-      // Sort by createdAt descending (newest first)
+      // What these next lines do:
+      // Newest tasks first.
+      // Why this matters in this project:
+      // Returning this value here defines the output contract of the helper and keeps callers predictable.
       return [...this.tasks].sort((a, b) => {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
@@ -116,19 +135,28 @@ const TaskManager = (function() {
       
       let results = [...this.tasks];
       
+      // What these next lines do:
       // Filter by status
+      // Why this matters in this project:
+      // Applying this filter here ensures users only see tasks matching the chosen criteria.
       if (query.status) {
         const status = query.status.toLowerCase();
         results = results.filter(task => task.status === status);
       }
       
+      // What these next lines do:
       // Filter by priority
+      // Why this matters in this project:
+      // Applying this filter here ensures users only see tasks matching the chosen criteria.
       if (query.priority) {
         const priority = query.priority.toLowerCase();
         results = results.filter(task => task.priority === priority);
       }
       
-      // Filter by tags (any match)
+      // What these next lines do:
+      // Tags filter uses "any match" logic.
+      // Why this matters in this project:
+      // Applying this filter here ensures users only see tasks matching the chosen criteria.
       if (query.tags && query.tags.length > 0) {
         const tags = Array.isArray(query.tags) ? query.tags : Utils.parseTags(query.tags);
         const normalizedTags = tags.map(t => t.toLowerCase());
@@ -137,7 +165,10 @@ const TaskManager = (function() {
         );
       }
       
+      // What these next lines do:
       // Filter by due date range
+      // Why this matters in this project:
+      // Applying this filter here ensures users only see tasks matching the chosen criteria.
       if (query.dueBefore) {
         results = results.filter(task => {
           if (!task.dueDate) return false;
@@ -152,12 +183,18 @@ const TaskManager = (function() {
         });
       }
       
+      // What these next lines do:
       // Filter by exact due date
+      // Why this matters in this project:
+      // Applying this filter here ensures users only see tasks matching the chosen criteria.
       if (query.dueDate) {
         results = results.filter(task => task.dueDate === query.dueDate);
       }
       
+      // What these next lines do:
       // Sort by createdAt descending
+      // Why this matters in this project:
+      // Sorting at this step guarantees a consistent order in UI views and command outputs.
       results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       
       return results;
@@ -172,7 +209,10 @@ const TaskManager = (function() {
      * @throws {ValidationError} If task not found or validation fails
      */
     async updateTask(id, updates, options = {}) {
+      // What these next lines do:
       // Check if task exists
+      // Why this matters in this project:
+      // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
       const task = this.tasks.find(t => t.id === id);
       if (!task) {
         throw new Validator.ValidationError(
@@ -182,7 +222,10 @@ const TaskManager = (function() {
         );
       }
 
-      // Merge existing task with updates for validation
+      // What these next lines do:
+      // Merge old + new values, then validate full shape.
+      // Why this matters in this project:
+      // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
       const mergedData = {
         title: updates.title !== undefined ? updates.title : task.title,
         description: updates.description !== undefined ? updates.description : task.description,
@@ -192,7 +235,10 @@ const TaskManager = (function() {
         tags: updates.tags !== undefined ? updates.tags : task.tags
       };
 
+      // What these next lines do:
       // Validate merged data
+      // Why this matters in this project:
+      // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
       const validation = Validator.validateTask(mergedData, options);
       if (!validation.valid) {
         throw validation.errors[0];
@@ -206,7 +252,10 @@ const TaskManager = (function() {
         updatedAt: Utils.getCurrentTimestamp()
       };
 
-      // Handle status transition - update timestamp if status changed
+      // What these next lines do:
+      // Keep updatedAt fresh when status changes.
+      // Why this matters in this project:
+      // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
       if (updates.status && updates.status !== task.status) {
         updatedData.updatedAt = Utils.getCurrentTimestamp();
       }
@@ -214,7 +263,10 @@ const TaskManager = (function() {
       try {
         const updatedTask = await Storage.updateTask(id, updatedData);
         
-        // Update in-memory task
+        // What these next lines do:
+        // Mirror persisted update in in-memory cache.
+        // Why this matters in this project:
+        // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
         const index = this.tasks.findIndex(t => t.id === id);
         if (index !== -1) {
           this.tasks[index] = { ...task, ...updatedTask };
@@ -259,7 +311,10 @@ const TaskManager = (function() {
      * @throws {ValidationError} If task not found
      */
     async deleteTask(id) {
+      // What these next lines do:
       // Check if task exists
+      // Why this matters in this project:
+      // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
       const task = this.tasks.find(t => t.id === id);
       if (!task) {
         throw new Validator.ValidationError(
@@ -272,7 +327,10 @@ const TaskManager = (function() {
       try {
         await Storage.deleteTask(id);
         
+        // What these next lines do:
         // Remove from in-memory array
+        // Why this matters in this project:
+        // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
         const index = this.tasks.findIndex(t => t.id === id);
         if (index !== -1) {
           this.tasks.splice(index, 1);
@@ -309,19 +367,28 @@ const TaskManager = (function() {
       const query = caseSensitive ? searchQuery : searchQuery.toLowerCase();
       
       let results = this.tasks.filter(task => {
+        // What these next lines do:
         // Search in title
+        // Why this matters in this project:
+        // Search behavior directly affects discoverability, so this logic must be predictable.
         if (fields.includes('title')) {
           const title = caseSensitive ? task.title : task.title.toLowerCase();
           if (title.includes(query)) return true;
         }
         
+        // What these next lines do:
         // Search in description
+        // Why this matters in this project:
+        // Search behavior directly affects discoverability, so this logic must be predictable.
         if (fields.includes('description') && task.description) {
           const desc = caseSensitive ? task.description : task.description.toLowerCase();
           if (desc.includes(query)) return true;
         }
         
+        // What these next lines do:
         // Search in tags
+        // Why this matters in this project:
+        // Search behavior directly affects discoverability, so this logic must be predictable.
         if (fields.includes('tags') && task.tags) {
           const tags = caseSensitive ? task.tags : task.tags.map(t => t.toLowerCase());
           if (tags.some(tag => tag.includes(query))) return true;
@@ -330,7 +397,10 @@ const TaskManager = (function() {
         return false;
       });
       
+      // What these next lines do:
       // Sort by relevance (exact matches first, then by createdAt)
+      // Why this matters in this project:
+      // Sorting at this step guarantees a consistent order in UI views and command outputs.
       results.sort((a, b) => {
         const aExact = a.title.toLowerCase() === query;
         const bExact = b.title.toLowerCase() === query;
@@ -498,11 +568,17 @@ const TaskManager = (function() {
     }
   }
 
+  // What these next lines do:
   // Return singleton instance
+  // Why this matters in this project:
+  // Returning this value here defines the output contract of the helper and keeps callers predictable.
   return new TaskManagerClass();
 })();
 
+// What these next lines do:
 // Export for Node.js/CommonJS environments
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = TaskManager;
 }

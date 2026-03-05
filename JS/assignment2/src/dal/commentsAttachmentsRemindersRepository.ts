@@ -10,6 +10,10 @@ import type {
   ITaskDto,
 } from "./types";
 
+// What these next lines do:
+// Small assert helper for readable validation errors.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const ensure = (condition: boolean, message: string): void => {
   if (!condition) {
     throw new Error(message);
@@ -20,13 +24,25 @@ const cloneComment = (comment: ICommentDto): ICommentDto => ({ ...comment });
 const cloneAttachment = (attachment: IAttachmentDto): IAttachmentDto => ({ ...attachment });
 const cloneReminder = (reminder: IReminderDto): IReminderDto => ({ ...reminder });
 
+// What these next lines do:
+// Standard timestamp format used by this layer.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const nowIsoString = (): string => new Date().toISOString();
 
+// What these next lines do:
+// Load valid task IDs so child records cannot point to missing tasks.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const loadTaskIds = (): Set<EntityId> => {
   const tasks = loadEnvelope<ITaskDto>("tasks").items;
   return new Set(tasks.map((t) => t.id));
 };
 
+// What these next lines do:
+// Validation for each child entity type.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateComment = (comment: ICommentDto, taskIds: Set<EntityId>): void => {
   ensure(!!comment.id, "comment.id is required");
   ensure(!!comment.taskId, "comment.taskId is required");
@@ -51,6 +67,10 @@ const validateReminder = (reminder: IReminderDto, taskIds: Set<EntityId>): void 
   ensure(taskIds.has(reminder.taskId), `reminder.taskId ${reminder.taskId} does not exist`);
 };
 
+// What these next lines do:
+// CRUD repository for task comments.
+// Why this matters in this project:
+// Encapsulating this logic in a class keeps related state and behavior together, which makes the flow easier to maintain.
 class CommentsRepository implements ICommentsRepository {
   private items: ICommentDto[];
   private version: number;
@@ -61,6 +81,10 @@ class CommentsRepository implements ICommentsRepository {
     this.version = envelope.version;
   }
 
+  // What these next lines do:
+  // Persist collection with optimistic version check.
+  // Why this matters in this project:
+  // The version check avoids overwriting newer writes from another operation or tab.
   private async persist(next: ICommentDto[]): Promise<void> {
     const envelope = saveEnvelope<ICommentDto>("comments", next, this.version);
     this.items = envelope.items.map(cloneComment);
@@ -116,6 +140,10 @@ class CommentsRepository implements ICommentsRepository {
   }
 }
 
+// What these next lines do:
+// CRUD repository for attachments.
+// Why this matters in this project:
+// Encapsulating this logic in a class keeps related state and behavior together, which makes the flow easier to maintain.
 class AttachmentsRepository implements IAttachmentsRepository {
   private items: IAttachmentDto[];
   private version: number;
@@ -126,6 +154,10 @@ class AttachmentsRepository implements IAttachmentsRepository {
     this.version = envelope.version;
   }
 
+  // What these next lines do:
+  // Persist collection with optimistic version check.
+  // Why this matters in this project:
+  // The version check avoids overwriting newer writes from another operation or tab.
   private async persist(next: IAttachmentDto[]): Promise<void> {
     const envelope = saveEnvelope<IAttachmentDto>("attachments", next, this.version);
     this.items = envelope.items.map(cloneAttachment);
@@ -179,6 +211,10 @@ class AttachmentsRepository implements IAttachmentsRepository {
   }
 }
 
+// What these next lines do:
+// CRUD repository for reminders.
+// Why this matters in this project:
+// Encapsulating this logic in a class keeps related state and behavior together, which makes the flow easier to maintain.
 class RemindersRepository implements IRemindersRepository {
   private items: IReminderDto[];
   private version: number;
@@ -189,6 +225,10 @@ class RemindersRepository implements IRemindersRepository {
     this.version = envelope.version;
   }
 
+  // What these next lines do:
+  // Persist collection with optimistic version check.
+  // Why this matters in this project:
+  // The version check avoids overwriting newer writes from another operation or tab.
   private async persist(next: IReminderDto[]): Promise<void> {
     const envelope = saveEnvelope<IReminderDto>("reminders", next, this.version);
     this.items = envelope.items.map(cloneReminder);

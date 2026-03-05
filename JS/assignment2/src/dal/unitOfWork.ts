@@ -25,6 +25,10 @@ import type {
 } from "./types";
 import { TasksRepositoryAdapter } from "./tasksRepository";
 
+// What these next lines do:
+// localStorage collection names managed by UnitOfWork.
+// Why this matters in this project:
+// Being explicit about storage behavior prevents corruption and makes recovery paths clearer.
 type CollectionKey =
   | "tasks"
   | "categories"
@@ -36,6 +40,10 @@ type CollectionKey =
   | "reminders"
   | "checklist";
 
+// What these next lines do:
+// Snapshot = data plus storage version at load time.
+// Why this matters in this project:
+// Being explicit about storage behavior prevents corruption and makes recovery paths clearer.
 type Snapshot<TDto> = { items: TDto[]; version: number };
 
 type SnapshotMap = {
@@ -50,27 +58,51 @@ type SnapshotMap = {
   checklist: Snapshot<IChecklistItemDto>;
 };
 
+// What these next lines do:
+// Differences between baseline and edited state.
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Differences between baseline and edited state.
 type Changeset<TDto> = {
   created: TDto[];
   updated: TDto[];
   deleted: EntityId[];
 };
 
+// What these next lines do:
+// Clone plain objects so repositories do not share mutable references.
+// Why this matters in this project:
+// The generic type parameter lets one helper work with many data shapes while still preserving compile-time type checks.
 const cloneArray = <T>(items: T[]): T[] => items.map((item) => ({ ...(item as object) } as T));
 
+// What these next lines do:
+// Small assert helper for readable validation errors.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const ensure = (condition: boolean, message: string): void => {
   if (!condition) {
     throw new Error(message);
   }
 };
 
+// What these next lines do:
+// Read one collection and keep both items and version.
+// Why this matters in this project:
+// The generic type parameter lets one helper work with many data shapes while still preserving compile-time type checks.
 const loadSnapshot = <TDto>(collection: CollectionKey): Snapshot<TDto> => {
   const envelope = loadEnvelope<TDto>(collection as never);
   return { items: cloneArray(envelope.items), version: envelope.version };
 };
 
+// What these next lines do:
+// Simple equality for change detection.
+// Why this matters in this project:
+// The generic type parameter lets one helper work with many data shapes while still preserving compile-time type checks.
 const deepEqual = <T>(a: T, b: T): boolean => JSON.stringify(a) === JSON.stringify(b);
 
+// What these next lines do:
+// Compute create/update/delete sets from baseline to next state.
+// Why this matters in this project:
+// The generic type parameter lets one helper work with many data shapes while still preserving compile-time type checks.
 const computeChangeset = <TDto>(
   base: TDto[],
   next: TDto[],
@@ -103,9 +135,17 @@ const computeChangeset = <TDto>(
   return { created, updated, deleted };
 };
 
+// What these next lines do:
+// Helper to skip writes when nothing changed.
+// Why this matters in this project:
+// The generic type parameter lets one helper work with many data shapes while still preserving compile-time type checks.
 const hasChanges = <TDto>(changes: Changeset<TDto>): boolean =>
   changes.created.length > 0 || changes.updated.length > 0 || changes.deleted.length > 0;
 
+// What these next lines do:
+// Build simple in-memory repositories for most collections.
+// Why this matters in this project:
+// The generic type parameter lets one helper work with many data shapes while still preserving compile-time type checks.
 const makeCrud = <TDto>(initialItems: TDto[]) =>
   createCrudRepository<TDto>({
     getId: (dto) => (dto as { id: EntityId }).id,
@@ -118,6 +158,10 @@ const makeChecklistRepository = (initial: IChecklistItemDto[]): IChecklistReposi
 
 const buildTaskIdSet = (tasks: ITaskDto[]): Set<EntityId> => new Set(tasks.map((task) => task.id));
 
+// What these next lines do:
+// Build dependency graph and detect cycles (same idea as dependency repository).
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const buildDependencyAdjacency = (edges: IDependencyDto[]): Map<EntityId, EntityId[]> => {
   const adjacency = new Map<EntityId, EntityId[]>();
   edges.forEach((edge) => {
@@ -152,9 +196,17 @@ const hasDependencyCycle = (edges: IDependencyDto[]): boolean => {
   return false;
 };
 
+// What these next lines do:
+// Keep only ids that still exist in an allowed set.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const cleanIds = (ids: EntityId[] | undefined, allowed: Set<EntityId>): EntityId[] =>
   (ids ?? []).filter((id) => allowed.has(id));
 
+// What these next lines do:
+// If tasks are deleted, remove or repair all linked child records.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const applyCascadeDeletes = (state: SnapshotMap, baseline: SnapshotMap): void => {
   const baselineTaskIds = buildTaskIdSet(baseline.tasks.items);
   const nextTaskIds = buildTaskIdSet(state.tasks.items);
@@ -216,6 +268,10 @@ const applyCascadeDeletes = (state: SnapshotMap, baseline: SnapshotMap): void =>
   });
 };
 
+// What these next lines do:
+// Cross-collection validation before commit.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateState = (state: SnapshotMap): string[] => {
   const errors: string[] = [];
 
@@ -321,6 +377,10 @@ const validateState = (state: SnapshotMap): string[] => {
   return errors;
 };
 
+// What these next lines do:
+// UnitOfWork groups repo operations into one commit/rollback boundary.
+// Why this matters in this project:
+// Exporting the class allows other modules to catch or construct it, which keeps behavior and error handling consistent.
 export class UnitOfWork implements IUnitOfWork {
   public tasks: ITasksRepository;
   public categories: ICategoriesRepository;
@@ -358,6 +418,10 @@ export class UnitOfWork implements IUnitOfWork {
     this.checklist = makeChecklistRepository(this.snapshots.checklist.items);
   }
 
+  // What these next lines do:
+  // Pull current working state from repository instances.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Pull current working state from repository instances.
   private async currentState(): Promise<SnapshotMap> {
     const [
       tasks,
@@ -394,6 +458,10 @@ export class UnitOfWork implements IUnitOfWork {
     };
   }
 
+  // What these next lines do:
+  // Recreate repositories from latest snapshot after commit/rollback.
+  // Why this matters in this project:
+  // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Recreate repositories from latest snapshot after commit/rollback.
   private refreshRepositories(): void {
     this.tasks = makeTasksRepository(this.snapshots.tasks.items);
     this.categories = makeCrud<ICategoryDto>(this.snapshots.categories.items);
@@ -406,6 +474,10 @@ export class UnitOfWork implements IUnitOfWork {
     this.checklist = makeChecklistRepository(this.snapshots.checklist.items);
   }
 
+  // What these next lines do:
+  // Commit flow: cascade cleanup -> validate -> concurrency check -> save changed collections.
+  // Why this matters in this project:
+  // Validation here stops bad input early so broken data does not spread to storage or UI.
   async commit(): Promise<IUnitOfWorkCommitResult> {
     try {
       const baseline = this.snapshots;
@@ -497,6 +569,10 @@ export class UnitOfWork implements IUnitOfWork {
     }
   }
 
+  // What these next lines do:
+  // Reload snapshots from storage and discard in-memory edits.
+  // Why this matters in this project:
+  // Being explicit about storage behavior prevents corruption and makes recovery paths clearer.
   async rollback(): Promise<void> {
     this.snapshots = {
       tasks: loadSnapshot<ITaskDto>("tasks"),

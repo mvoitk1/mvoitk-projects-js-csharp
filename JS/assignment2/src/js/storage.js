@@ -57,13 +57,19 @@ const Storage = (function() {
       const tasks = JSON.parse(data);
       
       if (!Array.isArray(tasks)) {
+        // What these next lines do:
         // Data corruption - reset to empty array
+        // Why this matters in this project:
+        // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Data corruption - reset to empty array.
         console.warn('Data corruption detected: tasks is not an array');
         await saveTasks([]);
         return [];
       }
 
-      // Validate each task has required fields
+      // What these next lines do:
+      // Keep only minimally valid task records.
+      // Why this matters in this project:
+      // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
       const validTasks = tasks.filter(task => task && task.id && task.title);
       
       if (validTasks.length !== tasks.length) {
@@ -111,7 +117,10 @@ const Storage = (function() {
       const data = JSON.stringify(tasks);
       localStorage.setItem(TASKS_KEY, data);
 
-      // Update metadata
+      // What these next lines do:
+      // Keep metadata task count in sync after save.
+      // Why this matters in this project:
+      // This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Keep metadata task count in sync after save.
       await updateMetadata({ taskCount: tasks.length });
 
       return true;
@@ -175,6 +184,10 @@ const Storage = (function() {
       );
     }
 
+    // What these next lines do:
+    // Merge patch updates on top of existing task.
+    // Why this matters in this project:
+    // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
     tasks[index] = { ...tasks[index], ...updates };
     await saveTasks(tasks);
     return tasks[index];
@@ -221,7 +234,10 @@ const Storage = (function() {
 
       return JSON.parse(data);
     } catch (error) {
+      // What these next lines do:
       // Return default on error
+      // Why this matters in this project:
+      // Returning this value here defines the output contract of the helper and keeps callers predictable.
       return {
         version: APP_VERSION,
         lastBackup: null,
@@ -289,7 +305,10 @@ const Storage = (function() {
         );
       }
 
-      // Validate each task
+      // What these next lines do:
+      // Keep only records that look like valid task objects.
+      // Why this matters in this project:
+      // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
       const validTasks = data.tasks.filter(task => 
         task && typeof task.id === 'string' && typeof task.title === 'string'
       );
@@ -319,6 +338,10 @@ const Storage = (function() {
    * @returns {Promise<boolean>} True if successful
    */
   async function clearAll() {
+    // What these next lines do:
+    // App reset just means persisting an empty tasks list.
+    // Why this matters in this project:
+    // Returning this value here defines the output contract of the helper and keeps callers predictable.
     return await saveTasks([]);
   }
 
@@ -348,7 +371,10 @@ const Storage = (function() {
     }
   }
 
+  // What these next lines do:
   // Public API
+  // Why this matters in this project:
+  // Returning this value here defines the output contract of the helper and keeps callers predictable.
   return {
     StorageError,
     isAvailable,
@@ -371,7 +397,10 @@ const Storage = (function() {
   };
 })();
 
+// What these next lines do:
 // Export for Node.js/CommonJS environments
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = Storage;
 }

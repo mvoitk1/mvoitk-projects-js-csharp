@@ -3,8 +3,16 @@ import { createTasksRepository } from "../tasksRepository";
 import { ETaskStatus, type EntityId } from "../types";
 import type { StorageCollection } from "../localStorageGateway";
 
+// What these next lines do:
+// Convert date text into normalized ISO strings used by repository date comparisons.
+// Why this matters in this project:
+// Repository logic compares date strings directly, so consistent formatting avoids flaky tests.
 const iso = (value: string) => new Date(value).toISOString();
 
+// What these next lines do:
+// Write raw collection envelopes directly into localStorage, including version numbers.
+// Why this matters in this project:
+// Tests can fully control initial repository state (items + concurrency version).
 const seedEnvelope = <T>(collection: StorageCollection, items: T[], version = 1): void => {
   localStorage.setItem(
     `tm.${collection}`,
@@ -12,6 +20,10 @@ const seedEnvelope = <T>(collection: StorageCollection, items: T[], version = 1)
   );
 };
 
+// What these next lines do:
+// Seed the minimum category/priority data that task validation expects.
+// Why this matters in this project:
+// Most tests focus on filtering/sorting behavior, not FK failures.
 const seedBaseFks = (): void => {
   seedEnvelope("categories", [{ id: "c1", name: "Cat" }]);
   seedEnvelope("priorities", [
@@ -20,6 +32,10 @@ const seedBaseFks = (): void => {
   ]);
 };
 
+// What these next lines do:
+// Build a valid default task and allow tests to override only the fields they care about.
+// Why this matters in this project:
+// Keeps test setup short and makes scenario intent easy to read.
 const makeTask = (id: EntityId, overrides: Record<string, unknown> = {}) => ({
   id,
   title: id,

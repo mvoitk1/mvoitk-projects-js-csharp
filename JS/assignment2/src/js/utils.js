@@ -15,7 +15,10 @@ const Utils = (function() {
       return crypto.randomUUID();
     }
     
-    // Fallback implementation for browsers without crypto.randomUUID
+    // What these next lines do:
+    // Fallback for older browsers without crypto.randomUUID.
+    // Why this matters in this project:
+    // Returning this value here defines the output contract of the helper and keeps callers predictable.
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -54,7 +57,10 @@ const Utils = (function() {
     
     const date = new Date(year, month, day);
     
-    // Check if date is valid
+    // What these next lines do:
+    // Reject impossible dates (for example 2026-02-31).
+    // Why this matters in this project:
+    // Standardizing date handling avoids subtle bugs when comparing or displaying time values.
     if (date.getFullYear() !== year || 
         date.getMonth() !== month || 
         date.getDate() !== day) {
@@ -162,6 +168,10 @@ const Utils = (function() {
     today.setHours(0, 0, 0, 0);
     date.setHours(0, 0, 0, 0);
     
+    // What these next lines do:
+    // Positive = future, zero = today, negative = overdue.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const diffTime = date.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
@@ -216,10 +226,16 @@ const Utils = (function() {
   function parseTags(tagsString) {
     if (!tagsString) return [];
     
-    // Split by comma or whitespace
+    // What these next lines do:
+    // Accept comma- or space-separated tag input.
+    // Why this matters in this project:
+    // Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
     const tags = tagsString.split(/[,\s]+/);
     
+    // What these next lines do:
     // Filter empty and trim
+    // Why this matters in this project:
+    // Returning this value here defines the output contract of the helper and keeps callers predictable.
     return tags
       .map(tag => trimText(tag))
       .filter(tag => tag.length > 0);
@@ -231,6 +247,10 @@ const Utils = (function() {
    * @returns {any} Cloned object
    */
   function deepClone(obj) {
+    // What these next lines do:
+    // Simple deep clone for plain JSON-compatible objects.
+    // Why this matters in this project:
+    // Returning this value here defines the output contract of the helper and keeps callers predictable.
     return JSON.parse(JSON.stringify(obj));
   }
 
@@ -264,7 +284,10 @@ const Utils = (function() {
     return weights[status] || 0;
   }
 
+  // What these next lines do:
   // Public API
+  // Why this matters in this project:
+  // Returning this value here defines the output contract of the helper and keeps callers predictable.
   return {
     generateUUID,
     getCurrentTimestamp,
@@ -285,7 +308,10 @@ const Utils = (function() {
   };
 })();
 
+// What these next lines do:
 // Export for Node.js/CommonJS environments
+// Why this matters in this project:
+// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = Utils;
 }

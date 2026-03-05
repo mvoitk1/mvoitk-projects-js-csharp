@@ -11,6 +11,10 @@ import type {
   ITaskDto,
 } from "./types";
 
+// What these next lines do:
+// Domain aliases currently match DTOs, but are kept separate for future growth.
+// Why this matters in this project:
+// Exporting this type lets other modules share the same contract and keeps TypeScript checks consistent across the project.
 export type ITask = ITaskDto;
 export type ICategory = ICategoryDto;
 export type IPriority = IPriorityDto;
@@ -21,6 +25,10 @@ export type IComment = ICommentDto;
 export type IAttachment = IAttachmentDto;
 export type IReminder = IReminderDto;
 
+// What these next lines do:
+// Optional lookup sets used to validate foreign keys.
+// Why this matters in this project:
+// Validation here stops bad input early so broken data does not spread to storage or UI.
 export interface IForeignKeyContext {
   taskIds?: Set<EntityId>;
   categoryIds?: Set<EntityId>;
@@ -35,6 +43,10 @@ export interface IForeignKeyContext {
 
 type ValidationIssue = string;
 
+// What these next lines do:
+// Treat undefined/null/blank string as missing input.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const isMissing = (value: unknown): boolean =>
   value === undefined || value === null || (typeof value === "string" && value.trim() === "");
 
@@ -44,6 +56,10 @@ const requireField = (value: unknown, field: string, issues: ValidationIssue[]):
   }
 };
 
+// What these next lines do:
+// Validate one foreign key value against an allowed-id set.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateForeignKey = (
   id: EntityId | undefined,
   field: string,
@@ -64,6 +80,10 @@ const validateForeignKey = (
   }
 };
 
+// What these next lines do:
+// Validate every id in a list field (for arrays like dependencyIds).
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateForeignKeys = (
   ids: EntityId[] | undefined,
   field: string,
@@ -75,12 +95,20 @@ const validateForeignKeys = (
   return ids;
 };
 
+// What these next lines do:
+// Throw one clear error with all collected issues.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const ensureValid = (entity: string, issues: ValidationIssue[]): void => {
   if (issues.length > 0) {
     throw new Error(`${entity} validation failed: ${issues.join("; ")}`);
   }
 };
 
+// What these next lines do:
+// Entity-specific validators.
+// Why this matters in this project:
+// Keeping this value/function in a `const` prevents accidental reassignment and makes behavior more predictable.
 const validateTaskShape = (
   task: ITaskDto,
   fk: IForeignKeyContext,
@@ -218,6 +246,10 @@ const withDefaults = (task: ITaskDto): ITaskDto => ({
   assigneeIds: task.assigneeIds ?? [],
 });
 
+// What these next lines do:
+// Mapper functions below validate input, then return normalized objects.
+// Why this matters in this project:
+// Exporting this constant/function exposes a single shared implementation so other modules do not duplicate logic.
 export const mapTaskDtoToDomain = (dto: ITaskDto, fk: IForeignKeyContext = {}): ITask => {
   const issues: ValidationIssue[] = [];
   validateTaskShape(dto, fk, issues);

@@ -1,83 +1,65 @@
 ## Why
 
-The current project has a comprehensive DAL layer, JS logic, and TypeScript types for task management, but lacks a user interface to interact with it. This change creates an HTML page that incorporates all the existing work to provide a complete browser-based task management application.
+The project already contains substantial browser UI logic in `src/js/app.js` plus task logic/validation/storage modules, but `index.html` and `src/main.ts` are placeholders. Without a concrete HTML shell and integration plan, the application cannot run as an actual UI.
+
+The current plan is also over-scoped versus what is implemented. It lists entities and views that are not yet wired end-to-end in the running UI flow. We need a KISS-first integration plan that delivers a usable interface first, then iterates.
 
 ## What Changes
 
-- Develop an HTML user interface that integrates the task management functionality.
-- Include UI components for task CRUD operations, search, filtering, sorting, and statistics.
-- Link the HTML to the compiled JavaScript from the TypeScript DAL and JS files.
+- Create a production-ready `index.html` shell that matches the DOM contract expected by `src/js/app.js`.
+- Integrate existing JS modules (`utils`, `validator`, `storage`, `taskManager`, `formatters`, `commands`, `app`) in dependency order.
+- Deliver the baseline UI/UX flows already implemented in code: task CRUD, status filters, search, dashboard cards, calendar view, and modal editing.
+- Align scope with existing runtime behavior; defer advanced entities and collaboration features until their repositories/services are truly wired.
+- Preserve clean boundaries so future TypeScript DAL integration can replace storage/task modules without redesigning the UI.
 
 ### Essential Features for HTML Integration
 
 #### UI Components
-- Task creation, viewing, editing, deletion, and organization forms and lists
-- Dashboard views for task overview, status summaries, and quick actions
-- Calendar view for due date management and scheduling
-- List/board views for organizing tasks by categories, priorities, and projects
-- Search and filter interface with real-time results
-- Task detail modals/panels with full information display
-- Navigation between different views (dashboard, list, calendar, etc.)
+- Task creation, viewing, editing, and deletion using the existing modal flow
+- Dashboard with summary counters, recent tasks, and upcoming deadlines
+- Task list with status filters and free-text search
+- Calendar month view for due-date visibility
+- Responsive navigation between dashboard, tasks, and calendar
 
 #### Data Access Layer Integration
-- Seamless integration with the existing TypeScript DAL for data persistence and retrieval
-- Use of Unit of Work pattern for transactional operations
-- Support for all entity types: tasks, categories, priorities, projects, boards, lists, tags, users, comments, attachments, reminders, recurrence rules, dependencies, checklists
-- Real-time data synchronization between UI and localStorage backend
+- Phase 1: use existing `src/js/storage.js` + `src/js/taskManager.js` for persistence and interaction
+- Phase 2 (follow-up change): adapt UI boundary to the TypeScript DAL repository/UOW layer
+- Keep a thin UI adapter boundary to avoid rewriting view code during migration
 
 #### Client-Side JavaScript Logic
-- Dynamic interactions for task management (create, update, delete, move)
-- Real-time updates to UI components without full page reloads
-- Form validation with immediate feedback
-- Event handling for user actions (clicks, keyboard shortcuts, drag-and-drop)
-- State management for current view, filters, and selections
-- Integration with existing TaskManager and App JS modules
+- Reuse current dynamic interactions in `App`/`TaskManager`
+- Keep immediate UI refreshes after create/update/delete
+- Preserve existing keyboard shortcuts and validation behavior
 
 #### TypeScript Type Safety
-- Full adherence to the comprehensive TypeScript domain types for all entities
-- Type-safe data binding between UI and DAL
-- Proper typing for event handlers, form data, and API responses
-- Utilization of enums for status, priority, dependency types, etc.
+- Do not block HTML delivery on full UI TS migration
+- Ensure DOM ids/classes and data shape stay compatible with eventual typed adapter inputs
 
 #### Responsive Design
 - Mobile-friendly layout that adapts to different screen sizes
 - Touch-friendly controls for mobile devices
-- Flexible grid systems for task lists and boards
-- Collapsible sidebars and responsive navigation
-
-#### Optional Advanced Features
-- User authentication and session management (if users entity is populated)
-- Advanced search with full-text search across task titles, descriptions, and comments
-- Priority-based task highlighting and sorting
-- Due date management with overdue indicators and upcoming reminders
-- Progress tracking with completion percentages and statistics
-- Tag-based organization with color coding
-- Dependency visualization and management
-- Recurrence rule configuration and display
-- Attachment upload and preview
-- Comment threads and collaboration features
-- Reminder notifications and scheduling
-- Statistics dashboard with charts and metrics
-- Export/import functionality for data backup
+- Responsive layout for dashboard cards, task list, and modal
+- Accessible form controls and visible focus states
 
 #### User Journeys and Workflows
-- Task creation workflow: form validation → DAL persistence → UI update
-- Task editing workflow: load data → modify → validate → save → refresh
-- Search and filter workflow: input query → filter application → results display
-- Calendar workflow: date selection → task display → scheduling actions
-- Dashboard workflow: load statistics → display summaries → quick actions
-- Organization workflow: drag-and-drop → update relationships → persist changes
+- Task creation: validate -> persist -> refresh dashboard/list/calendar
+- Task editing: load -> edit -> save -> refresh
+- Search/filter: update state -> rerender task list
+- Calendar: change month -> render due tasks -> open task modal from day entry
 
 ## Capabilities
 
 ### New Capabilities
-- html-ui-integration: Create an HTML-based user interface that incorporates the existing DAL repositories, JS task manager logic, and TypeScript domain models for full task management functionality.
+- `html-ui-integration`: Deliver a functioning HTML/CSS shell for the existing UI logic.
+- `ui-runtime-wiring`: Wire JS modules and DOM contract so app initialization succeeds in browser.
+- `ux-baseline`: Provide consistent, responsive baseline UX for dashboard/tasks/calendar flows.
 
 ### Modified Capabilities
-None
+- Refine previous scope to explicitly prioritize baseline task workflows over non-implemented advanced entities.
 
 ## Impact
 
-- New HTML file (index.html or dedicated UI file)
-- Potential updates to build configuration for browser-compatible JavaScript output
-- No modifications to existing DAL, JS, or TypeScript code
+- Updates `index.html` from placeholder to full app shell
+- Adds/updates UI assets (styles and structure) required by `src/js/app.js`
+- Keeps existing JS modules intact with minimal adapter glue
+- Defers full TypeScript DAL wiring to a dedicated follow-up change

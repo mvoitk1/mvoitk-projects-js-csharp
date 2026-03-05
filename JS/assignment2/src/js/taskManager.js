@@ -57,6 +57,7 @@ const TaskManager = (function() {
         priority: validation.data.priority,
         dueDate: validation.data.dueDate,
         tags: validation.data.tags || [],
+        checklist: this.normalizeChecklist(taskData.checklist),
         createdAt: timestamp,
         updatedAt: timestamp
       };
@@ -199,6 +200,9 @@ const TaskManager = (function() {
 
       const updatedData = {
         ...updates,
+        checklist: updates.checklist !== undefined
+          ? this.normalizeChecklist(updates.checklist)
+          : task.checklist,
         updatedAt: Utils.getCurrentTimestamp()
       };
 
@@ -227,6 +231,25 @@ const TaskManager = (function() {
         }
         throw error;
       }
+    }
+
+    /**
+     * Normalize checklist payload into a stable stored shape.
+     * @param {Array} checklist - Checklist data
+     * @returns {Array<{id: string, text: string, completed: boolean}>}
+     */
+    normalizeChecklist(checklist) {
+      if (!Array.isArray(checklist)) {
+        return [];
+      }
+
+      return checklist
+        .filter(item => item && typeof item.text === 'string' && item.text.trim().length > 0)
+        .map(item => ({
+          id: item.id || Utils.generateUUID(),
+          text: item.text.trim(),
+          completed: Boolean(item.completed)
+        }));
     }
 
     /**

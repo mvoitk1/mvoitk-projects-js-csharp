@@ -13,6 +13,9 @@ const App = (function() {
   let currentSearchQuery = '';
   let currentCalendarDate = new Date();
   let taskTags = [];
+  let taskChecklist = [];
+  let modalMode = 'create';
+  let dataAdapter = null;
 
   // DOM Elements
   const elements = {};
@@ -35,8 +38,9 @@ const App = (function() {
     cacheElements();
     setupEventListeners();
     
-    // Initialize TaskManager
-    await TaskManager.init();
+    // Initialize data adapter
+    dataAdapter = TaskDataAdapter.getAdapter();
+    await dataAdapter.init();
     
     // Load initial data
     await refreshAll();
@@ -81,6 +85,10 @@ const App = (function() {
     elements.taskDueDate = document.getElementById('task-due-date');
     elements.tagsContainer = document.getElementById('tags-container');
     elements.tagsInput = document.getElementById('tags-input');
+    elements.checklistControls = document.querySelector('.checklist-controls');
+    elements.checklistItems = document.getElementById('checklist-items');
+    elements.checklistInput = document.getElementById('checklist-input');
+    elements.addChecklistBtn = document.getElementById('add-checklist-btn');
     elements.saveTaskBtn = document.getElementById('save-task-btn');
     elements.deleteTaskBtn = document.getElementById('delete-task-btn');
     elements.cancelBtn = document.getElementById('cancel-btn');
@@ -158,6 +166,18 @@ const App = (function() {
         taskTags.pop();
         renderTags();
       }
+    });
+
+    // Checklist input
+    elements.checklistInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addChecklistItem(elements.checklistInput.value);
+      }
+    });
+
+    elements.addChecklistBtn.addEventListener('click', () => {
+      addChecklistItem(elements.checklistInput.value);
     });
 
     // Calendar navigation
@@ -269,17 +289,17 @@ const App = (function() {
    * Update badges
    */
   async function updateBadges() {
-    const tasks = await TaskManager.getAllTasks();
+    const tasks = await dataAdapter.getAllTasks();
     const byStatus = {
       pending: tasks.filter(t => t.status === 'pending').length,
       'in-progress': tasks.filter(t => t.status === 'in-progress').length,
       completed: tasks.filter(t => t.status === 'completed').length
     };
 
-    elements.totalBadge.textContent = tasks.length;
-    elements.pendingBadge.textContent = byStatus.pending;
-    elements.progressBadge.textContent = byStatus['in-progress'];
-    elements.completedBadge.textContent = byStatus.completed;
+    if (elements.totalBadge) elements.totalBadge.textContent = tasks.length;
+    if (elements.pendingBadge) elements.pendingBadge.textContent = byStatus.pending;
+    if (elements.progressBadge) elements.progressBadge.textContent = byStatus['in-progress'];
+    if (elements.completedBadge) elements.completedBadge.textContent = byStatus.completed;
 
     elements.statTotal.textContent = tasks.length;
     elements.statPending.textContent = byStatus.pending;
@@ -291,7 +311,7 @@ const App = (function() {
    * Load dashboard data
    */
   async function loadDashboard() {
-    const tasks = await TaskManager.getAllTasks();
+    const tasks = await dataAdapter.getAllTasks();
     
     // Recent tasks (last 5)
     const recent = tasks.slice(0, 5);
@@ -323,7 +343,7 @@ const App = (function() {
    * Load tasks with filters
    */
   async function loadTasks() {
-    let tasks = await TaskManager.getAllTasks();
+    let tasks = await dataAdapter.getAllTasks();
     
     // Apply status filter
     if (currentStatusFilter !== 'all') {
@@ -360,6 +380,7 @@ const App = (function() {
   function renderTaskCard(task) {
     const dueDateClass = getDueDateClass(task.dueDate, task.status);
     const daysUntil = task.dueDate ? Utils.getDaysUntil(task.dueDate) : null;
+    const checklistProgress = getChecklistProgress(task);
     
     let dueDateText = '';
     if (task.dueDate) {
@@ -372,13 +393,14 @@ const App = (function() {
     return `
       <div class="task-card priority-${task.priority} ${task.status === 'completed' ? 'completed' : ''}" data-id="${task.id}">
         <div class="task-checkbox ${task.status === 'completed' ? 'checked' : ''}" data-action="toggle" data-id="${task.id}"></div>
-        <div class="task-content" data-action="edit" data-id="${task.id}">
+        <div class="task-content" data-action="view" data-id="${task.id}">
           <div class="task-title">${Utils.escapeHtml(task.title)}</div>
           ${task.description ? `<div class="task-description">${Utils.escapeHtml(task.description)}</div>` : ''}
           <div class="task-meta">
             <span class="status-badge ${task.status}">${formatStatus(task.status)}</span>
             <span class="priority-badge ${task.priority}">${task.priority}</span>
             ${task.dueDate ? `<span class="task-due-date ${dueDateClass}">📅 ${dueDateText}</span>` : ''}
+            ${checklistProgress ? `<span class="checklist-badge">☑ ${checklistProgress}</span>` : ''}
             ${task.tags && task.tags.length > 0 ? task.tags.slice(0, 2).map(tag => `<span class="task-tag">${Utils.escapeHtml(tag)}</span>`).join('') : ''}
           </div>
         </div>
@@ -435,20 +457,33 @@ const App = (function() {
   function attachTaskCardHandlers(container) {
     container.querySelectorAll('.task-card').forEach(card => {
       const id = card.dataset.id;
-      
-      card.querySelector('[data-action="toggle"]').addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleTaskStatus(id);
+
+      card.querySelectorAll('[data-action="toggle"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTaskStatus(id);
+        });
       });
-      
-      card.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
-        e.stopPropagation();
-        editTask(id);
+
+      card.querySelectorAll('[data-action="view"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          viewTask(id);
+        });
       });
-      
-      card.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
-        e.stopPropagation();
-        confirmDeleteTask(id);
+
+      card.querySelectorAll('[data-action="edit"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          editTask(id);
+        });
+      });
+
+      card.querySelectorAll('[data-action="delete"]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          confirmDeleteTask(id);
+        });
       });
     });
   }
@@ -457,13 +492,13 @@ const App = (function() {
    * Toggle task status
    */
   async function toggleTaskStatus(id) {
-    const task = await TaskManager.getTask(id);
+    const task = await dataAdapter.getTask(id);
     if (!task) return;
 
     const newStatus = task.status === 'completed' ? 'pending' : 'completed';
     
     try {
-      await TaskManager.updateTask(id, { status: newStatus });
+      await dataAdapter.updateTask(id, { status: newStatus });
       await refreshAll();
     } catch (error) {
       alert('Failed to update task: ' + error.message);
@@ -473,11 +508,20 @@ const App = (function() {
   /**
    * Edit task
    */
+  async function viewTask(id) {
+    const task = await dataAdapter.getTask(id);
+    if (!task) return;
+    openTaskModal(task, 'view');
+  }
+
+  /**
+   * Edit task
+   */
   async function editTask(id) {
-    const task = await TaskManager.getTask(id);
+    const task = await dataAdapter.getTask(id);
     if (!task) return;
 
-    openTaskModal(task);
+    openTaskModal(task, 'edit');
   }
 
   /**
@@ -494,7 +538,7 @@ const App = (function() {
    */
   async function deleteTaskById(id) {
     try {
-      await TaskManager.deleteTask(id);
+      await dataAdapter.deleteTask(id);
       await refreshAll();
     } catch (error) {
       alert('Failed to delete task: ' + error.message);
@@ -516,10 +560,23 @@ const App = (function() {
   /**
    * Open task modal
    */
-  function openTaskModal(task = null) {
+  function openTaskModal(task = null, mode = 'create') {
     taskTags = [];
-    
-    if (task) {
+    taskChecklist = [];
+    modalMode = mode;
+
+    if (task && mode === 'view') {
+      // View mode
+      elements.modalTitle.textContent = 'Task Details';
+      elements.taskId.value = task.id;
+      elements.taskTitle.value = task.title;
+      elements.taskDescription.value = task.description || '';
+      elements.taskStatus.value = task.status;
+      elements.taskPriority.value = task.priority;
+      elements.taskDueDate.value = task.dueDate || '';
+      taskTags = [...(task.tags || [])];
+      taskChecklist = normalizeChecklist(task.checklist);
+    } else if (task) {
       // Edit mode
       elements.modalTitle.textContent = 'Edit Task';
       elements.taskId.value = task.id;
@@ -530,6 +587,7 @@ const App = (function() {
       elements.taskDueDate.value = task.dueDate || '';
       elements.deleteTaskBtn.style.display = 'block';
       taskTags = [...(task.tags || [])];
+      taskChecklist = normalizeChecklist(task.checklist);
     } else {
       // Create mode
       elements.modalTitle.textContent = 'New Task';
@@ -538,9 +596,29 @@ const App = (function() {
       elements.deleteTaskBtn.style.display = 'none';
     }
 
+    applyModalMode();
     renderTags();
+    renderChecklist();
     elements.modal.classList.add('active');
     elements.taskTitle.focus();
+  }
+
+  function applyModalMode() {
+    const isView = modalMode === 'view';
+    const hasTask = !!elements.taskId.value;
+
+    elements.taskTitle.readOnly = isView;
+    elements.taskDescription.readOnly = isView;
+    elements.taskStatus.disabled = isView;
+    elements.taskPriority.disabled = isView;
+    elements.taskDueDate.disabled = isView;
+
+    if (elements.checklistControls) {
+      elements.checklistControls.style.display = isView ? 'none' : 'grid';
+    }
+
+    elements.saveTaskBtn.style.display = isView ? 'none' : 'inline-block';
+    elements.deleteTaskBtn.style.display = !isView && hasTask ? 'block' : 'none';
   }
 
   /**
@@ -549,12 +627,16 @@ const App = (function() {
   function closeTaskModal() {
     elements.modal.classList.remove('active');
     taskTags = [];
+    taskChecklist = [];
+    modalMode = 'create';
   }
 
   /**
    * Add tag
    */
   function addTag(tag) {
+    if (modalMode === 'view') return;
+
     const trimmed = tag.trim().toLowerCase();
     if (trimmed && !taskTags.includes(trimmed) && taskTags.length < 10) {
       taskTags.push(trimmed);
@@ -567,6 +649,7 @@ const App = (function() {
    * Remove tag
    */
   function removeTag(index) {
+    if (modalMode === 'view') return;
     taskTags.splice(index, 1);
     renderTags();
   }
@@ -575,6 +658,13 @@ const App = (function() {
    * Render tags
    */
   function renderTags() {
+    if (modalMode === 'view') {
+      elements.tagsContainer.innerHTML = taskTags.length > 0
+        ? taskTags.map(tag => `<span class="tag-item">${Utils.escapeHtml(tag)}</span>`).join('')
+        : `<div class="checklist-empty">No tags.</div>`;
+      return;
+    }
+
     const tagElements = taskTags.map((tag, index) => `
       <span class="tag-item">
         ${Utils.escapeHtml(tag)}
@@ -600,8 +690,120 @@ const App = (function() {
 
     // Tag remove buttons
     elements.tagsContainer.querySelectorAll('.tag-remove').forEach(btn => {
-      btn.addEventListener('click', () => removeTag(parseInt(btn.dataset.index)));
+      btn.addEventListener('click', () => removeTag(parseInt(btn.dataset.index, 10)));
     });
+  }
+
+  /**
+   * Normalize checklist into stable UI shape.
+   */
+  function normalizeChecklist(checklist) {
+    if (!Array.isArray(checklist)) {
+      return [];
+    }
+
+    return checklist
+      .filter(item => item && typeof item.text === 'string' && item.text.trim().length > 0)
+      .map(item => ({
+        id: item.id || Utils.generateUUID(),
+        text: item.text.trim(),
+        completed: Boolean(item.completed)
+      }));
+  }
+
+  /**
+   * Add checklist item.
+   */
+  function addChecklistItem(text) {
+    if (modalMode === 'view') return;
+
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    taskChecklist.push({
+      id: Utils.generateUUID(),
+      text: trimmed,
+      completed: false
+    });
+
+    elements.checklistInput.value = '';
+    renderChecklist();
+  }
+
+  /**
+   * Toggle checklist item completion.
+   */
+  async function toggleChecklistItem(index) {
+    const item = taskChecklist[index];
+    if (!item) return;
+    item.completed = !item.completed;
+
+    if (modalMode === 'view' && elements.taskId.value) {
+      try {
+        await dataAdapter.updateTask(elements.taskId.value, { checklist: taskChecklist });
+        await refreshAll();
+      } catch (error) {
+        alert('Failed to update checklist: ' + error.message);
+      }
+    }
+
+    renderChecklist();
+  }
+
+  /**
+   * Remove checklist item.
+   */
+  function removeChecklistItem(index) {
+    if (modalMode === 'view') return;
+    taskChecklist.splice(index, 1);
+    renderChecklist();
+  }
+
+  /**
+   * Render checklist section in modal.
+   */
+  function renderChecklist() {
+    if (!elements.checklistItems) return;
+
+    if (taskChecklist.length === 0) {
+      elements.checklistItems.innerHTML = `<div class="checklist-empty">No checklist items yet.</div>`;
+      return;
+    }
+
+    elements.checklistItems.innerHTML = taskChecklist.map((item, index) => `
+      <div class="checklist-item ${item.completed ? 'completed' : ''}">
+        <label>
+          <input type="checkbox" data-check-action="toggle" data-index="${index}" ${item.completed ? 'checked' : ''} />
+          <span>${Utils.escapeHtml(item.text)}</span>
+        </label>
+        ${modalMode === 'view' ? '' : `<button type="button" class="checklist-remove" data-check-action="remove" data-index="${index}" aria-label="Remove checklist item">×</button>`}
+      </div>
+    `).join('');
+
+    elements.checklistItems.querySelectorAll('[data-check-action="toggle"]').forEach(el => {
+      el.addEventListener('change', async () => {
+        await toggleChecklistItem(parseInt(el.dataset.index, 10));
+      });
+    });
+
+    elements.checklistItems.querySelectorAll('[data-check-action="remove"]').forEach(el => {
+      el.addEventListener('click', () => {
+        removeChecklistItem(parseInt(el.dataset.index, 10));
+      });
+    });
+  }
+
+  /**
+   * Get checklist completion summary for task card.
+   */
+  function getChecklistProgress(task) {
+    if (!Array.isArray(task.checklist) || task.checklist.length === 0) {
+      return '';
+    }
+
+    const total = task.checklist.length;
+    const done = task.checklist.filter(item => item.completed).length;
+    return `${done}/${total}`;
   }
 
   /**
@@ -627,16 +829,17 @@ const App = (function() {
       status,
       priority,
       dueDate,
-      tags: taskTags
+      tags: taskTags,
+      checklist: taskChecklist
     };
 
     try {
       if (id) {
         // Update existing
-        await TaskManager.updateTask(id, taskData);
+        await dataAdapter.updateTask(id, taskData);
       } else {
         // Create new
-        await TaskManager.createTask(taskData);
+        await dataAdapter.createTask(taskData);
       }
 
       closeTaskModal();
@@ -653,7 +856,7 @@ const App = (function() {
     const id = elements.taskId.value;
     if (id && confirm('Are you sure you want to delete this task?')) {
       try {
-        await TaskManager.deleteTask(id);
+        await dataAdapter.deleteTask(id);
         closeTaskModal();
         await refreshAll();
       } catch (error) {
@@ -675,7 +878,7 @@ const App = (function() {
     elements.calendarMonth.textContent = `${monthNames[month]} ${year}`;
 
     // Get tasks
-    const tasks = await TaskManager.getAllTasks();
+    const tasks = await dataAdapter.getAllTasks();
     const tasksByDate = {};
     tasks.forEach(task => {
       if (task.dueDate) {
@@ -727,7 +930,7 @@ const App = (function() {
     elements.calendarGrid.querySelectorAll('.calendar-task-dot[data-id]').forEach(dot => {
       dot.addEventListener('click', (e) => {
         e.stopPropagation();
-        editTask(dot.dataset.id);
+        viewTask(dot.dataset.id);
       });
     });
   }

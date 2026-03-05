@@ -444,4 +444,73 @@ start with the next task. follow opsx guidelines, go over config.yaml
 timestamp: 2026-02-24T20:01:13.959Z
 prompt:
 create a plan to write a html which would incorporate the work that has been done before. go over everything that is in this project. follow opsx guidlines, and write the prompt to ai-prompts.md
+------
+timestamp: 2026-03-05T00:00:00.000Z
+prompt:
+# Context from my IDE setup:
+
+## Active file: index.html
+
+## Open tabs:
+- index.html: index.html
+- .gitignore: .gitignore
+- types.ts: src/dal/types.ts
+
+## My request for Codex:
+go over this assignment2 project. this project need an UI/UX, there also is an html implementation plan if needed make corrections. when operating with this project follow KISS, clean code and OPSX guidelines. go over everything so you know what we are doing
 ---
+timestamp: 2026-03-05T00:00:00.000Z
+prompt:
+# Context from my IDE setup:
+
+## Active file: index.html
+
+## Open tabs:
+- index.html: index.html
+- .gitignore: .gitignore
+- types.ts: src/dal/types.ts
+
+## My request for Codex:
+create a thin adapter contract between App and DAL to reduce migration risk before UI build and then implement the actual index.html + CSS shell
+---
+timestamp: 2026-03-05T00:00:00.000Z
+prompt:
+# Context from my IDE setup:
+
+## Active file: index.html
+
+## Open tabs:
+- index.html: index.html
+- .gitignore: .gitignore
+- types.ts: src/dal/types.ts
+
+## My request for Codex:
+remove the quick status stuff there already is a tasks view
+---
+timestamp: 2026-03-05T00:00:00.000Z
+prompt:
+# Context from my IDE setup:
+
+## Active file: index.html
+
+## Open tabs:
+- index.html: index.html
+- .gitignore: .gitignore
+- types.ts: src/dal/types.ts
+
+## My request for Codex:
+when creating a task i want there to be an option where i can chose checklist and add items to a checklist. when looking at the task i want to be able to click on the task and start checking stuff off from the checklist
+---
+timestamp: 2026-03-05T00:00:00.000Z
+prompt:
+# Context from my IDE setup:
+
+## Active file: index.html
+
+## Open tabs:
+- index.html: index.html
+- .gitignore: .gitignore
+- types.ts: src/dal/types.ts
+
+## My request for Codex:
+when i click on a task it should not open the edit task view right away, it should just be view task where if there is a checklist i can cross them off. when i want to edit a task there is a button with a emoji of a pencil when clicked on that i can edit it

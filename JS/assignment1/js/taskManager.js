@@ -7,9 +7,13 @@ const TaskManager = (function() {
   'use strict';
 
   /**
-   * TaskManager class for managing tasks
+   * Main class that keeps task logic in one place.
+   * It handles creating, reading, updating, deleting, and searching tasks.
    */
   class TaskManagerClass {
+    /**
+     * Creates TaskManager state in memory.
+     */
     constructor() {
       this.tasks = [];
       this.persistentFilter = null;
@@ -17,7 +21,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Initialize the task manager and load tasks from storage
+     * Loads tasks from storage once when app starts.
      * @returns {Promise<void>}
      */
     async init() {
@@ -34,7 +38,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Create a new task
+     * Creates a new task after validation, then saves it.
      * @param {Object} taskData - Task data (partial)
      * @param {Object} options - Validation options
      * @returns {Promise<Object>} Created task
@@ -71,7 +75,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get a task by ID
+     * Finds one task by ID (memory first, then storage).
      * @param {string} id - Task ID
      * @returns {Promise<Object|null>} Task or null
      */
@@ -92,7 +96,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get all tasks
+     * Returns all tasks sorted newest first.
      * @returns {Promise<Object[]>} All tasks sorted by createdAt descending
      */
     async getAllTasks() {
@@ -106,7 +110,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Find tasks matching query
+     * Filters tasks using query fields like status, priority, tags, and due dates.
      * @param {Object} query - Query object with filters
      * @returns {Promise<Object[]>} Matching tasks
      */
@@ -163,7 +167,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Update a task
+     * Updates one task by ID after validating merged task data.
      * @param {string} id - Task ID
      * @param {Object} updates - Fields to update
      * @param {Object} options - Validation options
@@ -230,7 +234,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Delete a task
+     * Deletes one task by ID from memory and storage.
      * @param {string} id - Task ID
      * @returns {Promise<boolean>} True if deleted
      * @throws {ValidationError} If task not found
@@ -269,7 +273,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Search tasks by query string
+     * Searches tasks by text in title/description/tags.
      * @param {string} searchQuery - Search query
      * @param {Object} options - Search options
      * @returns {Promise<Object[]>} Matching tasks
@@ -320,7 +324,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Set persistent filter
+     * Saves a filter that can be reused for later task listings.
      * @param {Object} filter - Filter object
      */
     setFilter(filter) {
@@ -328,7 +332,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get persistent filter
+     * Returns the current saved filter (if any).
      * @returns {Object|null} Current filter
      */
     getFilter() {
@@ -336,14 +340,14 @@ const TaskManager = (function() {
     }
 
     /**
-     * Clear persistent filter
+     * Removes the saved persistent filter.
      */
     clearFilter() {
       this.persistentFilter = null;
     }
 
     /**
-     * Get tasks with persistent filter applied
+     * Returns tasks with saved filter applied, or all tasks if no filter is set.
      * @returns {Promise<Object[]>} Filtered tasks
      */
     async getFilteredTasks() {
@@ -354,7 +358,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get task count
+     * Returns current number of tasks in memory.
      * @returns {number} Number of tasks
      */
     getTaskCount() {
@@ -362,7 +366,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get tasks grouped by status
+     * Groups tasks into buckets by status.
      * @returns {Object} Tasks grouped by status
      */
     async getTasksByStatus() {
@@ -385,7 +389,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get tasks grouped by priority
+     * Groups tasks into buckets by priority.
      * @returns {Object} Tasks grouped by priority
      */
     async getTasksByPriority() {
@@ -408,7 +412,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get overdue tasks
+     * Returns tasks that are overdue and not completed/cancelled.
      * @returns {Promise<Object[]>} Overdue tasks
      */
     async getOverdueTasks() {
@@ -424,7 +428,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Get tasks due today
+     * Returns tasks whose due date is today.
      * @returns {Promise<Object[]>} Tasks due today
      */
     async getTasksDueToday() {
@@ -438,7 +442,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Export all tasks
+     * Exports all stored data as JSON text.
      * @returns {Promise<string>} JSON string of tasks
      */
     async exportTasks() {
@@ -446,7 +450,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Import tasks from JSON
+     * Imports tasks from JSON text and refreshes in-memory list.
      * @param {string} jsonString - JSON string
      * @returns {Promise<number>} Number of imported tasks
      */
@@ -458,7 +462,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Clear all tasks
+     * Deletes all tasks from storage and memory.
      * @returns {Promise<void>}
      */
     async clearAllTasks() {
@@ -467,7 +471,7 @@ const TaskManager = (function() {
     }
 
     /**
-     * Reload tasks from storage
+     * Reloads tasks from storage into memory.
      * @returns {Promise<void>}
      */
     async reload() {

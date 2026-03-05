@@ -7,7 +7,8 @@ const Utils = (function() {
   'use strict';
 
   /**
-   * Generate a UUID v4 compliant string
+   * Makes a unique ID string for tasks.
+   * Uses browser crypto when possible, otherwise a fallback generator.
    * @returns {string} UUID v4 format
    */
   function generateUUID() {
@@ -24,7 +25,7 @@ const Utils = (function() {
   }
 
   /**
-   * Get current ISO 8601 timestamp
+   * Returns the current date and time in standard text format.
    * @returns {string} ISO 8601 timestamp
    */
   function getCurrentTimestamp() {
@@ -32,7 +33,8 @@ const Utils = (function() {
   }
 
   /**
-   * Parse a date string in YYYY-MM-DD format
+   * Converts a date string like 2026-03-05 into a Date object.
+   * Returns null if the text is missing or invalid.
    * @param {string} dateString - Date string in YYYY-MM-DD format
    * @returns {Date|null} Date object or null if invalid
    */
@@ -65,7 +67,7 @@ const Utils = (function() {
   }
 
   /**
-   * Format a Date object to YYYY-MM-DD string
+   * Converts a Date object back into YYYY-MM-DD text.
    * @param {Date} date - Date object
    * @returns {string} Formatted date string
    */
@@ -82,7 +84,7 @@ const Utils = (function() {
   }
 
   /**
-   * Format a timestamp to human-readable string
+   * Turns a timestamp into a readable date/time string for users.
    * @param {string} isoTimestamp - ISO 8601 timestamp
    * @returns {string} Formatted timestamp
    */
@@ -102,7 +104,7 @@ const Utils = (function() {
   }
 
   /**
-   * Check if a date is in the past
+   * Checks if the given date happened before today.
    * @param {string} dateString - Date string in YYYY-MM-DD format
    * @returns {boolean} True if date is in the past
    */
@@ -118,7 +120,7 @@ const Utils = (function() {
   }
 
   /**
-   * Check if a date is today
+   * Checks if the given date is today.
    * @param {string} dateString - Date string in YYYY-MM-DD format
    * @returns {boolean} True if date is today
    */
@@ -134,7 +136,7 @@ const Utils = (function() {
   }
 
   /**
-   * Check if a date is in the future
+   * Checks if the given date is after today.
    * @param {string} dateString - Date string in YYYY-MM-DD format
    * @returns {boolean} True if date is in the future
    */
@@ -150,7 +152,8 @@ const Utils = (function() {
   }
 
   /**
-   * Get days until a due date
+   * Calculates how many days are left until a date.
+   * Negative number means it is overdue.
    * @param {string} dateString - Date string in YYYY-MM-DD format
    * @returns {number|null} Number of days (negative if overdue) or null if invalid
    */
@@ -169,7 +172,7 @@ const Utils = (function() {
   }
 
   /**
-   * Escape HTML special characters
+   * Escapes HTML special characters so user text is safer to render.
    * @param {string} text - Text to escape
    * @returns {string} Escaped text
    */
@@ -189,7 +192,7 @@ const Utils = (function() {
   }
 
   /**
-   * Strip HTML tags from text
+   * Removes HTML tags from text and keeps only plain content.
    * @param {string} text - Text with potential HTML tags
    * @returns {string} Text without HTML tags
    */
@@ -199,7 +202,7 @@ const Utils = (function() {
   }
 
   /**
-   * Trim whitespace from string and handle null/undefined
+   * Cleans text by trimming spaces and safely handling null/undefined.
    * @param {string|null|undefined} text - Text to trim
    * @returns {string} Trimmed text or empty string
    */
@@ -209,7 +212,8 @@ const Utils = (function() {
   }
 
   /**
-   * Parse comma or space-separated tags
+   * Splits a tag string into an array of tags.
+   * Works with commas and spaces.
    * @param {string} tagsString - Comma or space-separated tags
    * @returns {string[]} Array of trimmed tags
    */
@@ -226,7 +230,7 @@ const Utils = (function() {
   }
 
   /**
-   * Deep clone an object
+   * Creates a deep copy of an object so edits do not affect the original.
    * @param {any} obj - Object to clone
    * @returns {any} Cloned object
    */
@@ -235,7 +239,8 @@ const Utils = (function() {
   }
 
   /**
-   * Get priority weight for sorting
+   * Converts priority text into a number for sorting.
+   * Bigger number means higher priority.
    * @param {string} priority - Priority level
    * @returns {number} Weight value
    */
@@ -250,7 +255,7 @@ const Utils = (function() {
   }
 
   /**
-   * Get status weight for sorting
+   * Converts status text into a number for sorting.
    * @param {string} status - Status value
    * @returns {number} Weight value
    */

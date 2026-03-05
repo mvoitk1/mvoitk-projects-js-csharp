@@ -7,7 +7,7 @@ const Commands = (function() {
   'use strict';
 
   /**
-   * Parse a command string into command name and arguments
+   * Splits raw user command text into command name + parsed arguments.
    * @param {string} input - Raw command input
    * @returns {Object} Parsed command
    */
@@ -35,7 +35,7 @@ const Commands = (function() {
   }
 
   /**
-   * Tokenize command input handling quotes
+   * Breaks command text into tokens while keeping quoted text together.
    * @param {string} input - Input string
    * @returns {string[]} Array of tokens
    */
@@ -72,7 +72,7 @@ const Commands = (function() {
   }
 
   /**
-   * Parse argument tokens into options object
+   * Turns tokens into an args object (flags, values, and positional args).
    * @param {string[]} tokens - Argument tokens
    * @returns {Object} Parsed arguments
    */
@@ -154,7 +154,7 @@ const Commands = (function() {
   }
 
   /**
-   * Execute a parsed command
+   * Runs the correct command handler based on parsed command name.
    * @param {Object} parsed - Parsed command object
    * @returns {Promise<Object>} Command result
    */
@@ -202,7 +202,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle add command
+   * Handles `add` command and creates a new task.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -238,7 +238,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle list command
+   * Handles `list` command and shows tasks in chosen format.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -286,7 +286,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle update command
+   * Handles `update` command and changes fields of one task.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -347,7 +347,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle delete command
+   * Handles `delete` command and removes a task by ID.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -379,7 +379,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle filter command
+   * Handles `filter` command to set, clear, or show persistent filters.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -427,7 +427,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle search command
+   * Handles `search` command and finds tasks matching query text.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -475,7 +475,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle help command
+   * Handles `help` command and returns usage instructions.
    * @param {Object} args - Command arguments
    * @returns {Object} Command result
    */
@@ -489,7 +489,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle export command
+   * Handles `export` command and returns task data as JSON output.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -512,7 +512,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle import command
+   * Handles `import` command (currently returns guidance text in this UI).
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */
@@ -526,7 +526,7 @@ const Commands = (function() {
   }
 
   /**
-   * Handle clear command
+   * Handles `clear` command and removes all tasks.
    * @param {Object} args - Command arguments
    * @returns {Promise<Object>} Command result
    */

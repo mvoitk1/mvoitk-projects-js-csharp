@@ -53,9 +53,12 @@ const Validator = (function() {
   };
 
   /**
-   * Custom error class for validation
+   * Error type used when input validation fails.
    */
   class ValidationError extends Error {
+    /**
+     * Creates a validation error object with code/message/field.
+     */
     constructor(code, message, field = null) {
       super(message);
       this.code = code;
@@ -65,7 +68,7 @@ const Validator = (function() {
   }
 
   /**
-   * Get error message for error code
+   * Converts an error code into a user-friendly message.
    * @param {string} code - Error code
    * @param {Object} params - Parameters for message formatting
    * @returns {string} Formatted error message
@@ -96,7 +99,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate task title
+   * Checks if task title exists, fits length limits, and has allowed characters.
    * @param {string} title - Title to validate
    * @returns {Object} Validation result
    */
@@ -141,7 +144,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate task description
+   * Cleans and checks task description length.
    * @param {string} description - Description to validate
    * @returns {Object} Validation result
    */
@@ -169,7 +172,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate task status
+   * Checks if status value is valid; uses default when missing.
    * @param {string} status - Status to validate
    * @returns {Object} Validation result
    */
@@ -196,7 +199,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate task priority
+   * Checks if priority value is valid; uses default when missing.
    * @param {string} priority - Priority to validate
    * @returns {Object} Validation result
    */
@@ -223,7 +226,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate due date
+   * Validates due date format, real calendar date, and past-date rules.
    * @param {string} dueDate - Due date to validate
    * @param {Object} options - Validation options
    * @returns {Object} Validation result
@@ -279,7 +282,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate tags
+   * Validates tags array/string, removes duplicates, and enforces limits.
    * @param {string[]|string} tags - Tags to validate
    * @returns {Object} Validation result
    */
@@ -340,7 +343,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate a complete task object
+   * Validates every field in a task object and returns cleaned values.
    * @param {Object} taskData - Task data to validate
    * @param {Object} options - Validation options
    * @returns {Object} Validation result with validated data
@@ -405,7 +408,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate task ID format
+   * Checks if task ID text matches UUID format.
    * @param {string} id - ID to validate
    * @returns {boolean} True if valid UUID format
    */
@@ -417,7 +420,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate filter/query options
+   * Validates query/filter values before searching or filtering tasks.
    * @param {Object} query - Query object to validate
    * @returns {Object} Validation result
    */
@@ -475,7 +478,7 @@ const Validator = (function() {
   }
 
   /**
-   * Validate command arguments
+   * Validates command name and required arguments for that command.
    * @param {string} command - Command name
    * @param {Object} args - Arguments to validate
    * @returns {Object} Validation result

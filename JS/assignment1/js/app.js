@@ -18,7 +18,9 @@ const App = (function() {
   const elements = {};
 
   /**
-   * Initialize the application
+   * Starts the app.
+   * If the page is still loading, it waits.
+   * If the page is already ready, it continues right away.
    */
   async function init() {
     if (document.readyState === 'loading') {
@@ -29,7 +31,9 @@ const App = (function() {
   }
 
   /**
-   * Handle DOM ready event
+   * Runs once the HTML page is ready.
+   * It finds important elements, sets click/keyboard listeners,
+   * starts TaskManager, and loads data on screen.
    */
   async function onDOMReady() {
     cacheElements();
@@ -43,7 +47,8 @@ const App = (function() {
   }
 
   /**
-   * Cache DOM elements
+   * Finds HTML elements once and stores them in `elements`.
+   * This avoids doing the same `getElementById` calls over and over.
    */
   function cacheElements() {
     elements.headerTitle = document.getElementById('header-title');
@@ -93,7 +98,8 @@ const App = (function() {
   }
 
   /**
-   * Set up event listeners
+   * Connects buttons, inputs, and keyboard shortcuts to functions.
+   * In short: this makes the UI react when the user does something.
    */
   function setupEventListeners() {
     // Navigation
@@ -168,7 +174,8 @@ const App = (function() {
   }
 
   /**
-   * Handle keyboard shortcuts
+   * Handles keyboard shortcuts:
+   * Escape closes modal, Ctrl/Cmd+N opens new task, Ctrl/Cmd+F focuses search.
    */
   function handleKeyboard(e) {
     // Escape to close modal
@@ -190,7 +197,8 @@ const App = (function() {
   }
 
   /**
-   * Switch between views
+   * Changes to a different screen (dashboard/tasks/calendar).
+   * Also updates active menu style, header title, and loads data for that screen.
    */
   function switchView(viewName) {
     currentView = viewName;
@@ -226,7 +234,8 @@ const App = (function() {
   }
 
   /**
-   * Load data for the current view
+   * Loads only the data needed for the selected view.
+   * This keeps each screen fresh without reloading everything.
    */
   async function loadViewData(viewName) {
     switch (viewName) {
@@ -243,7 +252,8 @@ const App = (function() {
   }
 
   /**
-   * Refresh all data
+   * Reloads main parts of the app (dashboard, task list, and badges).
+   * Useful after creating, editing, or deleting a task.
    */
   async function refreshAll() {
     await loadDashboard();
@@ -252,7 +262,8 @@ const App = (function() {
   }
 
   /**
-   * Update badges
+   * Counts tasks by status and updates the numbers shown in the UI.
+   * Example: total tasks, pending tasks, completed tasks.
    */
   async function updateBadges() {
     const tasks = await TaskManager.getAllTasks();
@@ -271,7 +282,8 @@ const App = (function() {
   }
 
   /**
-   * Load dashboard data
+   * Fills dashboard sections:
+   * recent tasks and upcoming tasks due in the next 7 days.
    */
   async function loadDashboard() {
     const tasks = await TaskManager.getAllTasks();
@@ -303,7 +315,8 @@ const App = (function() {
   }
 
   /**
-   * Load tasks with filters
+   * Loads all tasks, then applies status filter and search filter.
+   * Finally, shows the filtered result in the task list.
    */
   async function loadTasks() {
     let tasks = await TaskManager.getAllTasks();
@@ -333,7 +346,8 @@ const App = (function() {
   }
 
   /**
-   * Render task card HTML
+   * Builds the HTML for one task card.
+   * This is what each task looks like on screen.
    */
   function renderTaskCard(task) {
     const dueDateClass = getDueDateClass(task.dueDate, task.status);
@@ -369,7 +383,8 @@ const App = (function() {
   }
 
   /**
-   * Get due date CSS class
+   * Chooses a CSS class for due date color/style.
+   * Overdue and due-today tasks get special classes.
    */
   function getDueDateClass(dueDate, status) {
     if (!dueDate || status === 'completed' || status === 'cancelled') return '';
@@ -381,7 +396,8 @@ const App = (function() {
   }
 
   /**
-   * Format status for display
+   * Converts status code text to user-friendly text.
+   * Example: `in-progress` becomes `In Progress`.
    */
   function formatStatus(status) {
     const labels = {
@@ -394,7 +410,8 @@ const App = (function() {
   }
 
   /**
-   * Render empty state
+   * Creates the "empty state" message HTML.
+   * This shows when there are no tasks to display.
    */
   function renderEmptyState(title, text) {
     return `
@@ -408,7 +425,8 @@ const App = (function() {
   }
 
   /**
-   * Attach event handlers to task cards
+   * Adds click behavior to each task card button:
+   * toggle complete, edit, and delete.
    */
   function attachTaskCardHandlers(container) {
     container.querySelectorAll('.task-card').forEach(card => {
@@ -432,7 +450,8 @@ const App = (function() {
   }
 
   /**
-   * Toggle task status
+   * Switches one task between `completed` and `pending`,
+   * then refreshes the UI so the change is visible.
    */
   async function toggleTaskStatus(id) {
     const task = await TaskManager.getTask(id);
@@ -449,7 +468,7 @@ const App = (function() {
   }
 
   /**
-   * Edit task
+   * Opens the modal with existing task data so user can edit it.
    */
   async function editTask(id) {
     const task = await TaskManager.getTask(id);
@@ -459,7 +478,7 @@ const App = (function() {
   }
 
   /**
-   * Confirm delete task
+   * Asks user for delete confirmation before removing a task.
    */
   function confirmDeleteTask(id) {
     if (confirm('Are you sure you want to delete this task?')) {
@@ -468,7 +487,7 @@ const App = (function() {
   }
 
   /**
-   * Delete task by ID
+   * Deletes a task using its ID, then refreshes the UI.
    */
   async function deleteTaskById(id) {
     try {
@@ -480,7 +499,7 @@ const App = (function() {
   }
 
   /**
-   * Update filter buttons
+   * Updates filter button styles so the selected filter looks active.
    */
   function updateFilterButtons() {
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -492,7 +511,8 @@ const App = (function() {
   }
 
   /**
-   * Open task modal
+   * Opens the task modal.
+   * If a task is given, it opens in edit mode. If not, it opens in create mode.
    */
   function openTaskModal(task = null) {
     taskTags = [];
@@ -522,7 +542,7 @@ const App = (function() {
   }
 
   /**
-   * Close task modal
+   * Closes the modal and clears temporary tag list.
    */
   function closeTaskModal() {
     elements.modal.classList.remove('active');
@@ -530,7 +550,8 @@ const App = (function() {
   }
 
   /**
-   * Add tag
+   * Adds a new tag after cleaning it:
+   * trims spaces, makes lowercase, avoids duplicates, max 10 tags.
    */
   function addTag(tag) {
     const trimmed = tag.trim().toLowerCase();
@@ -542,7 +563,7 @@ const App = (function() {
   }
 
   /**
-   * Remove tag
+   * Removes one tag from the tag list by its position (index).
    */
   function removeTag(index) {
     taskTags.splice(index, 1);
@@ -550,7 +571,7 @@ const App = (function() {
   }
 
   /**
-   * Render tags
+   * Redraws all tags in the modal and re-connects tag input/remove events.
    */
   function renderTags() {
     const tagElements = taskTags.map((tag, index) => `
@@ -583,7 +604,8 @@ const App = (function() {
   }
 
   /**
-   * Save task
+   * Saves task data from the modal.
+   * Creates a new task if no ID exists, otherwise updates existing task.
    */
   async function saveTask() {
     const title = elements.taskTitle.value.trim();
@@ -625,7 +647,7 @@ const App = (function() {
   }
 
   /**
-   * Delete task from modal
+   * Deletes the task currently opened in the modal (after confirmation).
    */
   async function deleteTask() {
     const id = elements.taskId.value;
@@ -641,7 +663,8 @@ const App = (function() {
   }
 
   /**
-   * Render calendar
+   * Builds the monthly calendar view and places tasks on their due dates.
+   * Clicking a task dot opens that task for editing.
    */
   async function renderCalendar() {
     const year = currentCalendarDate.getFullYear();
@@ -711,7 +734,9 @@ const App = (function() {
   }
 
   /**
-   * Debounce helper
+   * Debounce utility:
+   * waits a short time before running a function, so rapid typing/clicking
+   * does not trigger too many calls (useful for search input).
    */
   function debounce(func, wait) {
     let timeout;

@@ -11,9 +11,12 @@ const Storage = (function() {
   const APP_VERSION = '1.0.0';
 
   /**
-   * Custom error class for storage operations
+   * Error type used when something goes wrong with browser storage.
    */
   class StorageError extends Error {
+    /**
+     * Creates a storage error object with code/message/details.
+     */
     constructor(code, message, details = null) {
       super(message);
       this.code = code;
@@ -23,7 +26,7 @@ const Storage = (function() {
   }
 
   /**
-   * Check if localStorage is available
+   * Checks if `localStorage` works in this browser right now.
    * @returns {boolean} True if localStorage is available
    */
   function isAvailable() {
@@ -38,7 +41,8 @@ const Storage = (function() {
   }
 
   /**
-   * Get all tasks from storage
+   * Loads all tasks from localStorage.
+   * Also cleans obviously broken task data.
    * @returns {Promise<Array>} Array of tasks
    * @throws {StorageError} If storage access fails
    */
@@ -93,7 +97,8 @@ const Storage = (function() {
   }
 
   /**
-   * Save tasks to storage
+   * Saves the full task list to localStorage.
+   * Also updates metadata like task count.
    * @param {Array} tasks - Array of tasks to save
    * @returns {Promise<boolean>} True if successful
    * @throws {StorageError} If storage fails
@@ -136,7 +141,7 @@ const Storage = (function() {
   }
 
   /**
-   * Get a single task by ID
+   * Finds and returns one task by its ID.
    * @param {string} id - Task ID
    * @returns {Promise<Object|null>} Task object or null
    */
@@ -146,7 +151,7 @@ const Storage = (function() {
   }
 
   /**
-   * Add a new task
+   * Adds one new task to the stored task list.
    * @param {Object} task - Task object to add
    * @returns {Promise<Object>} Added task
    */
@@ -158,7 +163,7 @@ const Storage = (function() {
   }
 
   /**
-   * Update an existing task
+   * Updates an existing task by ID with new field values.
    * @param {string} id - Task ID
    * @param {Object} updates - Fields to update
    * @returns {Promise<Object>} Updated task
@@ -181,7 +186,7 @@ const Storage = (function() {
   }
 
   /**
-   * Delete a task
+   * Deletes one task by ID from storage.
    * @param {string} id - Task ID
    * @returns {Promise<boolean>} True if deleted
    */
@@ -202,7 +207,8 @@ const Storage = (function() {
   }
 
   /**
-   * Get app metadata
+   * Loads app metadata (version, backup time, task count).
+   * Creates default metadata if none exists yet.
    * @returns {Promise<Object>} Metadata object
    */
   async function getMetadata() {
@@ -231,7 +237,7 @@ const Storage = (function() {
   }
 
   /**
-   * Save app metadata
+   * Saves metadata object to localStorage.
    * @param {Object} metadata - Metadata to save
    * @returns {Promise<boolean>} True if successful
    */
@@ -246,7 +252,7 @@ const Storage = (function() {
   }
 
   /**
-   * Update metadata fields
+   * Updates only selected metadata fields while keeping others.
    * @param {Object} updates - Fields to update
    * @returns {Promise<Object>} Updated metadata
    */
@@ -258,7 +264,7 @@ const Storage = (function() {
   }
 
   /**
-   * Export all data as JSON string
+   * Exports tasks and metadata into one JSON string for backup.
    * @returns {Promise<string>} JSON string of all data
    */
   async function exportData() {
@@ -273,7 +279,7 @@ const Storage = (function() {
   }
 
   /**
-   * Import data from JSON string
+   * Imports tasks from a JSON string after basic validation.
    * @param {string} jsonString - JSON string to import
    * @returns {Promise<boolean>} True if successful
    * @throws {StorageError} If import fails
@@ -315,7 +321,7 @@ const Storage = (function() {
   }
 
   /**
-   * Clear all tasks (for testing/reset)
+   * Removes all tasks by saving an empty array.
    * @returns {Promise<boolean>} True if successful
    */
   async function clearAll() {
@@ -323,7 +329,7 @@ const Storage = (function() {
   }
 
   /**
-   * Get storage usage information
+   * Returns simple storage stats like number of tasks and data size.
    * @returns {Promise<Object>} Storage info
    */
   async function getStorageInfo() {

@@ -35,7 +35,7 @@ const Formatters = (function() {
   };
 
   /**
-   * Format status with color
+   * Adds color styling to a task status value.
    * @param {string} status - Task status
    * @returns {string} Formatted status
    */
@@ -52,7 +52,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format priority with color
+   * Adds color styling to a task priority value.
    * @param {string} priority - Task priority
    * @returns {string} Formatted priority
    */
@@ -69,7 +69,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format tags as colored spans
+   * Turns tag list into colored `#tag` text.
    * @param {string[]} tags - Array of tags
    * @returns {string} Formatted tags
    */
@@ -82,7 +82,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format ID for display
+   * Styles task ID for display output.
    * @param {string} id - Task ID
    * @returns {string} Formatted ID
    */
@@ -91,7 +91,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format a single task as a table row
+   * Builds display HTML for one task row.
    * @param {Object} task - Task object
    * @param {Object} options - Display options
    * @returns {string} Formatted task row
@@ -125,7 +125,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format due date with relative indicator
+   * Shows due date with helpful labels like overdue/today/tomorrow.
    * @param {string} dueDate - Due date in YYYY-MM-DD format
    * @returns {string} Formatted due date
    */
@@ -152,7 +152,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Truncate a string to specified length
+   * Shortens long text and adds `...` if needed.
    * @param {string} text - Text to truncate
    * @param {number} maxLength - Maximum length
    * @returns {string} Truncated text
@@ -164,7 +164,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format tasks as a table
+   * Builds a table-style HTML view for many tasks.
    * @param {Object[]} tasks - Array of tasks
    * @param {Object} options - Display options
    * @returns {string} HTML table
@@ -195,7 +195,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format tasks as a compact list
+   * Builds a compact bullet-list style HTML view for tasks.
    * @param {Object[]} tasks - Array of tasks
    * @param {Object} options - Display options
    * @returns {string} HTML list
@@ -235,7 +235,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format tasks as JSON
+   * Returns tasks as JSON text (pretty or compact).
    * @param {Object[]} tasks - Array of tasks
    * @param {Object} options - Display options
    * @returns {string} JSON string
@@ -251,7 +251,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Get status icon
+   * Returns a small symbol for task status.
    * @param {string} status - Task status
    * @returns {string} Status icon
    */
@@ -266,7 +266,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Get priority icon
+   * Returns a small symbol for task priority.
    * @param {string} priority - Task priority
    * @returns {string} Priority icon
    */
@@ -281,7 +281,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format a single task detail view
+   * Builds a detailed HTML view for one task.
    * @param {Object} task - Task object
    * @returns {string} Formatted task details
    */
@@ -322,7 +322,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format error message
+   * Builds a styled error message line.
    * @param {Error} error - Error object
    * @returns {string} Formatted error
    */
@@ -334,7 +334,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format success message
+   * Builds a styled success message line.
    * @param {string} message - Success message
    * @returns {string} Formatted message
    */
@@ -343,7 +343,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format info message
+   * Builds a styled info message line.
    * @param {string} message - Info message
    * @returns {string} Formatted message
    */
@@ -352,7 +352,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format warning message
+   * Builds a styled warning message line.
    * @param {string} message - Warning message
    * @returns {string} Formatted message
    */
@@ -361,7 +361,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Format command output
+   * Wraps command output with optional timestamp and command header.
    * @param {string} command - Command that was executed
    * @param {string} output - Command output
    * @returns {string} Formatted command output
@@ -377,7 +377,7 @@ const Formatters = (function() {
   }
 
   /**
-   * Get help text for a command
+   * Returns help text for one command or a general command list.
    * @param {string} command - Command name
    * @returns {string} Help text
    */

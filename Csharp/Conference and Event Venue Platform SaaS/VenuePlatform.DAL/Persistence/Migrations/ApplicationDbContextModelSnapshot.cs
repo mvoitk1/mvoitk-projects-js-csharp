@@ -254,13 +254,43 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Status")
+                    b.Property<int>("InvoiceNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("InvoiceNumberText")
                         .IsRequired()
-                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("IssuedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("IssuedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("PaidByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PaidUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SentByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SentUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasMaxLength(20)
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("SubtotalAmount")
                         .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("VoidedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("VoidedUtc")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -306,6 +336,47 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.HasIndex("InvoiceId");
 
                     b.ToTable("InvoiceItems", (string)null);
+                });
+
+            modelBuilder.Entity("VenuePlatform.BLL.Domain.Billing.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("PaidUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId", "InvoiceId");
+
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("VenuePlatform.BLL.Domain.Bookings.Booking", b =>
@@ -389,6 +460,10 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -417,6 +492,11 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Plan")
+                        .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Slug")
@@ -515,6 +595,20 @@ namespace VenuePlatform.DAL.Persistence.Migrations
                     b.HasIndex("SpaceId");
 
                     b.ToTable("BookingSpaces", (string)null);
+                });
+
+            modelBuilder.Entity("VenuePlatform.DAL.Persistence.InvoiceCounter", b =>
+                {
+                    b.Property<Guid>("CompanyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("NextInvoiceNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("CompanyId");
+
+                    b.ToTable("InvoiceCounters", (string)null);
                 });
 
             modelBuilder.Entity("VenuePlatform.DAL.Persistence.SpaceConfigurationSpace", b =>

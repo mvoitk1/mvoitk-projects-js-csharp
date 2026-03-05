@@ -37,6 +37,8 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
     public DbSet<BookingSpace> BookingSpaces => Set<BookingSpace>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<InvoiceCounter> InvoiceCounters => Set<InvoiceCounter>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -370,5 +372,63 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
 
         // Tenant query filter for InvoiceItem
         invoiceItem.HasQueryFilter(ii => companyId != null && ii.CompanyId == companyId);
+
+        // Payment configuration with tenant query filter
+        var payment = modelBuilder.Entity<Payment>();
+
+        payment.ToTable("Payments");
+
+        payment.HasKey(p => p.Id);
+
+        payment.Property(p => p.CompanyId)
+            .IsRequired();
+
+        payment.Property(p => p.InvoiceId)
+            .IsRequired();
+
+        payment.Property(p => p.Amount)
+            .IsRequired()
+            .HasPrecision(18, 2);
+
+        payment.Property(p => p.PaidUtc)
+            .IsRequired();
+
+        payment.Property(p => p.Method)
+            .IsRequired()
+            .HasMaxLength(30);
+
+        payment.Property(p => p.Reference)
+            .HasMaxLength(100);
+
+        payment.Property(p => p.CreatedByUserId)
+            .IsRequired();
+
+        payment.Property(p => p.CreatedUtc)
+            .IsRequired();
+
+        payment.HasIndex(p => new { p.CompanyId, p.InvoiceId });
+
+        // Tenant query filter for Payment
+        payment.HasQueryFilter(p => companyId != null && p.CompanyId == companyId);
+
+        // InvoiceCounter configuration (no tenant query filter - direct lookup by CompanyId)
+        var invoiceCounter = modelBuilder.Entity<InvoiceCounter>();
+
+        invoiceCounter.ToTable("InvoiceCounters");
+
+        invoiceCounter.HasKey(ic => ic.CompanyId);
+
+        invoiceCounter.Property(ic => ic.NextInvoiceNumber)
+            .IsRequired();
+
+        // Company Plan configuration
+        company.Property(c => c.Plan)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        // Client Email configuration
+        client.Property(c => c.Email)
+            .HasMaxLength(256);
     }
 }

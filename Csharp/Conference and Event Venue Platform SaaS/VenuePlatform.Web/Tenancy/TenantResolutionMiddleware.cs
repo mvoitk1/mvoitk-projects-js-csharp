@@ -57,8 +57,10 @@ public class TenantResolutionMiddleware
     private static bool IsExemptPath(PathString path)
     {
         var pathValue = path.Value?.ToLowerInvariant() ?? string.Empty;
-        
+
         return pathValue == "/health"
-            || pathValue.StartsWith("/swagger");
+            || pathValue.StartsWith("/swagger")
+            || pathValue == "/dev"
+            || pathValue.StartsWith("/dev/");
     }
 }

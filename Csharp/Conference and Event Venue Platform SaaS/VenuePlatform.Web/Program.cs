@@ -65,16 +65,36 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 // Auth services
 builder.Services.AddScoped<JwtTokenService>();
 
+// CORS for development
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCors", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
+
+// Log environment at startup
+app.Logger.LogInformation("Environment: {Env}", app.Environment.EnvironmentName);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapDevEndpoints();
 }
 
 app.UseHttpsRedirection();
+
+// CORS middleware (dev-only, before auth, after HTTPS redirection)
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevCors");
+}
 
 // Authentication & Authorization middleware
 app.UseAuthentication();
@@ -84,19 +104,25 @@ app.UseAuthorization();
 app.UseMiddleware<TenantResolutionMiddleware>();
 
 // Platform-level endpoints (no tenant required)
-app.MapPlatformHealthEndpoints();
+app.MapPlatformDiagnosticsEndpoints();
 app.MapAuthEndpoints(builder.Configuration);
+
+// DEV-only endpoints (must be in Development environment)
+if (app.Environment.IsDevelopment())
+{
+    app.MapDevEndpoints();
+}
 
 // Tenant route group - endpoints under /{companySlug}
 var tenantGroup = app.MapGroup("/{companySlug}");
 
 // Tenant-scoped endpoints
-tenantGroup.MapTenantHealthEndpoints();
+tenantGroup.MapTenantDiagnosticsEndpoints();
 tenantGroup.MapClientEndpoints();
 tenantGroup.MapSpaceEndpoints();
 tenantGroup.MapSpaceConfigurationEndpoints();
 tenantGroup.MapBookingEndpoints();
-tenantGroup.MapInvoiceEndpoints();
+tenantGroup.MapInvoiceEndpoints(builder.Configuration);
 
 // Apply migrations and seed minimal data
 using (var scope = app.Services.CreateScope())

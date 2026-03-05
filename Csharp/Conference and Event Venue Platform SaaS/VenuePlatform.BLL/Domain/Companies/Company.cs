@@ -1,3 +1,5 @@
+using VenuePlatform.Contracts.Billing;
+
 namespace VenuePlatform.BLL.Domain.Companies;
 
 public sealed class Company
@@ -6,6 +8,7 @@ public sealed class Company
     public string Name { get; private set; } = null!;
     public string Slug { get; private set; } = null!;
     public DateTime CreatedUtc { get; private set; }
+    public CompanyPlan Plan { get; private set; }
 
     private Company() { } // EF
 
@@ -18,5 +21,11 @@ public sealed class Company
         Name = name.Trim();
         Slug = slug.Trim().ToLowerInvariant();
         CreatedUtc = DateTime.UtcNow;
+        Plan = CompanyPlan.Free;
+    }
+
+    public void SetPlan(CompanyPlan plan)
+    {
+        Plan = plan;
     }
 }

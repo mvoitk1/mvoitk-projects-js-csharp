@@ -7,6 +7,7 @@ public sealed class Client : ITenantScoped
     public Guid Id { get; private set; }
     public Guid CompanyId { get; private set; }
     public string Name { get; private set; } = null!;
+    public string? Email { get; private set; }
     public string? Notes { get; private set; }
     public DateTime CreatedUtc { get; private set; }
 
@@ -22,5 +23,10 @@ public sealed class Client : ITenantScoped
         Name = name.Trim();
         Notes = notes;
         CreatedUtc = DateTime.UtcNow;
+    }
+
+    public void SetEmail(string? email)
+    {
+        Email = email;
     }
 }

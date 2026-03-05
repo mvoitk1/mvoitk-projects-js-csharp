@@ -34,6 +34,15 @@ export function TopBar() {
             <Link to={`/${companySlug}/bookings`} style={styles.navLink}>
               Bookings
             </Link>
+            <Link to={`/${companySlug}/invoices`} style={styles.navLink}>
+              Invoices
+            </Link>
+            <Link to={`/${companySlug}/reports/revenue`} style={styles.navLink}>
+              Reports
+            </Link>
+            <Link to={`/${companySlug}/billing`} style={styles.navLink}>
+              Billing
+            </Link>
           </nav>
         )}
       </div>

@@ -235,7 +235,7 @@ export function CreateBookingPage() {
                       />
                       <span style={styles.spaceName}>{space.name}</span>
                       <span style={styles.spaceInfo}>
-                        (Capacity: {space.capacity}, Rate: ${space.hourlyRate}/hr)
+                        (Capacity: {space.capacity})
                       </span>
                     </label>
                   ))

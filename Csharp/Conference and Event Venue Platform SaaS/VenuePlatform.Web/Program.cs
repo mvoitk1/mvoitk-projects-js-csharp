@@ -9,6 +9,7 @@ using VenuePlatform.BLL.Tenancy;
 using VenuePlatform.DAL.Persistence;
 using VenuePlatform.Web.Auth;
 using VenuePlatform.Web.Endpoints;
+using VenuePlatform.Web.Startup;
 using VenuePlatform.Web.Tenancy;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,6 +59,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+
+// User context service (centralizes claim extraction)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 
 // Repositories
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
@@ -124,6 +129,7 @@ tenantGroup.MapSpaceConfigurationEndpoints();
 tenantGroup.MapBookingEndpoints();
 tenantGroup.MapInvoiceEndpoints(builder.Configuration);
 tenantGroup.MapBillingEndpoints();
+tenantGroup.MapReportEndpoints();
 
 // Apply migrations and seed minimal data
 using (var scope = app.Services.CreateScope())
@@ -138,5 +144,8 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
+
+// Seed platform admin user (if configured)
+await IdentitySeeder.SeedPlatformAdminAsync(app.Services, builder.Configuration, app.Logger);
 
 app.Run();

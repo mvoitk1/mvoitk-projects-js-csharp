@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using VenuePlatform.BLL.Domain.Clients;
 using VenuePlatform.BLL.Tenancy;
 using VenuePlatform.Contracts.Auth;
+using VenuePlatform.Contracts.Clients;
 using VenuePlatform.DAL.Persistence;
+using VenuePlatform.Web.Auth;
 
 namespace VenuePlatform.Web.Endpoints;
 
@@ -56,7 +58,44 @@ public static class ClientEndpoints
         .RequireAuthorization();
 
         // GET /{companySlug}/clients - Lists clients for current tenant (requires auth + membership)
-        group.MapGet("/clients", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user) =>
+        group.MapGet("/clients", (ApplicationDbContext db, ITenantContext tenantContext, IUserContext userContext) =>
+        {
+            // Extract userId from IUserContext
+            var userId = userContext.UserId;
+            if (userId is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var tenant = tenantContext.Current;
+            if (tenant is null)
+            {
+                return Results.NotFound();
+            }
+
+            // Check membership
+            var isMember = db.UserCompanyMemberships
+                .AsNoTracking()
+                .Any(m => m.UserId == userId.Value && m.CompanyId == tenant.CompanyId);
+
+            if (!isMember)
+            {
+                return Results.Forbid();
+            }
+
+            var clients = db.Clients
+                .AsNoTracking()
+                .Where(c => c.CompanyId == tenant.CompanyId)
+                .OrderBy(c => c.Name)
+                .Select(c => new ClientResponse(c.Id, c.CompanyId, c.Name, c.Notes, c.Email, c.CreatedUtc))
+                .ToList();
+
+            return Results.Ok(clients);
+        })
+        .RequireAuthorization();
+
+        // GET /{companySlug}/clients/{id} - Get a single client by ID (requires auth + membership)
+        group.MapGet("/clients/{id:guid}", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id) =>
         {
             // Extract userId from "sub" claim
             var userId = EndpointHelpers.GetUserIdFromClaims(user);
@@ -81,13 +120,172 @@ public static class ClientEndpoints
                 return Results.Forbid();
             }
 
-            var clients = db.Clients
+            var client = db.Clients
                 .AsNoTracking()
-                .OrderBy(c => c.Name)
-                .Select(c => new { c.Id, c.Name, c.CompanyId })
-                .ToList();
+                .Where(c => c.Id == id && c.CompanyId == tenant.CompanyId)
+                .Select(c => new ClientResponse(c.Id, c.CompanyId, c.Name, c.Notes, c.Email, c.CreatedUtc))
+                .FirstOrDefault();
 
-            return Results.Ok(clients);
+            if (client is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(client);
+        })
+        .RequireAuthorization();
+
+        // POST /{companySlug}/clients - Create a new client (requires auth + Manager/Admin/Owner)
+        group.MapPost("/clients", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, CreateClientRequest request) =>
+        {
+            // Extract userId from "sub" claim
+            var userId = EndpointHelpers.GetUserIdFromClaims(user);
+            if (userId == Guid.Empty)
+            {
+                return Results.Unauthorized();
+            }
+
+            var tenant = tenantContext.Current;
+            if (tenant is null)
+            {
+                return Results.NotFound();
+            }
+
+            // Query membership with role
+            var membership = db.UserCompanyMemberships
+                .AsNoTracking()
+                .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+            if (membership is null)
+            {
+                return Results.Forbid();
+            }
+
+            // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+            var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+            if (!allowedRoles.Contains(membership.Role))
+            {
+                return Results.Forbid();
+            }
+
+            // Validate request
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                return Results.BadRequest(new { error = "Name is required." });
+            }
+
+            var client = new Client(tenant.CompanyId, request.Name.Trim(), request.Notes);
+            client.UpdateEmail(request.Email);
+            db.Clients.Add(client);
+            db.SaveChanges();
+
+            var response = new ClientResponse(client.Id, client.CompanyId, client.Name, client.Notes, client.Email, client.CreatedUtc);
+            return Results.Created($"/{tenant.CompanySlug}/clients/{client.Id}", response);
+        })
+        .RequireAuthorization();
+
+        // PUT /{companySlug}/clients/{id} - Update an existing client (requires auth + Manager/Admin/Owner)
+        group.MapPut("/clients/{id:guid}", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id, UpdateClientRequest request) =>
+        {
+            // Extract userId from "sub" claim
+            var userId = EndpointHelpers.GetUserIdFromClaims(user);
+            if (userId == Guid.Empty)
+            {
+                return Results.Unauthorized();
+            }
+
+            var tenant = tenantContext.Current;
+            if (tenant is null)
+            {
+                return Results.NotFound();
+            }
+
+            // Query membership with role
+            var membership = db.UserCompanyMemberships
+                .AsNoTracking()
+                .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+            if (membership is null)
+            {
+                return Results.Forbid();
+            }
+
+            // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+            var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+            if (!allowedRoles.Contains(membership.Role))
+            {
+                return Results.Forbid();
+            }
+
+            // Validate request
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                return Results.BadRequest(new { error = "Name is required." });
+            }
+
+            var client = db.Clients
+                .FirstOrDefault(c => c.Id == id && c.CompanyId == tenant.CompanyId);
+
+            if (client is null)
+            {
+                return Results.NotFound();
+            }
+
+            client.UpdateName(request.Name.Trim());
+            client.SetNotes(request.Notes);
+            client.UpdateEmail(request.Email);
+            db.SaveChanges();
+
+            var response = new ClientResponse(client.Id, client.CompanyId, client.Name, client.Notes, client.Email, client.CreatedUtc);
+            return Results.Ok(response);
+        })
+        .RequireAuthorization();
+
+        // DELETE /{companySlug}/clients/{id} - Delete a client (requires auth + Manager/Admin/Owner)
+        group.MapDelete("/clients/{id:guid}", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id) =>
+        {
+            // Extract userId from "sub" claim
+            var userId = EndpointHelpers.GetUserIdFromClaims(user);
+            if (userId == Guid.Empty)
+            {
+                return Results.Unauthorized();
+            }
+
+            var tenant = tenantContext.Current;
+            if (tenant is null)
+            {
+                return Results.NotFound();
+            }
+
+            // Query membership with role
+            var membership = db.UserCompanyMemberships
+                .AsNoTracking()
+                .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+            if (membership is null)
+            {
+                return Results.Forbid();
+            }
+
+            // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+            var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+            if (!allowedRoles.Contains(membership.Role))
+            {
+                return Results.Forbid();
+            }
+
+            var client = db.Clients
+                .FirstOrDefault(c => c.Id == id && c.CompanyId == tenant.CompanyId);
+
+            if (client is null)
+            {
+                return Results.NotFound();
+            }
+
+            db.Clients.Remove(client);
+            db.SaveChanges();
+
+            return Results.NoContent();
         })
         .RequireAuthorization();
 

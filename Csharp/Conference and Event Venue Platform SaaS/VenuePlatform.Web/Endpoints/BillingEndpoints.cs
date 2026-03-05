@@ -1,9 +1,9 @@
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using VenuePlatform.BLL.Limits;
 using VenuePlatform.BLL.Tenancy;
 using VenuePlatform.Contracts.Billing;
 using VenuePlatform.DAL.Persistence;
+using VenuePlatform.Web.Auth;
 
 namespace VenuePlatform.Web.Endpoints;
 
@@ -15,11 +15,11 @@ public static class BillingEndpoints
     public static RouteGroupBuilder MapBillingEndpoints(this RouteGroupBuilder group)
     {
         // GET /{companySlug}/billing/plan - Get plan usage and limits (requires auth + any membership)
-        group.MapGet("/billing/plan", async (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user) =>
+        group.MapGet("/billing/plan", async (ApplicationDbContext db, ITenantContext tenantContext, IUserContext userContext) =>
         {
-            // Extract userId from claims
-            var userId = EndpointHelpers.GetUserIdFromClaims(user);
-            if (userId == Guid.Empty)
+            // Extract userId from IUserContext
+            var userId = userContext.UserId;
+            if (userId is null)
             {
                 return Results.Unauthorized();
             }
@@ -33,7 +33,7 @@ public static class BillingEndpoints
             // Check membership - any role allowed
             var isMember = db.UserCompanyMemberships
                 .AsNoTracking()
-                .Any(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+                .Any(m => m.UserId == userId.Value && m.CompanyId == tenant.CompanyId);
 
             if (!isMember)
             {

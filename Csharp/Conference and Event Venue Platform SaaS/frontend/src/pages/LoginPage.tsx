@@ -1,5 +1,5 @@
-import { useState, FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, FormEvent, useEffect } from 'react'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { ApiError } from '../types/apiTypes'
 import { loginUser } from '../api/authApi'
@@ -70,8 +70,9 @@ function getLoginErrorMessage(normalized: NormalizedError): string {
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { login } = useAuth()
-  
+
   const [companySlug, setCompanySlug] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -79,8 +80,23 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [normalizedError, setNormalizedError] = useState<NormalizedError | null>(null)
   const [showDetails, setShowDetails] = useState(false)
-  
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
   const isDev = import.meta.env.DEV
+
+  // Handle state passed from registration
+  useEffect(() => {
+    const state = location.state as { registeredEmail?: string; companySlug?: string } | null
+    if (state?.registeredEmail) {
+      setEmail(state.registeredEmail)
+      setSuccessMessage('Account created successfully! Please sign in.')
+      if (state.companySlug) {
+        setCompanySlug(state.companySlug)
+      }
+      // Clear state so message doesn't persist on refresh
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -124,7 +140,20 @@ export function LoginPage() {
     }}>
       <h1 style={{ marginBottom: '8px', fontSize: '24px' }}>Venue Platform</h1>
       <p style={{ color: '#666', marginBottom: '24px' }}>Sign in to your company workspace</p>
-      
+
+      {successMessage && (
+        <div style={{
+          marginBottom: '16px',
+          padding: '12px',
+          background: '#dcfce7',
+          color: '#166534',
+          borderRadius: '4px',
+          fontSize: '14px'
+        }}>
+          {successMessage}
+        </div>
+      )}
+
       {error && (
         <div style={{ 
           marginBottom: '16px', 
@@ -256,15 +285,32 @@ export function LoginPage() {
         </button>
       </form>
       
+      {/* Register link */}
+      <div style={{ marginTop: '24px', textAlign: 'center' }}>
+        <p style={{ fontSize: '14px', color: '#6b7280' }}>
+          Don&apos;t have an account?{' '}
+          <Link
+            to="/register"
+            style={{
+              color: '#2563eb',
+              textDecoration: 'none',
+              fontWeight: 500
+            }}
+          >
+            Create an account
+          </Link>
+        </p>
+      </div>
+
       {/* Dev-only bootstrap link */}
       {isDev && (
-        <div style={{ marginTop: '24px', textAlign: 'center' }}>
-          <Link 
-            to="/dev/bootstrap" 
-            style={{ 
-              fontSize: '12px', 
+        <div style={{ marginTop: '16px', textAlign: 'center' }}>
+          <Link
+            to="/dev/bootstrap"
+            style={{
+              fontSize: '12px',
               color: '#666',
-              textDecoration: 'underline' 
+              textDecoration: 'underline'
             }}
           >
             Dev bootstrap

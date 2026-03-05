@@ -88,3 +88,14 @@ export async function cancelBooking(companySlug: string, id: string, reason?: st
   const queryParams = reason ? `?reason=${encodeURIComponent(reason)}` : ''
   await api.delete<void>(`/${companySlug}/bookings/${id}${queryParams}`)
 }
+
+export async function createInvoiceFromBooking(
+  companySlug: string,
+  bookingId: string
+): Promise<string> {
+  const response = await api.post<{ invoiceId: string }>(
+    `/${companySlug}/bookings/${bookingId}/invoice`,
+    {}
+  )
+  return response.invoiceId
+}

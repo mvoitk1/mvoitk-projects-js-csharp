@@ -1,48 +1,21 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
-import { getSpaces, createSpace, deactivateSpace } from '../api/spacesApi'
-import { ApiError, CreateSpaceRequest } from '../types/apiTypes'
+import { getSpaces, deactivateSpace } from '../api/spacesApi'
+import { ApiError } from '../types/apiTypes'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
 export function SpacesPage() {
   const companySlug = useCompanySlug()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-
-  // Form state
-  const [createForm, setCreateForm] = useState<CreateSpaceRequest>({
-    name: '',
-    capacity: 0,
-    hourlyRate: 0,
-  })
 
   // Query for spaces list
   const { data: spaces, isLoading } = useQuery({
     queryKey: ['spaces', companySlug],
     queryFn: () => getSpaces(companySlug),
-  })
-
-  // Create mutation
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateSpaceRequest) =>
-      createSpace(companySlug, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['spaces', companySlug] })
-      setShowCreateForm(false)
-      setCreateForm({ name: '', capacity: 0, hourlyRate: 0 })
-      setError(null)
-    },
-    onError: (err: ApiError) => {
-      if (err.statusCode === 409) {
-        setError('Space limit reached for current plan.')
-      } else if (err.statusCode === 403) {
-        setError('Insufficient permissions to create spaces.')
-      } else {
-        setError(err.message || 'Failed to create space.')
-      }
-    },
   })
 
   // Deactivate mutation
@@ -61,23 +34,6 @@ export function SpacesPage() {
     },
   })
 
-  const handleCreateSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!createForm.name.trim()) {
-      setError('Name is required.')
-      return
-    }
-    if (createForm.capacity <= 0) {
-      setError('Capacity must be greater than 0.')
-      return
-    }
-    if (createForm.hourlyRate < 0) {
-      setError('Hourly rate cannot be negative.')
-      return
-    }
-    createMutation.mutate(createForm)
-  }
-
   const handleDeactivate = (id: string) => {
     if (confirm('Are you sure you want to deactivate this space?')) {
       deactivateMutation.mutate(id)
@@ -90,10 +46,10 @@ export function SpacesPage() {
         <div style={styles.header}>
           <h1 style={styles.title}>Spaces</h1>
           <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            style={styles.createButton}
+            onClick={() => navigate(`/${companySlug}/spaces/new`)}
+            style={styles.newButton}
           >
-            {showCreateForm ? 'Cancel' : 'Create Space'}
+            + New Space
           </button>
         </div>
 
@@ -102,52 +58,6 @@ export function SpacesPage() {
             {error}
             <button onClick={() => setError(null)} style={styles.closeError}>×</button>
           </div>
-        )}
-
-        {showCreateForm && (
-          <form onSubmit={handleCreateSubmit} style={styles.form}>
-            <h3 style={styles.formTitle}>Create New Space</h3>
-            <div style={styles.formRow}>
-              <label style={styles.label}>
-                Name
-                <input
-                  type="text"
-                  value={createForm.name}
-                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                  style={styles.input}
-                  placeholder="Space name"
-                />
-              </label>
-              <label style={styles.label}>
-                Capacity
-                <input
-                  type="number"
-                  value={createForm.capacity || ''}
-                  onChange={(e) => setCreateForm({ ...createForm, capacity: parseInt(e.target.value) || 0 })}
-                  style={styles.input}
-                  min="1"
-                />
-              </label>
-              <label style={styles.label}>
-                Hourly Rate
-                <input
-                  type="number"
-                  value={createForm.hourlyRate || ''}
-                  onChange={(e) => setCreateForm({ ...createForm, hourlyRate: parseFloat(e.target.value) || 0 })}
-                  style={styles.input}
-                  min="0"
-                  step="0.01"
-                />
-              </label>
-            </div>
-            <button
-              type="submit"
-              style={styles.submitButton}
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending ? 'Creating...' : 'Create Space'}
-            </button>
-          </form>
         )}
 
         {isLoading ? (
@@ -159,7 +69,6 @@ export function SpacesPage() {
                 <tr>
                   <th style={styles.th}>Name</th>
                   <th style={styles.th}>Capacity</th>
-                  <th style={styles.th}>Hourly Rate</th>
                   <th style={styles.th}>Status</th>
                   <th style={styles.th}>Actions</th>
                 </tr>
@@ -167,7 +76,7 @@ export function SpacesPage() {
               <tbody>
                 {spaces?.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={styles.emptyCell}>
+                    <td colSpan={4} style={styles.emptyCell}>
                       No spaces yet. Create your first space above.
                     </td>
                   </tr>
@@ -176,22 +85,35 @@ export function SpacesPage() {
                     <tr key={space.id} style={styles.tr}>
                       <td style={styles.td}>{space.name}</td>
                       <td style={styles.td}>{space.capacity}</td>
-                      <td style={styles.td}>${space.hourlyRate.toFixed(2)}</td>
                       <td style={styles.td}>
                         <span style={space.isActive ? styles.activeBadge : styles.inactiveBadge}>
                           {space.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td style={styles.td}>
-                        {space.isActive && (
+                        <div style={styles.actions}>
                           <button
-                            onClick={() => handleDeactivate(space.id)}
-                            style={styles.deactivateButton}
-                            disabled={deactivateMutation.isPending}
+                            onClick={() => navigate(`/${companySlug}/spaces/${space.id}`)}
+                            style={styles.actionButton}
                           >
-                            Deactivate
+                            View
                           </button>
-                        )}
+                          <button
+                            onClick={() => navigate(`/${companySlug}/spaces/${space.id}/edit`)}
+                            style={styles.actionButton}
+                          >
+                            Edit
+                          </button>
+                          {space.isActive && (
+                            <button
+                              onClick={() => handleDeactivate(space.id)}
+                              style={styles.deactivateButton}
+                              disabled={deactivateMutation.isPending}
+                            >
+                              Deactivate
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -223,14 +145,14 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#333',
     margin: 0,
   },
-  createButton: {
+  newButton: {
     padding: '10px 20px',
-    backgroundColor: '#007bff',
-    color: 'white',
+    fontSize: '14px',
+    fontWeight: '600',
     border: 'none',
     borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '500',
+    backgroundColor: '#007bff',
+    color: 'white',
     cursor: 'pointer',
   },
   errorBanner: {
@@ -251,50 +173,18 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     padding: '0 4px',
   },
-  form: {
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    marginBottom: '24px',
-  },
-  formTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    marginBottom: '16px',
-    marginTop: 0,
-    color: '#333',
-  },
-  formRow: {
+  actions: {
     display: 'flex',
-    gap: '16px',
-    marginBottom: '16px',
-    flexWrap: 'wrap',
+    gap: '8px',
   },
-  label: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    fontSize: '14px',
-    color: '#666',
-    flex: '1',
-    minWidth: '150px',
-  },
-  input: {
-    padding: '8px 12px',
+  actionButton: {
+    padding: '6px 12px',
+    fontSize: '12px',
     border: '1px solid #ddd',
     borderRadius: '4px',
-    fontSize: '14px',
-  },
-  submitButton: {
-    padding: '10px 20px',
-    backgroundColor: '#28a745',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '500',
+    backgroundColor: 'white',
     cursor: 'pointer',
+    transition: 'background-color 0.2s',
   },
   loading: {
     padding: '40px',

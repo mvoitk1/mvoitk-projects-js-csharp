@@ -5,6 +5,7 @@ using VenuePlatform.BLL.Tenancy;
 using VenuePlatform.Contracts.Auth;
 using VenuePlatform.Contracts.Spaces;
 using VenuePlatform.DAL.Persistence;
+using VenuePlatform.Web.Auth;
 
 namespace VenuePlatform.Web.Endpoints;
 
@@ -16,11 +17,11 @@ public static class SpaceEndpoints
     public static RouteGroupBuilder MapSpaceEndpoints(this RouteGroupBuilder group)
     {
         // GET /{companySlug}/spaces - Lists spaces for current tenant (requires auth + membership)
-        group.MapGet("/spaces", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user) =>
+        group.MapGet("/spaces", (ApplicationDbContext db, ITenantContext tenantContext, IUserContext userContext) =>
         {
-            // Extract userId from "sub" claim
-            var userId = EndpointHelpers.GetUserIdFromClaims(user);
-            if (userId == Guid.Empty)
+            // Extract userId from IUserContext
+            var userId = userContext.UserId;
+            if (userId is null)
             {
                 return Results.Unauthorized();
             }
@@ -34,7 +35,7 @@ public static class SpaceEndpoints
             // Check membership
             var isMember = db.UserCompanyMemberships
                 .AsNoTracking()
-                .Any(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+                .Any(m => m.UserId == userId.Value && m.CompanyId == tenant.CompanyId);
 
             if (!isMember)
             {
@@ -43,8 +44,9 @@ public static class SpaceEndpoints
 
             var spaces = db.Spaces
                 .AsNoTracking()
+                .Where(s => s.CompanyId == tenant.CompanyId)
                 .OrderBy(s => s.Name)
-                .Select(s => new { s.Id, s.Name, s.Capacity, s.HourlyRate, s.CompanyId })
+                .Select(s => new SpaceResponse(s.Id, s.CompanyId, s.Name, s.Capacity, s.HourlyRate, s.Notes, s.IsActive))
                 .ToList();
 
             return Results.Ok(spaces);
@@ -98,11 +100,12 @@ public static class SpaceEndpoints
                 return Results.BadRequest(new { error = "Hourly rate cannot be negative." });
             }
 
-            var space = new Space(tenant.CompanyId, request.Name.Trim(), request.Capacity, request.HourlyRate);
+            var space = new Space(tenant.CompanyId, request.Name.Trim(), request.Capacity, request.HourlyRate, request.Notes);
             db.Spaces.Add(space);
             db.SaveChanges();
 
-            return Results.Created($"/{tenant.CompanySlug}/spaces/{space.Id}", new { space.Id, space.Name, space.Capacity, space.HourlyRate });
+            var response = new SpaceResponse(space.Id, space.CompanyId, space.Name, space.Capacity, space.HourlyRate, space.Notes, space.IsActive);
+            return Results.Created($"/{tenant.CompanySlug}/spaces/{space.Id}", response);
         })
         .RequireAuthorization();
 
@@ -134,8 +137,9 @@ public static class SpaceEndpoints
 
             var space = db.Spaces
                 .AsNoTracking()
-                .Select(s => new { s.Id, s.Name, s.Capacity, s.HourlyRate, s.IsActive, s.CompanyId })
-                .FirstOrDefault(s => s.Id == id && s.CompanyId == tenant.CompanyId);
+                .Where(s => s.Id == id && s.CompanyId == tenant.CompanyId)
+                .Select(s => new SpaceResponse(s.Id, s.CompanyId, s.Name, s.Capacity, s.HourlyRate, s.Notes, s.IsActive))
+                .FirstOrDefault();
 
             if (space is null)
             {
@@ -143,6 +147,72 @@ public static class SpaceEndpoints
             }
 
             return Results.Ok(space);
+        })
+        .RequireAuthorization();
+
+        // PUT /{companySlug}/spaces/{id} - Update an existing space (requires auth + Manager/Admin/Owner)
+        group.MapPut("/spaces/{id:guid}", (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user, Guid id, UpdateSpaceRequest request) =>
+        {
+            // Extract userId from "sub" claim
+            var userId = EndpointHelpers.GetUserIdFromClaims(user);
+            if (userId == Guid.Empty)
+            {
+                return Results.Unauthorized();
+            }
+
+            var tenant = tenantContext.Current;
+            if (tenant is null)
+            {
+                return Results.NotFound();
+            }
+
+            // Query membership with role
+            var membership = db.UserCompanyMemberships
+                .AsNoTracking()
+                .FirstOrDefault(m => m.UserId == userId && m.CompanyId == tenant.CompanyId);
+
+            if (membership is null)
+            {
+                return Results.Forbid();
+            }
+
+            // Allow only: CompanyOwner, CompanyAdmin, CompanyManager
+            var allowedRoles = new[] { TenantRoles.CompanyOwner, TenantRoles.CompanyAdmin, TenantRoles.CompanyManager };
+            if (!allowedRoles.Contains(membership.Role))
+            {
+                return Results.Forbid();
+            }
+
+            // Validate request
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                return Results.BadRequest(new { error = "Name is required." });
+            }
+            if (request.Capacity <= 0)
+            {
+                return Results.BadRequest(new { error = "Capacity must be greater than 0." });
+            }
+            if (request.HourlyRate < 0)
+            {
+                return Results.BadRequest(new { error = "Hourly rate cannot be negative." });
+            }
+
+            var space = db.Spaces
+                .FirstOrDefault(s => s.Id == id && s.CompanyId == tenant.CompanyId);
+
+            if (space is null)
+            {
+                return Results.NotFound();
+            }
+
+            space.UpdateName(request.Name.Trim());
+            space.UpdateCapacity(request.Capacity);
+            space.UpdateHourlyRate(request.HourlyRate);
+            space.SetNotes(request.Notes);
+            db.SaveChanges();
+
+            var response = new SpaceResponse(space.Id, space.CompanyId, space.Name, space.Capacity, space.HourlyRate, space.Notes, space.IsActive);
+            return Results.Ok(response);
         })
         .RequireAuthorization();
 
@@ -189,13 +259,15 @@ public static class SpaceEndpoints
 
             if (!space.IsActive)
             {
-                return Results.Ok(new { id = space.Id, name = space.Name, isActive = space.IsActive });
+                var existingResponse = new SpaceResponse(space.Id, space.CompanyId, space.Name, space.Capacity, space.HourlyRate, space.Notes, space.IsActive);
+                return Results.Ok(existingResponse);
             }
 
             space.Deactivate();
             db.SaveChanges();
 
-            return Results.Ok(new { space.Id, space.Name, space.IsActive });
+            var response = new SpaceResponse(space.Id, space.CompanyId, space.Name, space.Capacity, space.HourlyRate, space.Notes, space.IsActive);
+            return Results.Ok(response);
         })
         .RequireAuthorization();
 

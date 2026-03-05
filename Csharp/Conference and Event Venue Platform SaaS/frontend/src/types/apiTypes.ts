@@ -11,17 +11,36 @@ export interface LoginResponse {
   email: string
 }
 
+export interface RegisterRequest {
+  email: string
+  password: string
+  mode: 'Owner' | 'User'
+  companyName?: string    // Required when mode === 'Owner'
+  companySlug: string     // Required for both modes
+  role?: string           // Optional, only honored internally
+}
+
+export interface RegisterResponse {
+  userId: string
+  email: string
+  companySlug: string | null
+  membershipRole: string | null
+}
+
 // ==================== Billing Types ====================
 
 export type CompanyPlan = 'Free' | 'Starter' | 'Professional' | 'Enterprise'
 
 export interface PlanUsageResponse {
   companyName: string
+  companySlug: string
   plan: CompanyPlan
   maxSpaces: number
   currentSpaces: number
   maxBookingsPerMonth: number
   currentBookingsThisMonth: number
+  monthStartUtc: string
+  monthEndUtc: string
 }
 
 // ==================== API Error Types ====================
@@ -108,21 +127,20 @@ export interface Space {
   id: string
   name: string
   capacity: number
-  hourlyRate: number
+  notes: string | null
   isActive: boolean
-  companyId: string
 }
 
 export interface CreateSpaceRequest {
   name: string
   capacity: number
-  hourlyRate: number
+  notes?: string
 }
 
 export interface UpdateSpaceRequest {
   name: string
   capacity: number
-  hourlyRate: number
+  notes?: string
 }
 
 // ==================== Client Types ====================
@@ -210,4 +228,110 @@ export interface BookingConflictResponse {
   error: string
   conflictingBookingIds: string[]
   conflictingSpaceIds: string[]
+}
+
+// ==================== Invoice Types ====================
+
+export type InvoiceStatus = 'Draft' | 'Issued' | 'Void' | 'Sent' | 'Paid'
+
+export interface InvoiceItem {
+  id: string
+  description: string
+  quantity: number
+  unitPrice: number
+  lineTotal: number
+}
+
+export interface Invoice {
+  id: string
+  bookingId: string
+  createdUtc: string
+  status: InvoiceStatus
+  currency: string
+  subtotalAmount: number
+  invoiceNumber: number
+  invoiceNumberText: string
+  issuedUtc?: string
+  voidedUtc?: string
+  sentUtc?: string
+  amountPaid: number
+  amountDue: number
+  isPaid: boolean
+  paidUtc?: string
+}
+
+export interface InvoiceDetail extends Invoice {
+  createdByUserId: string
+  items: InvoiceItem[]
+  issuedByUserId?: string
+  voidedByUserId?: string
+  sentByUserId?: string
+  paidByUserId?: string
+}
+
+export interface Payment {
+  id: string
+  invoiceId: string
+  amount: number
+  paidUtc: string
+  method: string
+  reference?: string
+  createdByUserId: string
+  createdUtc: string
+}
+
+export interface CreatePaymentRequest {
+  amount: number
+  paidUtc: string
+  method: string
+  reference?: string
+}
+
+// ==================== Report Types ====================
+
+export interface DailyRevenueItem {
+  dateUtc: string
+  totalPayments: number
+  paymentCount: number
+}
+
+export interface RevenueSummaryResponse {
+  startUtc: string
+  endUtc: string
+  totalPayments: number
+  paymentCount: number
+}
+
+export interface DailyRevenueResponse {
+  startUtc: string
+  endUtc: string
+  days: DailyRevenueItem[]
+}
+
+export interface SpaceOccupancyItem {
+  spaceId: string
+  spaceName: string
+  bookingCount: number
+  totalBookedMinutes: number
+}
+
+export interface SpaceOccupancyResponse {
+  startUtc: string
+  endUtc: string
+  totalBookings: number
+  spaces: SpaceOccupancyItem[]
+}
+
+export interface DailySpaceOccupancyItem {
+  dateUtc: string
+  spaceId: string
+  spaceName: string
+  bookingCount: number
+  totalBookedMinutes: number
+}
+
+export interface DailySpaceOccupancyResponse {
+  startUtc: string
+  endUtc: string
+  items: DailySpaceOccupancyItem[]
 }

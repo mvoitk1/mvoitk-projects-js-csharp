@@ -29,4 +29,21 @@ public sealed class Client : ITenantScoped
     {
         Email = email;
     }
+
+    public void UpdateName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+        Name = name.Trim();
+    }
+
+    public void SetNotes(string? notes)
+    {
+        Notes = notes;
+    }
+
+    public void UpdateEmail(string? email)
+    {
+        Email = email;
+    }
 }

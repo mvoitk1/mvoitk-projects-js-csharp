@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { getClients } from '../api/clientsApi'
@@ -6,6 +7,7 @@ import { useCompanySlug } from '../hooks/useCompanySlug'
 
 export function ClientsPage() {
   const companySlug = useCompanySlug()
+  const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
 
   // Query for clients list
@@ -24,6 +26,12 @@ export function ClientsPage() {
       <div style={styles.container}>
         <div style={styles.header}>
           <h1 style={styles.title}>Clients</h1>
+          <button
+            onClick={() => navigate(`/${companySlug}/clients/new`)}
+            style={styles.newButton}
+          >
+            + New Client
+          </button>
         </div>
 
         {error && (
@@ -43,12 +51,13 @@ export function ClientsPage() {
                   <th style={styles.th}>Name</th>
                   <th style={styles.th}>Email</th>
                   <th style={styles.th}>Notes</th>
+                  <th style={styles.th}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {clients?.length === 0 ? (
                   <tr>
-                    <td colSpan={3} style={styles.emptyCell}>
+                    <td colSpan={4} style={styles.emptyCell}>
                       No clients yet.
                     </td>
                   </tr>
@@ -67,6 +76,16 @@ export function ClientsPage() {
                       </td>
                       <td style={styles.td}>
                         {client.notes || <span style={styles.emptyValue}>—</span>}
+                      </td>
+                      <td style={styles.td}>
+                        <div style={styles.actions}>
+                          <button
+                            onClick={() => navigate(`/${companySlug}/clients/${client.id}`)}
+                            style={styles.actionButton}
+                          >
+                            View
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -97,6 +116,16 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 'bold',
     color: '#333',
     margin: 0,
+  },
+  newButton: {
+    padding: '10px 20px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    cursor: 'pointer',
   },
   errorBanner: {
     padding: '12px 16px',
@@ -160,5 +189,18 @@ const styles: Record<string, React.CSSProperties> = {
   emptyValue: {
     color: '#999',
     fontStyle: 'italic',
+  },
+  actions: {
+    display: 'flex',
+    gap: '8px',
+  },
+  actionButton: {
+    padding: '6px 12px',
+    fontSize: '12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
   },
 }

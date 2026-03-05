@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
-import { getBookingDetails, confirmBooking, cancelBooking } from '../api/bookingsApi'
+import {
+  getBookingDetails,
+  confirmBooking,
+  cancelBooking,
+  createInvoiceFromBooking,
+} from '../api/bookingsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
 
 export function BookingDetailsPage() {
@@ -49,6 +54,18 @@ export function BookingDetailsPage() {
     },
   })
 
+  // Create invoice from booking mutation
+  const createInvoiceMutation = useMutation({
+    mutationFn: () => createInvoiceFromBooking(companySlug, id!),
+    onSuccess: (invoiceId) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      navigate(`/${companySlug}/invoices/${invoiceId}`)
+    },
+    onError: (err: Error) => {
+      setError(err.message || 'Failed to create invoice')
+    },
+  })
+
   // Show API error
   if (isError && !error) {
     setError('Failed to load booking details. Please try again.')
@@ -72,6 +89,12 @@ export function BookingDetailsPage() {
   const handleCancelDialogClose = () => {
     setShowCancelDialog(false)
     setCancelReason('')
+  }
+
+  const handleCreateInvoice = () => {
+    if (window.confirm('Are you sure you want to create an invoice from this booking?')) {
+      createInvoiceMutation.mutate()
+    }
   }
 
   const formatDateTime = (utcString: string) => {
@@ -161,6 +184,15 @@ export function BookingDetailsPage() {
                   {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Booking'}
                 </button>
               </>
+            )}
+            {!booking.isCancelled && booking.status === 'Confirmed' && (
+              <button
+                onClick={handleCreateInvoice}
+                style={{ ...styles.actionButton, ...styles.invoiceButton }}
+                disabled={createInvoiceMutation.isPending}
+              >
+                {createInvoiceMutation.isPending ? 'Creating Invoice...' : 'Create Invoice'}
+              </button>
             )}
           </div>
         </div>
@@ -315,6 +347,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   cancelButton: {
     backgroundColor: '#dc3545',
+    color: 'white',
+  },
+  invoiceButton: {
+    backgroundColor: '#007bff',
     color: 'white',
   },
   backButton: {

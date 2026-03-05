@@ -1,19 +1,17 @@
 import { api } from './apiClient'
-import { Space, CreateSpaceRequest } from '../types/apiTypes'
+import type { Space, CreateSpaceRequest, UpdateSpaceRequest } from '../types/apiTypes'
 
 export async function getSpaces(companySlug: string): Promise<Space[]> {
   const response = await api.get<Array<{
     id: string
     name: string
     capacity: number
-    hourlyRate: number
-    companyId: string
+    notes: string | null
+    isActive: boolean
   }>>(`/${companySlug}/spaces`)
 
-  // Map response to include isActive (backend list doesn't include it, default to true)
   return response.map(s => ({
     ...s,
-    isActive: true,
   }))
 }
 
@@ -22,9 +20,8 @@ export async function getSpace(companySlug: string, id: string): Promise<Space> 
     id: string
     name: string
     capacity: number
-    hourlyRate: number
+    notes: string | null
     isActive: boolean
-    companyId: string
   }>(`/${companySlug}/spaces/${id}`)
 
   return response
@@ -38,14 +35,27 @@ export async function createSpace(
     id: string
     name: string
     capacity: number
-    hourlyRate: number
+    notes: string | null
+    isActive: boolean
   }>(`/${companySlug}/spaces`, payload)
 
-  return {
-    ...response,
-    isActive: true,
-    companyId: '', // Will be filled in by caller or refetch
-  }
+  return response
+}
+
+export async function updateSpace(
+  companySlug: string,
+  id: string,
+  payload: UpdateSpaceRequest
+): Promise<Space> {
+  const response = await api.put<{
+    id: string
+    name: string
+    capacity: number
+    notes: string | null
+    isActive: boolean
+  }>(`/${companySlug}/spaces/${id}`, payload)
+
+  return response
 }
 
 export async function deactivateSpace(

@@ -10,11 +10,13 @@ namespace VenuePlatform.Web.Endpoints;
 internal static class EndpointHelpers
 {
     /// <summary>
-    /// Extracts the user ID from the "sub" claim. Returns Guid.Empty if invalid/missing.
+    /// Extracts the user ID from the NameIdentifier claim (mapped from JWT "sub" by ASP.NET Core).
+    /// Returns Guid.Empty if invalid/missing.
     /// </summary>
     internal static Guid GetUserIdFromClaims(ClaimsPrincipal user)
     {
-        var userIdClaim = user.FindFirst("sub")?.Value;
+        // ASP.NET Core JWT middleware maps JWT "sub" claim to ClaimTypes.NameIdentifier
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {
             return Guid.Empty;

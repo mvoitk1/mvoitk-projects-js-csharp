@@ -17,7 +17,7 @@ public static class BillingEndpoints
         // GET /{companySlug}/billing/plan - Get plan usage and limits (requires auth + any membership)
         group.MapGet("/billing/plan", async (ApplicationDbContext db, ITenantContext tenantContext, ClaimsPrincipal user) =>
         {
-            // Extract userId from "sub" claim
+            // Extract userId from claims
             var userId = EndpointHelpers.GetUserIdFromClaims(user);
             if (userId == Guid.Empty)
             {

@@ -59,8 +59,10 @@ public class TenantResolutionMiddleware
         var pathValue = path.Value?.ToLowerInvariant() ?? string.Empty;
 
         return pathValue == "/health"
-            || pathValue.StartsWith("/swagger")
-            || pathValue == "/dev"
-            || pathValue.StartsWith("/dev/");
+               || pathValue.StartsWith("/swagger")
+               || pathValue == "/dev"
+               || pathValue.StartsWith("/dev/")
+               || pathValue == "/auth"
+               || pathValue.StartsWith("/auth/");
     }
 }

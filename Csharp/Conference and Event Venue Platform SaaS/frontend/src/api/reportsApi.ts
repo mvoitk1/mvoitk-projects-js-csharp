@@ -1,3 +1,4 @@
+// Reports API - Functions for analytics and reporting
 import { api } from './apiClient'
 import type {
   RevenueSummaryResponse,
@@ -6,6 +7,7 @@ import type {
   DailySpaceOccupancyResponse,
 } from '../types/apiTypes'
 
+// GET /{companySlug}/reports/revenue - Get total revenue for date range
 export async function getRevenueReport(
   companySlug: string,
   fromUtc: string,
@@ -16,6 +18,7 @@ export async function getRevenueReport(
   )
 }
 
+// GET /{companySlug}/reports/revenue/daily - Get daily revenue breakdown
 export async function getRevenueDaily(
   companySlug: string,
   fromUtc: string,
@@ -26,6 +29,7 @@ export async function getRevenueDaily(
   )
 }
 
+// GET /{companySlug}/reports/occupancy - Get space occupancy summary
 export async function getOccupancyReport(
   companySlug: string,
   fromUtc: string,
@@ -36,6 +40,7 @@ export async function getOccupancyReport(
   )
 }
 
+// GET /{companySlug}/reports/occupancy/daily - Get daily occupancy breakdown
 export async function getOccupancyDaily(
   companySlug: string,
   fromUtc: string,

@@ -1,23 +1,26 @@
+// Payment - Records a payment made against an invoice (manual recording, not integrated with payment gateway)
 namespace VenuePlatform.BLL.Domain.Billing;
 
 /// <summary>
-/// Payment entity - records a payment made against an invoice (manual record only).
+/// Payment record - tracks when someone pays an invoice.
+/// This is manual recording (e.g., staff marks "cash received" or "bank transfer received").
 /// </summary>
 public sealed class Payment
 {
-    public Guid Id { get; private set; }
-    public Guid CompanyId { get; private set; }
-    public Guid InvoiceId { get; private set; }
-    public decimal Amount { get; private set; }
-    public DateTime PaidUtc { get; private set; }
-    public string Method { get; private set; } = null!;
-    public string? Reference { get; private set; }
-    public Guid CreatedByUserId { get; private set; }
-    public DateTime CreatedUtc { get; private set; }
+    public Guid Id { get; private set; }              // Unique ID
+    public Guid CompanyId { get; private set; }       // Company owning this
+    public Guid InvoiceId { get; private set; }       // Invoice being paid
+    public decimal Amount { get; private set; }       // Payment amount
+    public DateTime PaidUtc { get; private set; }     // When payment was made
+    public string Method { get; private set; } = null!;  // Payment method (Cash, Card, Bank Transfer)
+    public string? Reference { get; private set; }     // Payment reference (transaction ID, receipt #)
+    public Guid CreatedByUserId { get; private set; } // Who recorded the payment
+    public DateTime CreatedUtc { get; private set; }  // When record was created
 
-    // EF Core constructor
+    // Required for Entity Framework Core
     private Payment() { }
 
+    // Constructor with validation
     public Payment(
         Guid id,
         Guid companyId,
@@ -29,6 +32,7 @@ public sealed class Payment
         Guid createdByUserId,
         DateTime createdUtc)
     {
+        // Validate inputs
         if (id == Guid.Empty) throw new ArgumentException("Id cannot be empty", nameof(id));
         if (companyId == Guid.Empty) throw new ArgumentException("CompanyId cannot be empty", nameof(companyId));
         if (invoiceId == Guid.Empty) throw new ArgumentException("InvoiceId cannot be empty", nameof(invoiceId));
@@ -47,6 +51,7 @@ public sealed class Payment
         PaidUtc = paidUtc;
         Method = method;
 
+        // Trim and truncate reference if provided
         if (!string.IsNullOrWhiteSpace(reference))
         {
             reference = reference.Trim();

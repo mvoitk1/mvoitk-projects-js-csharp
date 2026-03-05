@@ -1,6 +1,8 @@
+// Bookings API - Functions to manage bookings (reservations of spaces)
 import { api } from './apiClient'
 import type { Booking, BookingDetails, CreateBookingRequest } from '../types/apiTypes'
 
+// GET /{companySlug}/bookings - Fetch all bookings for a company
 export async function getBookings(companySlug: string): Promise<Booking[]> {
   const encodedCompanySlug = encodeURIComponent(companySlug)
   const response = await api.get<Array<{
@@ -28,6 +30,7 @@ export async function getBookings(companySlug: string): Promise<Booking[]> {
   }))
 }
 
+// GET /{companySlug}/bookings/{id}/details - Fetch single booking with full details
 export async function getBookingDetails(companySlug: string, id: string): Promise<BookingDetails> {
   const encodedCompanySlug = encodeURIComponent(companySlug)
   const response = await api.get<{
@@ -56,6 +59,7 @@ export async function getBookingDetails(companySlug: string, id: string): Promis
   }
 }
 
+// POST /{companySlug}/bookings/with-spaces - Create new booking with spaces
 export async function createBookingWithSpaces(
   companySlug: string,
   payload: CreateBookingRequest
@@ -83,17 +87,20 @@ export async function createBookingWithSpaces(
   return response
 }
 
+// POST /{companySlug}/bookings/{id}/confirm - Confirm a pending booking
 export async function confirmBooking(companySlug: string, id: string): Promise<void> {
   const encodedCompanySlug = encodeURIComponent(companySlug)
   await api.post<void>(`/${encodedCompanySlug}/bookings/${id}/confirm`, {})
 }
 
+// DELETE /{companySlug}/bookings/{id} - Cancel a booking
 export async function cancelBooking(companySlug: string, id: string, reason?: string): Promise<void> {
   const encodedCompanySlug = encodeURIComponent(companySlug)
   const queryParams = reason ? `?reason=${encodeURIComponent(reason)}` : ''
   await api.delete<void>(`/${encodedCompanySlug}/bookings/${id}${queryParams}`)
 }
 
+// POST /{companySlug}/bookings/{bookingId}/invoice - Generate invoice from booking
 export async function createInvoiceFromBooking(
   companySlug: string,
   bookingId: string

@@ -14,9 +14,17 @@ export function CreateSpacePage() {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateSpaceRequest) => createSpace(companySlug, data),
-    onSuccess: (space) => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['spaces', companySlug] })
-      navigate(`/${companySlug}/spaces/${space.id}`)
+      const createdId = response?.id?.trim()
+      if (createdId) {
+        navigate(`/${companySlug}/spaces/${createdId}`)
+        return
+      }
+
+      navigate(`/${companySlug}/spaces`, {
+        state: { notice: 'Space created.' },
+      })
     },
     onError: (err: Error) => {
       setError(err.message || 'Failed to create space. Please try again.')

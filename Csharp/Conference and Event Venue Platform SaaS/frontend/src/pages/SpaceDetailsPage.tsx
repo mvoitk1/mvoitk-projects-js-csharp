@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getSpace, deactivateSpace } from '../api/spacesApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
+import { ApiError } from '../api/apiClient'
 
 export function SpaceDetailsPage() {
   const companySlug = useCompanySlug()
@@ -42,6 +43,10 @@ export function SpaceDetailsPage() {
   }
 
   const getErrorMessage = () => {
+    if (error instanceof ApiError && error.statusCode === 404) {
+      return 'Space not found'
+    }
+
     if (error instanceof Error) {
       return error.message
     }
@@ -59,10 +64,12 @@ export function SpaceDetailsPage() {
   }
 
   if (isError || !space) {
+    const isNotFound = error instanceof ApiError && error.statusCode === 404
+
     return (
       
         <div style={styles.container}>
-          <div style={styles.errorBanner}>{isError ? getErrorMessage() : 'Space not found'}</div>
+          <div style={styles.errorBanner}>{isNotFound || !space ? 'Space not found' : getErrorMessage()}</div>
           <button
             onClick={() => navigate(`/${companySlug}/spaces`)}
             style={styles.backButton}

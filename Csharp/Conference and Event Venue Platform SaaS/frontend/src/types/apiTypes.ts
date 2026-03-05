@@ -77,6 +77,22 @@ export interface PublicSpaceDto {
   notes: string | null
 }
 
+// ==================== Customer Booking Request Types ====================
+
+export interface CreateBookingRequestRequest {
+  contactName: string
+  contactEmail: string
+  contactPhone?: string
+  notes?: string
+  startUtc: string
+  endUtc: string
+  spaceIds: string[]
+}
+
+export interface CreateBookingRequestResponse {
+  bookingId: string
+}
+
 // ==================== Billing Types ====================
 
 export type CompanyPlan = 'Free' | 'Starter' | 'Professional' | 'Enterprise'
@@ -169,6 +185,10 @@ export interface Company {
   name: string
   slug: string
   plan: CompanyPlan
+}
+
+export interface CreateEntityResponse {
+  id: string
 }
 
 // ==================== Space Types ====================

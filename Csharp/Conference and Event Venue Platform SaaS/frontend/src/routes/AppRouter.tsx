@@ -105,7 +105,7 @@ export function AppRouter() {
           }
         />
         <Route
-          path="/customer/venues/:companySlug"
+          path="/customer/venues/:venueSlug"
           element={
             <ProtectedRoute>
               <AppLayout mode="customer">

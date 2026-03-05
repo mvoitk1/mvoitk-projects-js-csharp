@@ -55,18 +55,31 @@ export function CustomerVenuesPage() {
 
           {filteredCompanies.length === 0 ? (
             <div style={styles.emptyState}>
-              <p style={styles.emptyText}>
-                {searchQuery
-                  ? 'No venues match your search.'
-                  : 'No venues available yet.'}
-              </p>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  style={styles.clearButton}
-                >
-                  Clear Search
-                </button>
+              {searchQuery ? (
+                <>
+                  <p style={styles.emptyText}>
+                    No matches found for &quot;{searchQuery}&quot;
+                  </p>
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={styles.clearButton}
+                  >
+                    Clear Search
+                  </button>
+                </>
+              ) : companies.length === 0 ? (
+                <>
+                  <p style={styles.emptyText}>
+                    No venues yet. Try again later.
+                  </p>
+                  <p style={styles.emptySubtext}>
+                    Venues will appear here when venues register on the platform.
+                  </p>
+                </>
+              ) : (
+                <p style={styles.emptyText}>
+                  No venues match your search.
+                </p>
               )}
             </div>
           ) : (
@@ -155,6 +168,11 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '16px',
     color: '#666',
     margin: '0 0 16px 0',
+  },
+  emptySubtext: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    margin: 0,
   },
   clearButton: {
     padding: '8px 16px',

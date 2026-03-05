@@ -79,8 +79,20 @@ export function InvoicesPage() {
               <tbody>
                 {invoices?.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={styles.emptyCell}>
-                      No invoices yet.
+                    <td colSpan={6}>
+                      <div style={styles.emptyState}>
+                        <h2 style={styles.emptyTitle}>No invoices yet</h2>
+                        <p style={styles.emptyDescription}>
+                          Invoices are generated from confirmed bookings.
+                          Create a booking and confirm it to generate an invoice.
+                        </p>
+                        <button
+                          onClick={() => navigate(`/${companySlug}/bookings`)}
+                          style={styles.emptyCtaButton}
+                        >
+                          Go to Bookings
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -180,6 +192,31 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '40px',
     textAlign: 'center',
     color: '#666',
+  },
+  emptyState: {
+    padding: '60px 20px',
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    fontSize: '24px',
+    fontWeight: '600',
+    color: '#333',
+    margin: '0 0 12px 0',
+  },
+  emptyDescription: {
+    fontSize: '16px',
+    color: '#666',
+    margin: '0 0 24px 0',
+  },
+  emptyCtaButton: {
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    cursor: 'pointer',
   },
   statusBadge: {
     display: 'inline-block',

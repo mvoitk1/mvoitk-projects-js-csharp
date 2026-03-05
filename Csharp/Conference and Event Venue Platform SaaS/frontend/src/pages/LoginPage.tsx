@@ -275,19 +275,27 @@ export function LoginPage() {
         </p>
       </div>
 
-      {/* Dev-only bootstrap link */}
+      {/* Dev-only footer */}
       {isDev && (
-        <div style={{ marginTop: '16px', textAlign: 'center' }}>
-          <Link
-            to="/dev/bootstrap"
-            style={{
-              fontSize: '12px',
-              color: '#666',
-              textDecoration: 'underline'
-            }}
-          >
-            Dev bootstrap
-          </Link>
+        <div style={{
+          marginTop: '32px',
+          paddingTop: '16px',
+          borderTop: '1px solid #e5e7eb',
+          textAlign: 'center'
+        }}>
+          <span style={{ fontSize: '11px', color: '#9ca3af' }}>
+            Dev tools:{' '}
+            <Link
+              to="/dev/bootstrap"
+              style={{
+                fontSize: '11px',
+                color: '#6b7280',
+                textDecoration: 'underline'
+              }}
+            >
+              Bootstrap
+            </Link>
+          </span>
         </div>
       )}
     </div>

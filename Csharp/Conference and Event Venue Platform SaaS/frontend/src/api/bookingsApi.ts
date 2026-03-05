@@ -2,6 +2,7 @@ import { api } from './apiClient'
 import type { Booking, BookingDetails, CreateBookingRequest } from '../types/apiTypes'
 
 export async function getBookings(companySlug: string): Promise<Booking[]> {
+  const encodedCompanySlug = encodeURIComponent(companySlug)
   const response = await api.get<Array<{
     id: string
     clientId: string
@@ -19,7 +20,7 @@ export async function getBookings(companySlug: string): Promise<Booking[]> {
     createdByUserId?: string
     confirmedByUserId?: string
     cancelledByUserId?: string
-  }>>(`/${companySlug}/bookings`)
+  }>>(`/${encodedCompanySlug}/bookings`)
 
   return response.map(b => ({
     ...b,
@@ -28,6 +29,7 @@ export async function getBookings(companySlug: string): Promise<Booking[]> {
 }
 
 export async function getBookingDetails(companySlug: string, id: string): Promise<BookingDetails> {
+  const encodedCompanySlug = encodeURIComponent(companySlug)
   const response = await api.get<{
     id: string
     clientId: string
@@ -46,7 +48,7 @@ export async function getBookingDetails(companySlug: string, id: string): Promis
     createdByUserId?: string
     confirmedByUserId?: string
     cancelledByUserId?: string
-  }>(`/${companySlug}/bookings/${id}/details`)
+  }>(`/${encodedCompanySlug}/bookings/${id}/details`)
 
   return {
     ...response,
@@ -58,6 +60,7 @@ export async function createBookingWithSpaces(
   companySlug: string,
   payload: CreateBookingRequest
 ): Promise<Booking> {
+  const encodedCompanySlug = encodeURIComponent(companySlug)
   const response = await api.post<{
     id: string
     clientId: string
@@ -75,26 +78,29 @@ export async function createBookingWithSpaces(
     createdByUserId?: string
     confirmedByUserId?: string
     cancelledByUserId?: string
-  }>(`/${companySlug}/bookings/with-spaces`, payload)
+  }>(`/${encodedCompanySlug}/bookings/with-spaces`, payload)
 
   return response
 }
 
 export async function confirmBooking(companySlug: string, id: string): Promise<void> {
-  await api.post<void>(`/${companySlug}/bookings/${id}/confirm`, {})
+  const encodedCompanySlug = encodeURIComponent(companySlug)
+  await api.post<void>(`/${encodedCompanySlug}/bookings/${id}/confirm`, {})
 }
 
 export async function cancelBooking(companySlug: string, id: string, reason?: string): Promise<void> {
+  const encodedCompanySlug = encodeURIComponent(companySlug)
   const queryParams = reason ? `?reason=${encodeURIComponent(reason)}` : ''
-  await api.delete<void>(`/${companySlug}/bookings/${id}${queryParams}`)
+  await api.delete<void>(`/${encodedCompanySlug}/bookings/${id}${queryParams}`)
 }
 
 export async function createInvoiceFromBooking(
   companySlug: string,
   bookingId: string
 ): Promise<string> {
+  const encodedCompanySlug = encodeURIComponent(companySlug)
   const response = await api.post<{ invoiceId: string }>(
-    `/${companySlug}/bookings/${bookingId}/invoice`,
+    `/${encodedCompanySlug}/bookings/${bookingId}/invoice`,
     {}
   )
   return response.invoiceId

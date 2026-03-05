@@ -25,6 +25,7 @@ const API_BASE_URL = normalizeBaseUrl(rawBaseUrl)
  * Guards against invalid URL construction that causes Safari errors.
  */
 function buildApiUrl(baseUrl: string, endpoint: string): string {
+  let finalUrl = ''
   try {
     const trimmedEndpoint = endpoint.trim()
     
@@ -33,17 +34,12 @@ function buildApiUrl(baseUrl: string, endpoint: string): string {
       ? trimmedEndpoint 
       : `/${trimmedEndpoint}`
     
-    // In dev mode, log the URL construction for debugging
-    if (import.meta.env.DEV) {
-      console.log('[apiClient] Building URL:', { baseUrl, endpoint, normalizedPath })
-    }
-    
     // Validate base URL looks like a valid URL
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
       throw new Error(`Invalid base URL scheme: ${baseUrl}`)
     }
     
-    const finalUrl = `${baseUrl}${normalizedPath}`
+    finalUrl = `${baseUrl}${normalizedPath}`
     
     // Try to construct URL to catch any invalid patterns (Safari will throw here)
     // This validates the URL; void operator prevents "unused variable" warning
@@ -52,11 +48,14 @@ function buildApiUrl(baseUrl: string, endpoint: string): string {
     return finalUrl
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown URL error'
-    console.error('[apiClient] URL construction failed:', {
-      baseUrl,
-      endpoint,
-      error: errorMessage,
-    })
+    if (import.meta.env.DEV) {
+      console.error('[apiClient] URL construction failed:', {
+        baseUrl,
+        endpointPath: endpoint,
+        finalUrl,
+        error: errorMessage,
+      })
+    }
     throw new ApiError(
       'config_error',
       `Invalid API URL configuration: ${errorMessage}`,

@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { TenantShell } from './TenantShell'
 import { CustomerShell } from './CustomerShell'
+import { useAuth } from '../auth/useAuth'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -18,6 +20,7 @@ interface AppLayoutProps {
 export function AppLayout({ children, mode = 'auto' }: AppLayoutProps) {
   const { companySlug } = useParams<{ companySlug: string }>()
   const location = useLocation()
+  const { companySlug: authCompanySlug, setCompanySlug } = useAuth()
   
   // Determine mode automatically if not explicitly provided
   const effectiveMode = mode === 'auto' 
@@ -26,6 +29,12 @@ export function AppLayout({ children, mode = 'auto' }: AppLayoutProps) {
   
   // Check if we're on a route that should use customer shell
   const isCustomerRoute = ['/customer', '/select-company', '/become-a-venue', '/session'].includes(location.pathname)
+
+  useEffect(() => {
+    if (companySlug && companySlug !== authCompanySlug) {
+      setCompanySlug(companySlug)
+    }
+  }, [authCompanySlug, companySlug, setCompanySlug])
   
   // If explicitly on a customer route, use customer shell even if somehow we have a companySlug
   if (isCustomerRoute || effectiveMode === 'customer') {

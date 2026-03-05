@@ -4,6 +4,7 @@ using VenuePlatform.BLL.Domain.Clients;
 using VenuePlatform.BLL.Tenancy;
 using VenuePlatform.Contracts.Auth;
 using VenuePlatform.Contracts.Clients;
+using VenuePlatform.Contracts.Common;
 using VenuePlatform.DAL.Persistence;
 using VenuePlatform.Web.Auth;
 
@@ -53,7 +54,7 @@ public static class ClientEndpoints
             db.Clients.Add(client);
             db.SaveChanges();
 
-            return Results.Created($"/{tenant.CompanySlug}/clients/{client.Id}", new { id = client.Id });
+            return Results.Created($"/{tenant.CompanySlug}/clients/{client.Id}", new CreateEntityResponse(client.Id));
         })
         .RequireAuthorization();
 
@@ -179,8 +180,7 @@ public static class ClientEndpoints
             db.Clients.Add(client);
             db.SaveChanges();
 
-            var response = new ClientResponse(client.Id, client.CompanyId, client.Name, client.Notes, client.Email, client.CreatedUtc);
-            return Results.Created($"/{tenant.CompanySlug}/clients/{client.Id}", response);
+            return Results.Created($"/{tenant.CompanySlug}/clients/{client.Id}", new CreateEntityResponse(client.Id));
         })
         .RequireAuthorization();
 

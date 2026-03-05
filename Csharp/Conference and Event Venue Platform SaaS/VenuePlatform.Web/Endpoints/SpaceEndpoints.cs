@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using VenuePlatform.BLL.Domain.Spaces;
 using VenuePlatform.BLL.Tenancy;
 using VenuePlatform.Contracts.Auth;
+using VenuePlatform.Contracts.Common;
 using VenuePlatform.Contracts.Spaces;
 using VenuePlatform.DAL.Persistence;
 using VenuePlatform.Web.Auth;
@@ -104,8 +105,7 @@ public static class SpaceEndpoints
             db.Spaces.Add(space);
             db.SaveChanges();
 
-            var response = new SpaceResponse(space.Id, space.CompanyId, space.Name, space.Capacity, space.HourlyRate, space.Notes, space.IsActive);
-            return Results.Created($"/{tenant.CompanySlug}/spaces/{space.Id}", response);
+            return Results.Created($"/{tenant.CompanySlug}/spaces/{space.Id}", new CreateEntityResponse(space.Id));
         })
         .RequireAuthorization();
 

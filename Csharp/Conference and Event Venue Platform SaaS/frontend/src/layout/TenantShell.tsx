@@ -58,12 +58,15 @@ export function TenantShell({ companySlug, children }: TenantShellProps) {
             >
               Customer View
             </button>
-            <button 
+          <div style={styles.switchContainer}>
+            <button
               onClick={handleSwitchCompany}
               style={styles.switchButton}
             >
               Switch Company
             </button>
+            <span style={styles.switchLabel}>Choose a different workspace</span>
+          </div>
             <button 
               onClick={handleLogout}
               style={styles.logoutButton}
@@ -146,6 +149,16 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
+  },
+  switchContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '2px',
+  },
+  switchLabel: {
+    fontSize: '10px',
+    color: '#6b7280',
   },
   customerViewButton: {
     padding: '8px 16px',

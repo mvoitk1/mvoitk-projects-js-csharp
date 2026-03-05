@@ -140,8 +140,19 @@ export function BookingsPage() {
               <tbody>
                 {bookings?.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={styles.emptyCell}>
-                      No bookings yet.
+                    <td colSpan={7}>
+                      <div style={styles.emptyState}>
+                        <h2 style={styles.emptyTitle}>No bookings yet</h2>
+                        <p style={styles.emptyDescription}>
+                          Create your first booking to schedule an event.
+                        </p>
+                        <button
+                          onClick={() => navigate(`/${companySlug}/bookings/new`)}
+                          style={styles.emptyCtaButton}
+                        >
+                          Create Booking
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -307,6 +318,31 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '40px',
     textAlign: 'center',
     color: '#666',
+  },
+  emptyState: {
+    padding: '60px 20px',
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    fontSize: '24px',
+    fontWeight: '600',
+    color: '#333',
+    margin: '0 0 12px 0',
+  },
+  emptyDescription: {
+    fontSize: '16px',
+    color: '#666',
+    margin: '0 0 24px 0',
+  },
+  emptyCtaButton: {
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    cursor: 'pointer',
   },
   statusBadge: {
     display: 'inline-block',

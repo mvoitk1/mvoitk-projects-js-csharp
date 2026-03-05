@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { getClient, deleteClient } from '../api/clientsApi'
 import { useCompanySlug } from '../hooks/useCompanySlug'
+import { ApiError } from '../api/apiClient'
 
 export function ClientDetailsPage() {
   const companySlug = useCompanySlug()
@@ -43,6 +44,10 @@ export function ClientDetailsPage() {
   }
 
   const getErrorMessage = () => {
+    if (error instanceof ApiError && error.statusCode === 404) {
+      return 'Client not found'
+    }
+
     if (error instanceof Error) {
       return error.message
     }
@@ -60,10 +65,12 @@ export function ClientDetailsPage() {
   }
 
   if (isError || !client) {
+    const isNotFound = error instanceof ApiError && error.statusCode === 404
+
     return (
       
         <div style={styles.container}>
-          <div style={styles.errorBanner}>{isError ? getErrorMessage() : 'Client not found'}</div>
+          <div style={styles.errorBanner}>{isNotFound || !client ? 'Client not found' : getErrorMessage()}</div>
           <button
             onClick={() => navigate(`/${companySlug}/clients`)}
             style={styles.backButton}

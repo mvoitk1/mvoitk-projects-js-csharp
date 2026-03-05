@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getSpaces, deactivateSpace } from '../api/spacesApi'
 import { ApiError } from '../types/apiTypes'
@@ -8,8 +8,16 @@ import { useCompanySlug } from '../hooks/useCompanySlug'
 export function SpacesPage() {
   const companySlug = useCompanySlug()
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
+  const notice =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'notice' in location.state &&
+    typeof location.state.notice === 'string'
+      ? location.state.notice
+      : null
 
   // Query for spaces list
   const { data: spaces, isLoading } = useQuery({
@@ -59,6 +67,12 @@ export function SpacesPage() {
           </div>
         )}
 
+        {notice && (
+          <div style={styles.successBanner}>
+            {notice}
+          </div>
+        )}
+
         {isLoading ? (
           <div style={styles.loading}>Loading spaces...</div>
         ) : (
@@ -75,8 +89,19 @@ export function SpacesPage() {
               <tbody>
                 {spaces?.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={styles.emptyCell}>
-                      No spaces yet. Create your first space above.
+                    <td colSpan={4}>
+                      <div style={styles.emptyState}>
+                        <h2 style={styles.emptyTitle}>No spaces yet</h2>
+                        <p style={styles.emptyDescription}>
+                          Create your first space so customers can book rooms at your venue.
+                        </p>
+                        <button
+                          onClick={() => navigate(`/${companySlug}/spaces/new`)}
+                          style={styles.emptyCtaButton}
+                        >
+                          Create Space
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -164,6 +189,13 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  successBanner: {
+    padding: '12px 16px',
+    backgroundColor: '#d4edda',
+    color: '#155724',
+    borderRadius: '4px',
+    marginBottom: '16px',
+  },
   closeError: {
     background: 'none',
     border: 'none',
@@ -221,6 +253,31 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '40px',
     textAlign: 'center',
     color: '#666',
+  },
+  emptyState: {
+    padding: '60px 20px',
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    fontSize: '24px',
+    fontWeight: '600',
+    color: '#333',
+    margin: '0 0 12px 0',
+  },
+  emptyDescription: {
+    fontSize: '16px',
+    color: '#666',
+    margin: '0 0 24px 0',
+  },
+  emptyCtaButton: {
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: 'none',
+    borderRadius: '4px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    cursor: 'pointer',
   },
   activeBadge: {
     display: 'inline-block',

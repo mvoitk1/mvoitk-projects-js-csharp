@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { useEffect, useState } from 'react'
+import { getMe } from '../api/authApi'
+import { MeResponse } from '../types/apiTypes'
 
 interface CustomerShellProps {
   children: React.ReactNode
@@ -7,19 +10,39 @@ interface CustomerShellProps {
 
 /**
  * CustomerShell - Layout for customer mode (no company/tenant)
- * 
+ *
  * Features:
  * - Simple centered container
  * - Header with navigation links and logout
  * - Clean card-based content area
+ * - Conditional nav: Select Company only shown if 2+ companies
+ * - Become a Venue is less prominent if user already has companies
  */
 export function CustomerShell({ children }: CustomerShellProps) {
   const { logout } = useAuth()
-  
+  const [me, setMe] = useState<MeResponse | null>(null)
+
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const data = await getMe()
+        setMe(data)
+      } catch {
+        // Ignore errors - user will be redirected by auth if needed
+      }
+    }
+
+    fetchMe()
+  }, [])
+
   const handleLogout = () => {
     logout()
   }
-  
+
+  const companyCount = me?.companies.length ?? 0
+  const showSelectCompany = companyCount >= 2
+  const showBecomeVenue = companyCount === 0
+
   return (
     <div style={styles.container}>
       {/* Header */}
@@ -30,7 +53,7 @@ export function CustomerShell({ children }: CustomerShellProps) {
           </Link>
           <span style={styles.modeLabel}>Customer</span>
         </div>
-        
+
         <nav style={styles.nav}>
           <Link to="/customer" style={styles.navLink}>
             Home
@@ -38,16 +61,20 @@ export function CustomerShell({ children }: CustomerShellProps) {
           <Link to="/customer/venues" style={styles.navLink}>
             Venues
           </Link>
-          <Link to="/select-company" style={styles.navLink}>
-            Select Company
-          </Link>
-          <Link to="/become-a-venue" style={styles.navLink}>
-            Become a Venue
-          </Link>
+          {showSelectCompany && (
+            <Link to="/select-company" style={styles.navLink}>
+              Select Company
+            </Link>
+          )}
+          {showBecomeVenue && (
+            <Link to="/become-a-venue" style={styles.navLinkHighlight}>
+              Become a Venue
+            </Link>
+          )}
         </nav>
-        
+
         <div style={styles.headerRight}>
-          <button 
+          <button
             onClick={handleLogout}
             style={styles.logoutButton}
           >
@@ -55,7 +82,7 @@ export function CustomerShell({ children }: CustomerShellProps) {
           </button>
         </div>
       </header>
-      
+
       {/* Main content */}
       <main style={styles.main}>
         {children}
@@ -117,6 +144,16 @@ const styles: Record<string, React.CSSProperties> = {
     textDecoration: 'none',
     fontSize: '14px',
     borderRadius: '4px',
+    transition: 'background-color 0.2s, color 0.2s',
+  },
+  navLinkHighlight: {
+    padding: '8px 16px',
+    color: '#2563eb',
+    textDecoration: 'none',
+    fontSize: '14px',
+    borderRadius: '4px',
+    backgroundColor: '#eff6ff',
+    fontWeight: '500',
     transition: 'background-color 0.2s, color 0.2s',
   },
   headerRight: {

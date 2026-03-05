@@ -14,9 +14,17 @@ export function CreateClientPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateClientRequest) => createClient(companySlug, data),
-    onSuccess: (client) => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['clients', companySlug] })
-      navigate(`/${companySlug}/clients/${client.id}`)
+      const createdId = response?.id?.trim()
+      if (createdId) {
+        navigate(`/${companySlug}/clients/${createdId}`)
+        return
+      }
+
+      navigate(`/${companySlug}/clients`, {
+        state: { notice: 'Client created.' },
+      })
     },
     onError: (err: Error) => {
       setError(err.message || 'Failed to create client. Please try again.')

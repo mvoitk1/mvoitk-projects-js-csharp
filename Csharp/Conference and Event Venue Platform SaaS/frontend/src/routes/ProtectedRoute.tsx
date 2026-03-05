@@ -1,4 +1,4 @@
-import { Navigate, useParams, Link } from 'react-router-dom'
+import { Navigate, useParams, Link, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { api } from '../api/apiClient'
@@ -13,6 +13,7 @@ type MembershipStatus = 'loading' | 'valid' | 'no_access' | 'not_found' | 'error
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading: authLoading, companySlug: storedCompanySlug } = useAuth()
   const { companySlug } = useParams<{ companySlug: string }>()
+  const location = useLocation()
   const [membershipStatus, setMembershipStatus] = useState<MembershipStatus>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   
@@ -20,6 +21,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     // Only check membership when authenticated and company slug is available
     if (!isAuthenticated || authLoading) return
     
+    // Customer routes are never tenant-scoped, even when they include other params.
+    if (location.pathname.startsWith('/customer')) {
+      setMembershipStatus('valid')
+      return
+    }
+
     // Skip membership check for non-tenant routes (no companySlug in URL)
     // Global routes like /session, /customer, /select-company don't need tenant verification
     if (!companySlug) {
@@ -57,7 +64,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
     
     checkMembership()
-  }, [isAuthenticated, authLoading, companySlug])
+  }, [isAuthenticated, authLoading, companySlug, location.pathname])
   
   if (authLoading || (isAuthenticated && membershipStatus === 'loading')) {
     return <div>Loading...</div>

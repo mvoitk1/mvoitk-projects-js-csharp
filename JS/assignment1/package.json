@@ -1,0 +1,15 @@
+{
+  "name": "assignment1",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Task manager assignment build setup",
+  "scripts": {
+    "compile": "npm run build",
+    "build": "node scripts/build.mjs",
+    "check": "node --check js/*.js",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.1"
+  }
+}

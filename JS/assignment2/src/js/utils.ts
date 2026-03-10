@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Utility functions for the Task Management Application
  * Contains UUID generation, date handling, and helper functions
@@ -308,10 +309,4 @@ const Utils = (function() {
   };
 })();
 
-// What these next lines do:
-// Export for Node.js/CommonJS environments
-// Why this matters in this project:
-// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Utils;
-}
+export default Utils;

@@ -1,3 +1,7 @@
+// @ts-nocheck
+import TaskDataAdapter from './dataAdapter';
+import Utils from './utils';
+
 /**
  * GUI Application - Task Management Application
  * Handles navigation, views, and user interactions
@@ -1113,8 +1117,4 @@ const App = (function() {
   };
 })();
 
-// What these next lines do:
-// Auto-initialize
-// Why this matters in this project:
-// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Auto-initialize.
-App.init();
+export default App;

@@ -1,3 +1,6 @@
+// @ts-nocheck
+import TaskManager from './taskManager';
+
 /**
  * Thin data adapter contract between UI (App) and data layer.
  * Keeps current behavior via TaskManager while allowing DAL swap later.
@@ -68,9 +71,7 @@ const TaskDataAdapter = (function() {
   function ensureDefaultAdapter() {
     if (activeAdapter) return;
 
-    if (typeof TaskManager !== 'undefined') {
-      activeAdapter = createLegacyAdapter(TaskManager);
-    }
+    activeAdapter = createLegacyAdapter(TaskManager);
   }
 
   // What these next lines do:
@@ -101,3 +102,5 @@ const TaskDataAdapter = (function() {
     createLegacyAdapter
   };
 })();
+
+export default TaskDataAdapter;

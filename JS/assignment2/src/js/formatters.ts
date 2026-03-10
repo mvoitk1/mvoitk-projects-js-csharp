@@ -1,3 +1,6 @@
+// @ts-nocheck
+import Utils from './utils';
+
 /**
  * Output Formatting Module for Task Management Application
  * Provides different output formats: table, list, JSON
@@ -546,10 +549,4 @@ ${COLORS.bold}help${COLORS.reset} [command]
   };
 })();
 
-// What these next lines do:
-// Export for Node.js/CommonJS environments
-// Why this matters in this project:
-// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Formatters;
-}
+export default Formatters;

@@ -1,3 +1,8 @@
+// @ts-nocheck
+import Formatters from './formatters';
+import TaskManager from './taskManager';
+import Utils from './utils';
+
 /**
  * Command Handlers for Task Management Application
  * Parses and executes user commands
@@ -628,10 +633,4 @@ const Commands = (function() {
   };
 })();
 
-// What these next lines do:
-// Export for Node.js/CommonJS environments
-// Why this matters in this project:
-// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Commands;
-}
+export default Commands;

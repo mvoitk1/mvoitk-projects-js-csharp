@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Storage module for Task Management Application
  * Provides localStorage abstraction layer with error handling
@@ -397,10 +398,4 @@ const Storage = (function() {
   };
 })();
 
-// What these next lines do:
-// Export for Node.js/CommonJS environments
-// Why this matters in this project:
-// This step is part of the main data/UI flow, so mistakes here would directly affect user-visible behavior: Export for Node.js/CommonJS environments.
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Storage;
-}
+export default Storage;

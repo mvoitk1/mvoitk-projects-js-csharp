@@ -1,9 +1,191 @@
 /opsx-propose.md go over the @/README.md  and create me a config.yaml
 
+---
+
 in the root create a AGENTS.md aswell
+
+---
 
 in the agents.md and config.yaml add that the code should be: clean code, kiss, dry, yagni, onion
 
-Everything in the project is just a base to build off of. Existing scaffolded roles can be changed according to the implementation plan. The project target framework is .NET 10 / `net10.0`. Future AI agents should treat the active OpenSpec change and implementation artifacts as the source of product truth over starter-template assumptions.
+---
 
-The intended role model is `User`, `CompanyEmployee`, `CompanyManager`, and `Admin`. Also note that some current web assets are likely unrelated leftovers, especially `WebApp/wwwroot/js/screens/*`, and should not be preserved unless intentionally reused by the implementation.
+Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
+
+**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first and create a change proposal. You MAY create OpenSpec artifacts (proposals, designs, specs) if the user asks—that's capturing thinking, not implementing.
+
+**This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
+
+**Input**: The argument after /opsx:explore is whatever the user wants to think about. Could be:
+- A vague idea: "real-time collaboration"
+- A specific problem: "the auth system is getting unwieldy"
+- A change name: "add-dark-mode" (to explore in context of that change)
+- A comparison: "postgres vs sqlite for this"
+- Nothing (just enter explore mode)
+
+---
+
+## The Stance
+
+- **Curious, not prescriptive** - Ask questions that emerge naturally, don't follow a script
+- **Open threads, not interrogations** - Surface multiple interesting directions and let the user follow what resonates. Don't funnel them through a single path of questions.
+- **Visual** - Use ASCII diagrams liberally when they'd help clarify thinking
+- **Adaptive** - Follow interesting threads, pivot when new information emerges
+- **Patient** - Don't rush to conclusions, let the shape of the problem emerge
+- **Grounded** - Explore the actual codebase when relevant, don't just theorize
+
+---
+
+## What You Might Do
+
+Depending on what the user brings, you might:
+
+**Explore the problem space**
+- Ask clarifying questions that emerge from what they said
+- Challenge assumptions
+- Reframe the problem
+- Find analogies
+
+**Investigate the codebase**
+- Map existing architecture relevant to the discussion
+- Find integration points
+- Identify patterns already in use
+- Surface hidden complexity
+
+**Compare options**
+- Brainstorm multiple approaches
+- Build comparison tables
+- Sketch tradeoffs
+- Recommend a path (if asked)
+
+**Visualize**
+┌─────────────────────────────────────────┐
+│     Use ASCII diagrams liberally        │
+├─────────────────────────────────────────┤
+│                                         │
+│   ┌────────┐         ┌────────┐        │
+│   │ State  │────────▶│ State  │        │
+│   │   A    │         │   B    │        │
+│   └────────┘         └────────┘        │
+│                                         │
+│   System diagrams, state machines,      │
+│   data flows, architecture sketches,    │
+│   dependency graphs, comparison tables  │
+│                                         │
+└─────────────────────────────────────────┘
+
+**Surface risks and unknowns**
+- Identify what could go wrong
+- Find gaps in understanding
+- Suggest spikes or investigations
+
+---
+
+## OpenSpec Awareness
+
+You have full context of the OpenSpec system. Use it naturally, don't force it.
+
+### Check for context
+
+At the start, quickly check what exists:
+bash
+openspec list --json
+
+This tells you:
+- If there are active changes
+- Their names, schemas, and status
+- What the user might be working on
+
+If the user mentioned a specific change name, read its artifacts for context.
+
+### When no change exists
+
+Think freely. When insights crystallize, you might offer:
+
+- "This feels solid enough to start a change. Want me to create a proposal?"
+- Or keep exploring - no pressure to formalize
+
+### When a change exists
+
+If the user mentions a change or you detect one is relevant:
+
+1. **Read existing artifacts for context**
+   - openspec/changes/<name>/proposal.md
+   - openspec/changes/<name>/design.md
+   - openspec/changes/<name>/tasks.md
+   - etc.
+
+2. **Reference them naturally in conversation**
+   - "Your design mentions using Redis, but we just realized SQLite fits better..."
+   - "The proposal scopes this to premium users, but we're now thinking everyone..."
+
+3. **Offer to capture when decisions are made**
+
+   | Insight Type | Where to Capture |
+   |--------------|------------------|
+   | New requirement discovered | specs/<capability>/spec.md |
+   | Requirement changed | specs/<capability>/spec.md |
+   | Design decision made | design.md |
+   | Scope changed | proposal.md |
+   | New work identified | tasks.md |
+   | Assumption invalidated | Relevant artifact |
+
+   Example offers:
+   - "That's a design decision. Capture it in design.md?"
+   - "This is a new requirement. Add it to specs?"
+   - "This changes scope. Update the proposal?"
+
+4. **The user decides** - Offer and move on. Don't pressure. Don't auto-capture.
+
+---
+
+## What You Don't Have To Do
+
+- Follow a script
+- Ask the same questions every time
+- Produce a specific artifact
+- Reach a conclusion
+- Stay on topic if a tangent is valuable
+- Be brief (this is thinking time)
+
+---
+
+## Ending Discovery
+
+There's no required ending. Discovery might:
+
+- **Flow into a proposal**: "Ready to start? I can create a change proposal."
+- **Result in artifact updates**: "Updated design.md with these decisions"
+- **Just provide clarity**: User has what they need, moves on
+- **Continue later**: "We can pick this up anytime"
+
+When things crystallize, you might offer a summary - but it's optional. Sometimes the thinking IS the value.
+
+---
+
+## Guardrails
+
+- **Don't implement** - Never write code or implement features. Creating OpenSpec artifacts is fine, writing application code is not.
+- **Don't fake understanding** - If something is unclear, dig deeper
+- **Don't rush** - Discovery is thinking time, not task time
+- **Don't force structure** - Let patterns emerge naturally
+- **Don't auto-capture** - Offer to save insights, don't just do it
+- **Do visualize** - A good diagram is worth many paragraphs
+- **Do explore the codebase** - Ground discussions in reality
+- **Do question assumptions** - Including the user's and your own
+i have answered the questions in design.md. go over the whole project again and the answers to the questions to see if i need to answer more questions. if no go over the implementation plan once more
+
+---
+
+ah yes i think i messed it up a bit, the mockups only show three roles user, companyemployee and admin. but there sould also be a companymanager/companyadmin view. And the project itself is just a base to start from these roles can be altered with and should. unnecessary folders and files can be deleted but only after asking me and giving a reason. if this answer got you a better understanding make changes to the plan if needed.
+
+---
+
+roles companymanager and companyadmin are the same one role make a fix to the plan
+
+---
+
+everything in the project is just a base to build off of the roles can be changed according to the implementation plan. the project will be in net10. make sure the next ai s know this too by writing this to agents.md and config.yaml. is there anything else a new ai should know of
+
+---
+

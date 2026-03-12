@@ -1,6 +1,6 @@
 ## Context
 
-The current solution already has ASP.NET Core MVC, Identity, Swagger, localization plumbing, and an EF Core PostgreSQL context, but it does not yet model the venue business domain shown in `HtmlMock/`. The mock set covers three visible experience bands: public entry and marketing, employee booking operations, and admin-oriented venue administration. The implementation must go beyond the mocks by introducing an explicit company-manager role for tenant-side management, while keeping cross-venue onboarding and rights review separate if those workflows stay platform-admin responsibilities. Because the current codebase is mostly scaffolded, the main design challenge is introducing a minimal but coherent domain model and application structure that can support those screens without overbuilding features that the mocks do not require.
+The current solution already has ASP.NET Core MVC, Identity, Swagger, localization plumbing, and an EF Core PostgreSQL context, but it does not yet model the venue business domain shown in `HtmlMock/`. The mock set covers three distinct experience bands: public entry and marketing, employee booking operations, and manager/admin venue administration. Because the current codebase is mostly scaffolded, the main design challenge is introducing a minimal but coherent domain model and application structure that can support those screens without overbuilding features that the mocks do not require.
 
 ## Goals / Non-Goals
 
@@ -37,18 +37,6 @@ Alternatives considered:
 - Separate frontend projects per role: rejected as unnecessary complexity.
 - Single controller namespace without areas: rejected because the mock set implies clear role segmentation.
 
-### Decision: Treat the starter application's current Identity roles and admin folders as replaceable scaffolding
-Rationale: The repository is a base project, not a role model to preserve. The target product needs at least `User`, `CompanyEmployee`, `CompanyManager`, plus a clear platform-level administrative responsibility for venue review and access control if those workflows remain cross-venue.
-Alternatives considered:
-- Keep the starter roles and map everything onto them: rejected because it would force the business model to conform to scaffold terminology.
-- Limit the first slice to only the three roles visible in the mocks: rejected because the project requirements still need a tenant-side management role plus a clear answer for cross-venue review authority.
-
-### Decision: Model venue membership and active venue context explicitly
-Rationale: The approved direction allows employees and managers to belong to multiple venues, and several mock screens imply a current venue that scopes dashboards, bookings, catering, and configuration. This requires explicit membership data plus an active-venue selection mechanism rather than relying on global roles alone.
-Alternatives considered:
-- Single-venue foreign key on user: rejected because it conflicts with the agreed multi-venue first schema.
-- Infer active venue only from the last opened booking or route: rejected because it is too implicit for authorization and dashboard aggregation.
-
 ### Decision: Translate mock CSS into reusable design tokens and shared components inside `WebApp`
 Rationale: The mock pages already reveal repeated color systems, typography pairings, cards, sidebars, and metric panels. Consolidating these into shared partials and CSS variables reduces duplication and keeps the implementation maintainable.
 Alternatives considered:
@@ -67,13 +55,11 @@ Alternatives considered:
 - [Large first migration] -> Mitigation: split schema work into coherent migrations by domain slice where possible and validate each slice with tests.
 - [UI duplication across roles] -> Mitigation: extract shared layout primitives, card components, and CSS variables before building later pages.
 - [Authorization gaps while adding new areas] -> Mitigation: define role access rules early and cover them with integration tests.
-- [Role ambiguity between company manager and platform admin responsibilities] -> Mitigation: separate tenant-scoped management from cross-venue approval/review workflows in the service and routing design before implementation starts.
 - [Mock-to-data mismatch] -> Mitigation: use dashboard/query DTOs that can shape screen data without overloading entities.
 
 ## Migration Plan
 
 - Add core domain entities and EF mappings in a sequence that keeps the application buildable after each slice.
-- Replace or retire starter role assumptions as the venue-specific role model lands, while only deleting obsolete scaffold files or areas after explicit review.
 - Create and apply migrations for the venue domain after the entity model is stabilized for the first slice.
 - Seed enough local data to exercise public discovery, request review, employee bookings, and admin configuration views.
 - Introduce new controllers, areas, and views behind normal MVC routing; existing scaffold routes remain available during implementation.
@@ -88,4 +74,22 @@ Alternatives considered:
 - Does catering order management need inventory/partner enforcement in the first slice, or only editable order summaries and deadlines?
   - Answer: The catering can be hardcoded form a few partner menus for the initial implementation, and the BLL can enforce edit deadlines without inventory constraints.
 - Which of the existing identity roles map directly to `CompanyEmployee`, `CompanyManager`, and `CompanyAdmin`, and are any additional system roles required?
-  - Answer: `CompanyManager` and `CompanyAdmin` are the same tenant-side role in this project and should be represented as a single product role. The starter project's current roles are scaffolding and can be changed. The target implementation should define explicit product roles for `User`, `CompanyEmployee`, and `CompanyManager`. If venue request review and rights assignment remain cross-venue workflows, a separate platform-admin responsibility should exist in the implementation even if the final naming changes.
+  - Answer: 
+### Identity Role Mapping
+
+There will be a direct mapping between Identity roles and the roles used in the VenuePlatform. No additional system roles are required for the initial implementation.
+
+#### VenuePlatform Roles
+- `Client/User`
+- `CompanyEmployee`
+- `CompanyManager`
+- `Admin`
+
+#### Role Mapping
+| Identity Role     | VenuePlatform Role |
+|-------------------|-------------------|
+| CompanyEmployee   | CompanyEmployee   |
+| CompanyManager    | CompanyManager    |
+| CompanyAdmin      | Admin             |
+
+The existing `Admin` role will be used to cover `CompanyAdmin` responsibilities. If necessary, additional roles can be introduced in the future as the authorization model evolves.

@@ -98,6 +98,21 @@ public class VenuePlatformServicesTests
     }
 
     [Fact]
+    public async Task UpdateMembershipStatusAsync_ClearsActiveVenueWhenMembershipIsBlocked()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var membershipService = new VenueMembershipService(context);
+
+        await membershipService.UpdateMembershipStatusAsync(
+            fixture.ManagerMembership.Id,
+            new UpdateVenueMembershipStatusDto { Status = VenueMembershipStatus.Suspended.ToString() });
+
+        var manager = await context.Users.SingleAsync(user => user.Id == fixture.Manager.Id);
+        Assert.Null(manager.ActiveVenueId);
+    }
+
+    [Fact]
     public async Task ReviewVenueAccessRequestAsync_AssignsMembershipForApprovedRequest()
     {
         await using var context = CreateContext();

@@ -1,0 +1,63 @@
+@model EmployeeDashboardPageViewModel
+@{
+    ViewData["Title"] = Pages.EmployeeDashboardTitle;
+    ViewData["WorkspaceLayout"] = Model.Layout;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.EmployeeDashboardEyebrow</p>
+        <h1>@Pages.EmployeeDashboardHeadline</h1>
+        <p>@Pages.EmployeeDashboardDescription</p>
+    </div>
+</section>
+
+@if (!Model.Layout.Context.HasVenueAccess)
+{
+    <section class="workspace-empty">
+        <h2>@Pages.NoVenueMembershipTitle</h2>
+        <p>@Pages.NoVenueMembershipBody</p>
+    </section>
+}
+else
+{
+    <section class="metric-grid">
+        <article class="metric-card"><strong>@Model.Dashboard.UpcomingBookingsCount</strong><span>@Pages.EmployeeMetricUpcoming</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.DraftOrPendingBookingsCount</strong><span>@Pages.EmployeeMetricPending</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.CateringOrdersCount</strong><span>@Pages.EmployeeMetricCatering</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.EquipmentAllocationsCount</strong><span>@Pages.EmployeeMetricEquipment</span></article>
+    </section>
+
+    <section class="workspace-panel">
+        <div class="section-heading">
+            <h2>@Pages.EmployeeUpcomingSection</h2>
+        </div>
+        @if (Model.Dashboard.UpcomingBookings.Count == 0)
+        {
+            <p>@Pages.EmployeeUpcomingEmpty</p>
+        }
+        else
+        {
+            <div class="card-stack">
+                @foreach (var booking in Model.Dashboard.UpcomingBookings)
+                {
+                    <article class="workspace-card">
+                        <div class="card-top">
+                            <div>
+                                <h3>@booking.Title</h3>
+                                <p>@booking.ClientName</p>
+                            </div>
+                            <span class="status-pill @WorkspacePresentation.ToBadgeClass(booking.Status)">@WorkspacePresentation.ToStatusLabel(booking.Status)</span>
+                        </div>
+                        <dl class="detail-grid">
+                            <div><dt>@Pages.BookingScheduleLabel</dt><dd>@WorkspacePresentation.FormatSchedule(booking.Schedule.StartsAt, booking.Schedule.EndsAt)</dd></div>
+                            <div><dt>@Pages.BookingSpaceLabel</dt><dd>@booking.SpaceName</dd></div>
+                            <div><dt>@Pages.BookingAttendeesLabel</dt><dd>@booking.ExpectedAttendees</dd></div>
+                            <div><dt>@Pages.BookingServicesLabel</dt><dd>@booking.CateringOrderCount catering, @booking.EquipmentAllocationCount equipment</dd></div>
+                        </dl>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+}

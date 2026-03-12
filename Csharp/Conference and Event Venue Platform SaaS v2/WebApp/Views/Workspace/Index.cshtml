@@ -1,0 +1,13 @@
+@using App.Resources.Views.Workspace
+@model WebApp.ViewModels.Workspace.WorkspaceLayoutViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.WorkspaceTitle;
+}
+
+<section class="workspace-redirect-card">
+    <p class="eyebrow">@Pages.WorkspaceTitle</p>
+    <h1>@Pages.NoVenueMembershipTitle</h1>
+    <p>@Pages.NoVenueMembershipBody</p>
+    <a class="public-button" asp-controller="Venues" asp-action="RequestVenue">@Pages.ReturnToPublicSite</a>
+</section>

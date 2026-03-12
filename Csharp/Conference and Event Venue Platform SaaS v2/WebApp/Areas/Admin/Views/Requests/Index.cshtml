@@ -1,0 +1,109 @@
+@model VenueRequestsPageViewModel
+@{
+    ViewData["Title"] = Pages.RequestReviewTitle;
+    ViewData["WorkspaceLayout"] = Model.Layout;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.RequestReviewEyebrow</p>
+        <h1>@Pages.RequestReviewHeadline</h1>
+        <p>@Pages.RequestReviewDescription</p>
+    </div>
+</section>
+
+@if (Model.Requests.Count == 0)
+{
+    <section class="workspace-empty">
+        <h2>@Pages.RequestReviewEmpty</h2>
+    </section>
+}
+else
+{
+    <section class="split-grid">
+        <article class="workspace-panel">
+            <div class="card-stack compact">
+                @foreach (var request in Model.Requests)
+                {
+                    <a class="workspace-card compact selectable @(Model.SelectedRequest?.RequestId == request.RequestId ? "selected" : null)"
+                       asp-area="Admin"
+                       asp-controller="Requests"
+                       asp-action="Index"
+                       asp-route-requestId="@request.RequestId">
+                        <div class="card-top">
+                            <strong>@request.VenueName</strong>
+                            <span class="status-pill @WorkspacePresentation.ToBadgeClass(request.Status)">@WorkspacePresentation.ToStatusLabel(request.Status)</span>
+                        </div>
+                        <p>@request.CompanyName</p>
+                        <p>@request.ContactName · @request.City, @request.Country</p>
+                    </a>
+                }
+            </div>
+        </article>
+
+        <article class="workspace-panel">
+            @if (Model.SelectedRequest == null)
+            {
+                <h2>@Pages.RequestReviewEmpty</h2>
+            }
+            else
+            {
+                <div class="section-heading">
+                    <h2>@Pages.RequestReviewFormTitle</h2>
+                </div>
+                <dl class="detail-grid">
+                    <div><dt>@Pages.RequestSubmittedLabel</dt><dd>@Model.SelectedRequest.SubmittedAt:g</dd></div>
+                    <div><dt>@Pages.RequestReviewedLabel</dt><dd>@(Model.SelectedRequest.ReviewedAt?.ToString("g") ?? "-")</dd></div>
+                    <div><dt>@Pages.BookingClientLabel</dt><dd>@Model.SelectedRequest.ContactName</dd></div>
+                    <div><dt>@Pages.BookingSpaceLabel</dt><dd>@Model.SelectedRequest.AddressLine1</dd></div>
+                </dl>
+                <p>@Model.SelectedRequest.Notes</p>
+
+                @if (Model.SelectedRequest.AssignedMembership != null)
+                {
+                    <section class="sidebar-panel inline">
+                        <strong>@Pages.AssignmentSummaryTitle</strong>
+                        <p>@Model.SelectedRequest.VenueName</p>
+                        <p>@Model.SelectedRequest.AssignedMembership.AccessLevel</p>
+                    </section>
+                }
+
+                <form asp-area="Admin" asp-controller="Requests" asp-action="Review" method="post" class="workspace-form">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="ReviewForm.RequestId" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                    <div class="field">
+                        <label asp-for="ReviewForm.Status"></label>
+                        <select asp-for="ReviewForm.Status">
+                            <option value="PendingReview">@Pages.StatusPendingReview</option>
+                            <option value="InReview">@Pages.StatusInReview</option>
+                            <option value="Approved">@Pages.StatusApproved</option>
+                            <option value="Rejected">@Pages.StatusRejected</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label asp-for="ReviewForm.ApprovedAccessLevel"></label>
+                        <select asp-for="ReviewForm.ApprovedAccessLevel">
+                            <option value="">-</option>
+                            <option value="Employee">Employee</option>
+                            <option value="Manager">Manager</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label asp-for="ReviewForm.ReviewNotes"></label>
+                        <textarea asp-for="ReviewForm.ReviewNotes" rows="4"></textarea>
+                    </div>
+                    <label class="checkbox-field">
+                        <input asp-for="ReviewForm.AssignMembership" />
+                        <span>@Pages.RequestReviewAssignLabel</span>
+                    </label>
+                    <button class="primary-button" type="submit">@Pages.RequestReviewSaveButton</button>
+                </form>
+            }
+        </article>
+    </section>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

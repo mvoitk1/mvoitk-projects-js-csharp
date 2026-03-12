@@ -1,0 +1,42 @@
+@model WorkspaceLayoutViewModel
+
+<aside class="workspace-sidebar">
+    <a class="workspace-brand" asp-area="" asp-controller="Workspace" asp-action="Index">
+        <span class="workspace-brand-mark">VF</span>
+        <span>VenueFlow Admin</span>
+    </a>
+
+    <section class="sidebar-panel">
+        @if (User.IsInRole(App.Domain.Identity.AppRoles.Admin))
+        {
+            <p class="eyebrow">@Pages.RequestReviewEyebrow</p>
+            <strong>@Pages.RequestReviewHeadline</strong>
+            <p>@Pages.RequestReviewDescription</p>
+        }
+        else if (Model.Context.ActiveVenue != null)
+        {
+            <p class="eyebrow">@Pages.VenueSelectorLabel</p>
+            <strong>@Model.Context.ActiveVenue.VenueName</strong>
+            <p>@Model.Context.ActiveVenue.CompanyName</p>
+        }
+    </section>
+
+    <nav class="workspace-nav">
+        @if (User.IsInRole(App.Domain.Identity.AppRoles.CompanyManager))
+        {
+            <a class="@(Model.ActiveNavigation == "dashboard" ? "active" : null)" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">@Pages.NavManagerDashboard</a>
+            <a class="@(Model.ActiveNavigation == "spaces" ? "active" : null)" asp-area="Admin" asp-controller="Spaces" asp-action="Index">@Pages.NavManagerSpaces</a>
+        }
+        @if (User.IsInRole(App.Domain.Identity.AppRoles.Admin))
+        {
+            <a class="@(Model.ActiveNavigation == "requests" ? "active" : null)" asp-area="Admin" asp-controller="Requests" asp-action="Index">@Pages.NavAdminRequests</a>
+        }
+    </nav>
+
+    @if (User.IsInRole(App.Domain.Identity.AppRoles.CompanyManager))
+    {
+        @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceVenueSwitcher.cshtml", Model.Context)
+    }
+
+    <a class="workspace-secondary-link" asp-area="" asp-controller="Home" asp-action="Index">@Pages.ReturnToPublicSite</a>
+</aside>

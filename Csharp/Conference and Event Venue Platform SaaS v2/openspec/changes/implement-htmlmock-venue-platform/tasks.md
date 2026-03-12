@@ -28,20 +28,20 @@
 
 ## 5. Employee Workspace UI
 
-- [ ] 5.1 Add employee-area routing, authorization, and navigation for dashboard, bookings, coordination, and catering workflows
-- [ ] 5.2 Implement employee dashboard venue selection and bookings views using BLL aggregation models rather than direct EF queries
-- [ ] 5.3 Implement the employee coordination and catering order views, including edit constraints such as catering lock timing
-- [ ] 5.4 Extract shared employee-facing layout and component partials from the mock screens to keep the workspace maintainable
+- [x] 5.1 Add employee-area routing, authorization, and navigation for dashboard, bookings, coordination, and catering workflows
+- [x] 5.2 Implement employee dashboard venue selection and bookings views using BLL aggregation models rather than direct EF queries
+- [x] 5.3 Implement the employee coordination and catering order views, including edit constraints such as catering lock timing
+- [x] 5.4 Extract shared employee-facing layout and component partials from the mock screens to keep the workspace maintainable
 
 ## 6. Manager And Admin UI
 
-- [ ] 6.1 Add company-manager/platform-admin routing, authorization, and navigation for venue dashboard, space configuration, and venue request review
-- [ ] 6.2 Implement the admin venue requests workflow for listing requests, viewing request details, updating review status, and assigning venue rights where allowed
-- [ ] 6.3 Implement the company management dashboard and spaces/layout configuration views with forms and validation rules backed by BLL services
-- [ ] 6.4 Extract shared manager/admin styling and panel components from the mock screens to avoid duplicating layout code
+- [x] 6.1 Add company-manager/platform-admin routing, authorization, and navigation for venue dashboard, space configuration, and venue request review
+- [x] 6.2 Implement the admin venue requests workflow for listing requests, viewing request details, updating review status, and assigning venue rights where allowed
+- [x] 6.3 Implement the company management dashboard and spaces/layout configuration views with forms and validation rules backed by BLL services
+- [x] 6.4 Extract shared manager/admin styling and panel components from the mock screens to avoid duplicating layout code
 
 ## 7. Verification
 
-- [ ] 7.1 Add unit tests for request submission, request review, rights assignment, active-venue selection, booking aggregation, catering edit rules, and space configuration logic in `WebApp.Tests`
-- [ ] 7.2 Add integration tests for the public entry flow, venue request workflow, employee workspace authorization, venue-selection behavior, and company-manager/platform-admin authorization boundaries
-- [ ] 7.3 Run the full test suite and fix regressions introduced by the new schema, routing, and role-based workflows
+- [x] 7.1 Add unit tests for request submission, request review, rights assignment, active-venue selection, booking aggregation, catering edit rules, and space configuration logic in `WebApp.Tests`
+- [x] 7.2 Add integration tests for the public entry flow, venue request workflow, employee workspace authorization, venue-selection behavior, and company-manager/platform-admin authorization boundaries
+- [x] 7.3 Run the full test suite and fix regressions introduced by the new schema, routing, and role-based workflows

@@ -1,0 +1,23 @@
+@using App.Resources.Views.Workspace
+@model WebApp.ViewModels.Workspace.WorkspaceContextViewModel
+@{
+    var currentPath = Context.Request.Path + Context.Request.QueryString.ToUriComponent();
+}
+
+@if (Model.VenueOptions.Count > 0)
+{
+    <form class="workspace-venue-switcher" asp-controller="Workspace" asp-action="SetActiveVenue" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@currentPath" />
+        <label>@Pages.VenueSelectorLabel</label>
+        <select name="venueId">
+            @foreach (var option in Model.VenueOptions)
+            {
+                <option value="@option.VenueId" selected="@(option.IsCurrentVenue ? "selected" : null)" disabled="@(!option.CanSelect)">
+                    @option.VenueName (@option.CompanyName)
+                </option>
+            }
+        </select>
+        <button type="submit">@Pages.VenueSelectorButton</button>
+    </form>
+}

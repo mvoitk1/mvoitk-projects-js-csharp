@@ -14,7 +14,7 @@
         <a class="public-lang-link" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="et-EE" asp-route-returnUrl="@currentPath">ET</a>
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <a class="public-link-button" asp-area="" asp-controller="Home" asp-action="Index">@Pages.NavWorkspace</a>
+            <a class="public-link-button" asp-area="" asp-controller="Workspace" asp-action="Index">@Pages.NavWorkspace</a>
         }
         else
         {

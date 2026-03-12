@@ -1,0 +1,109 @@
+@model CateringOrdersPageViewModel
+@{
+    ViewData["Title"] = Pages.EmployeeCateringTitle;
+    ViewData["WorkspaceLayout"] = Model.Layout;
+    var readOnly = Model.SelectedOrder?.IsLocked == true ? "readonly" : null;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.EmployeeCateringEyebrow</p>
+        <h1>@Pages.EmployeeCateringHeadline</h1>
+        <p>@Pages.EmployeeCateringDescription</p>
+    </div>
+</section>
+
+@if (Model.Orders.Count == 0)
+{
+    <section class="workspace-empty">
+        <h2>@Pages.EmployeeCateringEmpty</h2>
+    </section>
+}
+else
+{
+    <section class="split-grid">
+        <article class="workspace-panel">
+            <div class="section-heading">
+                <h2>@Pages.NavEmployeeCatering</h2>
+            </div>
+            <div class="card-stack compact">
+                @foreach (var order in Model.Orders)
+                {
+                    <a class="workspace-card compact selectable @(Model.SelectedOrder?.CateringOrderId == order.CateringOrderId ? "selected" : null)"
+                       asp-area="Employee"
+                       asp-controller="Catering"
+                       asp-action="Index"
+                       asp-route-orderId="@order.CateringOrderId">
+                        <div class="card-top">
+                            <strong>@order.BookingTitle</strong>
+                            <span class="status-pill @WorkspacePresentation.ToBadgeClass(order.Status)">@WorkspacePresentation.ToStatusLabel(order.Status)</span>
+                        </div>
+                        <p>@order.ProviderName</p>
+                        <p>@WorkspacePresentation.FormatMoney(order.TotalPrice.Amount, order.TotalPrice.Currency)</p>
+                    </a>
+                }
+            </div>
+        </article>
+
+        <article class="workspace-panel">
+            @if (Model.SelectedOrder == null)
+            {
+                <h2>@Pages.EmployeeCateringEmpty</h2>
+            }
+            else
+            {
+                <div class="section-heading">
+                    <h2>@Pages.CateringEditTitle</h2>
+                    @if (Model.SelectedOrder.IsLocked)
+                    {
+                        <span class="status-pill is-bad">@Pages.CateringLockMessage</span>
+                    }
+                </div>
+                <form asp-area="Employee" asp-controller="Catering" asp-action="Update" method="post" class="workspace-form">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="EditForm.CateringOrderId" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                    <div class="field">
+                        <label asp-for="EditForm.GuestCount"></label>
+                        <input asp-for="EditForm.GuestCount" readonly="@readOnly" />
+                        <span asp-validation-for="EditForm.GuestCount"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="EditForm.Notes"></label>
+                        <textarea asp-for="EditForm.Notes" rows="3" readonly="@readOnly"></textarea>
+                    </div>
+                    @for (var i = 0; i < Model.EditForm.Lines.Count; i++)
+                    {
+                        <div class="form-row-grid">
+                            <input asp-for="EditForm.Lines[i].LineId" type="hidden" />
+                            <div class="field">
+                                <label asp-for="EditForm.Lines[i].Name"></label>
+                                <input asp-for="EditForm.Lines[i].Name" readonly="@readOnly" />
+                            </div>
+                            <div class="field">
+                                <label asp-for="EditForm.Lines[i].Quantity"></label>
+                                <input asp-for="EditForm.Lines[i].Quantity" readonly="@readOnly" />
+                            </div>
+                            <div class="field">
+                                <label asp-for="EditForm.Lines[i].UnitPriceAmount"></label>
+                                <input asp-for="EditForm.Lines[i].UnitPriceAmount" readonly="@readOnly" />
+                            </div>
+                            <div class="field">
+                                <label asp-for="EditForm.Lines[i].DietaryNotes"></label>
+                                <input asp-for="EditForm.Lines[i].DietaryNotes" readonly="@readOnly" />
+                            </div>
+                        </div>
+                    }
+                    @if (!Model.SelectedOrder.IsLocked)
+                    {
+                        <button class="primary-button" type="submit">@Pages.CateringSaveButton</button>
+                    }
+                </form>
+            }
+        </article>
+    </section>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

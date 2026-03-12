@@ -1,0 +1,49 @@
+@model AdminDashboardPageViewModel
+@{
+    ViewData["Title"] = Pages.ManagerDashboardTitle;
+    ViewData["WorkspaceLayout"] = Model.Layout;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.ManagerDashboardEyebrow</p>
+        <h1>@Pages.ManagerDashboardHeadline</h1>
+        <p>@Pages.ManagerDashboardDescription</p>
+    </div>
+</section>
+
+@if (!Model.Layout.Context.HasVenueAccess)
+{
+    <section class="workspace-empty">
+        <h2>@Pages.NoVenueMembershipTitle</h2>
+        <p>@Pages.NoVenueMembershipBody</p>
+    </section>
+}
+else
+{
+    <section class="metric-grid">
+        <article class="metric-card"><strong>@Model.Dashboard.ActiveSpacesCount</strong><span>@Pages.ManagerMetricSpaces</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.UpcomingBookingsCount</strong><span>@Pages.ManagerMetricBookings</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.PendingApprovalBookingsCount</strong><span>@Pages.ManagerMetricPendingApprovals</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.ActiveMembershipCount</strong><span>@Pages.ManagerMetricMembers</span></article>
+    </section>
+
+    <section class="workspace-panel">
+        <div class="section-heading">
+            <h2>@Pages.ManagerActionItemsTitle</h2>
+        </div>
+        @if (Model.Dashboard.ActionItems.Count == 0)
+        {
+            <p>@Pages.ManagerActionItemsEmpty</p>
+        }
+        else
+        {
+            <ul class="signal-list">
+                @foreach (var item in Model.Dashboard.ActionItems)
+                {
+                    <li>@item</li>
+                }
+            </ul>
+        }
+    </section>
+}

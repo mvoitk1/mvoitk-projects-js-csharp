@@ -1,8 +1,11 @@
 using System;
 using System.Linq;
 using App.DAL.EF;
+using App.DAL.EF.Seeding;
+using App.Domain.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,13 +42,17 @@ public class CustomWebApplicationFactory<TStartup>
             using var scope = sp.CreateScope();
             var scopedServices = scope.ServiceProvider;
             var db = scopedServices.GetRequiredService<AppDbContext>();
+            var userManager = scopedServices.GetRequiredService<UserManager<AppUser>>();
+            var roleManager = scopedServices.GetRequiredService<RoleManager<AppRole>>();
             var logger = scopedServices
                 .GetRequiredService<ILogger<CustomWebApplicationFactory<TStartup>>>();
 
+            db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
 
             try
             { 
+                AppDataInit.SeedIdentity(userManager, roleManager);
                 DataSeeder.SeedData(db);
             }
             catch (Exception ex)

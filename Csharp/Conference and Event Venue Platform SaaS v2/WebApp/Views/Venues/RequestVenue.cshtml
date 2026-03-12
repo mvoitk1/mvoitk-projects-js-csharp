@@ -1,0 +1,94 @@
+@using App.Resources.Views.Public
+@model WebApp.ViewModels.Public.VenueAccessRequestViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.RequestTitle;
+}
+
+<section class="page-hero">
+    <div>
+        <p class="eyebrow">@Pages.RequestEyebrow</p>
+        <h1>@Pages.RequestHeadline</h1>
+        <p class="page-description">@Pages.RequestDescription</p>
+    </div>
+</section>
+
+@if (TempData["VenueRequestSuccess"] is string successMessage)
+{
+    <div class="status-banner success">
+        <strong>@Pages.RequestSuccessTitle</strong>
+        <span>@successMessage</span>
+    </div>
+}
+
+<section class="request-layout">
+    <article class="form-card">
+        <h2>@Pages.RequestFormTitle</h2>
+        <p>@Pages.RequestFormDescription</p>
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+            <div class="field-grid">
+                <div class="field">
+                    <label asp-for="CompanyName"></label>
+                    <input asp-for="CompanyName" />
+                    <span asp-validation-for="CompanyName" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="VenueName"></label>
+                    <input asp-for="VenueName" />
+                    <span asp-validation-for="VenueName" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="ContactName"></label>
+                    <input asp-for="ContactName" />
+                    <span asp-validation-for="ContactName" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="ContactEmail"></label>
+                    <input asp-for="ContactEmail" />
+                    <span asp-validation-for="ContactEmail" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="ContactPhone"></label>
+                    <input asp-for="ContactPhone" />
+                    <span asp-validation-for="ContactPhone" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="EstimatedMonthlyBookings"></label>
+                    <input asp-for="EstimatedMonthlyBookings" />
+                    <span asp-validation-for="EstimatedMonthlyBookings" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="City"></label>
+                    <input asp-for="City" />
+                    <span asp-validation-for="City" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Country"></label>
+                    <input asp-for="Country" />
+                    <span asp-validation-for="Country" class="field-validation-error"></span>
+                </div>
+                <div class="field field-full">
+                    <label asp-for="AddressLine1"></label>
+                    <input asp-for="AddressLine1" />
+                    <span asp-validation-for="AddressLine1" class="field-validation-error"></span>
+                </div>
+                <div class="field field-full">
+                    <label asp-for="Notes"></label>
+                    <textarea asp-for="Notes" rows="5"></textarea>
+                    <span class="field-helper">@Pages.RequestHelperText</span>
+                </div>
+            </div>
+            <button class="public-button" type="submit">@Pages.SubmitRequestCta</button>
+        </form>
+    </article>
+    <aside class="sidebar-card">
+        <h3>@Pages.RequestSidebarTitle</h3>
+        <p>@Pages.RequestSidebarBody</p>
+    </aside>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

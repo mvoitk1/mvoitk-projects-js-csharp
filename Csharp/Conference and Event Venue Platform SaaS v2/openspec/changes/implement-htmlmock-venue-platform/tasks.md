@@ -21,10 +21,10 @@
 
 ## 4. Public And Identity UI
 
-- [ ] 4.1 Replace the scaffolded home page with the branded public landing experience derived from `HtmlMock/landingpage.html`
-- [ ] 4.2 Implement browse venues and request venue pages with MVC controllers, view models, validation, and localized user-facing strings
-- [ ] 4.3 Reskin the login and registration flows to match the mock design while preserving ASP.NET Core Identity behavior
-- [ ] 4.4 Extract shared public-facing CSS variables, typography, and reusable partials so the mock visual language is not duplicated page by page
+- [x] 4.1 Replace the scaffolded home page with the branded public landing experience derived from `HtmlMock/landingpage.html`
+- [x] 4.2 Implement browse venues and request venue pages with MVC controllers, view models, validation, and localized user-facing strings
+- [x] 4.3 Reskin the login and registration flows to match the mock design while preserving ASP.NET Core Identity behavior
+- [x] 4.4 Extract shared public-facing CSS variables, typography, and reusable partials so the mock visual language is not duplicated page by page
 
 ## 5. Employee Workspace UI
 

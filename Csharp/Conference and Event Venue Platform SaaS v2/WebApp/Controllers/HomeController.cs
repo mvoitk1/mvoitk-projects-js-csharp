@@ -1,30 +1,34 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using App.DAL.EF;
+using App.BLL.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WebApp.ViewModels;
+using WebApp.ViewModels.Public;
 
 namespace WebApp.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly AppDbContext _context;
+    private readonly IPublicVenueDiscoveryService _publicVenueDiscoveryService;
     private static int _counter = 0;
 
-    public HomeController(AppDbContext context, ILogger<HomeController> logger)
+    public HomeController(
+        IPublicVenueDiscoveryService publicVenueDiscoveryService,
+        ILogger<HomeController> logger)
     {
         _logger = logger;
-        _context = context;
+        _publicVenueDiscoveryService = publicVenueDiscoveryService;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        return View();
+        var landingPage = await _publicVenueDiscoveryService.GetLandingPageAsync(cancellationToken);
+        return View(landingPage.ToViewModel());
     }
 
     public async Task<string> HtmxClicked()

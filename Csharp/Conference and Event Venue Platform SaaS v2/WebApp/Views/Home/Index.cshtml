@@ -1,19 +1,65 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using App.Resources.Views.Public
+@model WebApp.ViewModels.Public.PublicLandingPageViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.LandingTitle;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    
-    <div x-data="{ count: 0 }">
-        <button x-on:click="count++">Alpinejs counter</button>
-        <span x-text="count"></span>
+<section class="landing-hero">
+    <div class="landing-copy">
+        <p class="eyebrow">@Pages.LandingEyebrow</p>
+        <h1>@Pages.LandingHeadline</h1>
+        <p class="landing-description">@Pages.LandingDescription</p>
+        <div class="landing-actions">
+            <a class="public-button" asp-controller="Venues" asp-action="Index">@Pages.LandingPrimaryCta</a>
+            <a class="public-link-button" asp-controller="Venues" asp-action="RequestVenue">@Pages.LandingSecondaryCta</a>
+        </div>
     </div>
-    
-    <button hx-post="/home/htmxclicked" hx-swap="innerHTML">
-        Click Me
-    </button>
-    
-</div>
+    <div class="landing-metrics">
+        <article class="metric-card">
+            <strong>@Model.ActiveVenueCount</strong>
+            <span>@Pages.LandingMetricVenues</span>
+        </article>
+        <article class="metric-card">
+            <strong>@Model.CityCount</strong>
+            <span>@Pages.LandingMetricCities</span>
+        </article>
+        <article class="metric-card">
+            <strong>@Model.UpcomingConfirmedBookingCount</strong>
+            <span>@Pages.LandingMetricBookings</span>
+        </article>
+    </div>
+</section>
 
+<section class="feature-section">
+    <div class="section-heading">
+        <p class="eyebrow">@Pages.LandingFeatureSectionTitle</p>
+    </div>
+    <div class="feature-grid">
+        <article class="feature-card">
+            <h2>@Pages.LandingFeatureOneTitle</h2>
+            <p>@Pages.LandingFeatureOneBody</p>
+        </article>
+        <article class="feature-card">
+            <h2>@Pages.LandingFeatureTwoTitle</h2>
+            <p>@Pages.LandingFeatureTwoBody</p>
+        </article>
+        <article class="feature-card">
+            <h2>@Pages.LandingFeatureThreeTitle</h2>
+            <p>@Pages.LandingFeatureThreeBody</p>
+        </article>
+    </div>
+</section>
+
+<section class="feature-section">
+    <div class="section-heading">
+        <h2>@Pages.LandingFeaturedHeading</h2>
+        <p>@Pages.LandingFeaturedDescription</p>
+    </div>
+    <div class="venue-grid">
+        @foreach (var venue in Model.FeaturedVenues)
+        {
+            <partial name="Public/_VenueCard" model="venue" />
+        }
+    </div>
+</section>

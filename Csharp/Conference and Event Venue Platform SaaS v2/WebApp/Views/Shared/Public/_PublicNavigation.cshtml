@@ -1,0 +1,25 @@
+@using App.Resources.Views.Public
+@{
+    var currentPath = Context.Request.Path + Context.Request.QueryString.ToUriComponent();
+}
+<header class="public-nav">
+    <partial name="Public/_PublicBrand" />
+    <nav class="public-nav-links" aria-label="Primary">
+        <a asp-controller="Home" asp-action="Index">@Pages.NavHome</a>
+        <a asp-controller="Venues" asp-action="Index">@Pages.NavBrowseVenues</a>
+        <a asp-controller="Venues" asp-action="RequestVenue">@Pages.NavRequestVenue</a>
+    </nav>
+    <div class="public-nav-actions">
+        <a class="public-lang-link" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="en" asp-route-returnUrl="@currentPath">EN</a>
+        <a class="public-lang-link" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="et-EE" asp-route-returnUrl="@currentPath">ET</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="public-link-button" asp-area="" asp-controller="Home" asp-action="Index">@Pages.NavWorkspace</a>
+        }
+        else
+        {
+            <a class="public-link-button" asp-area="Identity" asp-page="/Account/Login">@Pages.NavLogin</a>
+            <a class="public-button" asp-area="Identity" asp-page="/Account/Register">@Pages.NavRegister</a>
+        }
+    </div>
+</header>

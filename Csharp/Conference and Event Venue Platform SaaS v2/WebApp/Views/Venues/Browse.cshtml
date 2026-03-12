@@ -1,0 +1,31 @@
+@using App.Resources.Views.Public
+@model WebApp.ViewModels.Public.BrowseVenuesViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.BrowseTitle;
+}
+
+<section class="page-hero">
+    <div>
+        <p class="eyebrow">@Pages.BrowseEyebrow</p>
+        <h1>@Pages.BrowseHeadline</h1>
+        <p class="page-description">@Pages.BrowseDescription</p>
+    </div>
+    <a class="public-button" asp-action="RequestVenue">@Pages.BrowsePrimaryCta</a>
+</section>
+
+@if (Model.Venues.Count == 0)
+{
+    <section class="empty-state">
+        <p>@Pages.BrowseEmpty</p>
+    </section>
+}
+else
+{
+    <section class="venue-grid">
+        @foreach (var venue in Model.Venues)
+        {
+            <partial name="Public/_VenueCard" model="venue" />
+        }
+    </section>
+}

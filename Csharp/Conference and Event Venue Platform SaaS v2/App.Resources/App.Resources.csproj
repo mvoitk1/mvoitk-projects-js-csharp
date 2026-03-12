@@ -11,6 +11,10 @@
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>_Layout.Designer.cs</LastGenOutput>
       </EmbeddedResource>
+      <EmbeddedResource Update="Views\Public\Pages.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>Pages.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -18,6 +22,11 @@
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>_Layout.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Views\Public\Pages.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Pages.resx</DependentUpon>
       </Compile>
     </ItemGroup>
 

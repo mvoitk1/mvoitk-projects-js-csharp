@@ -87,6 +87,9 @@ namespace App.DAL.EF.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("ActiveVenueId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -133,6 +136,8 @@ namespace App.DAL.EF.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ActiveVenueId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -141,6 +146,491 @@ namespace App.DAL.EF.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("CoordinationNotes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ExpectedAttendees")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SpaceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("VenueId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("SpaceId");
+
+                    b.HasIndex("VenueId");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.CateringOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("GuestCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LockedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("ProviderName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.ToTable("CateringOrders");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.CateringOrderLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CateringOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DietaryNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CateringOrderId");
+
+                    b.ToTable("CateringOrderLines");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("RegistrationCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RegistrationCode")
+                        .IsUnique();
+
+                    b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.EquipmentAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EquipmentInventoryItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("SpaceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("EquipmentInventoryItemId");
+
+                    b.HasIndex("SpaceId");
+
+                    b.ToTable("EquipmentAllocations");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.EquipmentInventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("VenueId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VenueId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("EquipmentInventoryItems");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Space", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("MinimumBookingDurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("ParentSpaceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("VenueId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentSpaceId");
+
+                    b.HasIndex("VenueId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Spaces");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.SpaceLayout", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LayoutType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("SpaceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpaceId", "LayoutType", "Name")
+                        .IsUnique();
+
+                    b.ToTable("SpaceLayouts");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Venue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressLine1")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("AddressLine2")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Venues");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.VenueAccessRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressLine1")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int?>("ApprovedAccessLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid?>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("EstimatedMonthlyBookings")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("RequestorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ReviewNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("VenueId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VenueName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("RequestorUserId");
+
+                    b.HasIndex("ReviewedByUserId");
+
+                    b.HasIndex("VenueId");
+
+                    b.ToTable("VenueAccessRequests");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.VenueMembership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccessLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("BlockedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("GrantedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDefaultVenue")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VenueId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("VenueId");
+
+                    b.HasIndex("UserId", "VenueId")
+                        .IsUnique();
+
+                    b.ToTable("VenueMemberships");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -276,6 +766,494 @@ namespace App.DAL.EF.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("App.Domain.Identity.AppUser", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Venue", "ActiveVenue")
+                        .WithMany("ActiveUsers")
+                        .HasForeignKey("ActiveVenueId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ActiveVenue");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Booking", b =>
+                {
+                    b.HasOne("App.Domain.Identity.AppUser", "CreatedByUser")
+                        .WithMany("CreatedBookings")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("App.Domain.Venues.Space", "Space")
+                        .WithMany("Bookings")
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("App.Domain.Venues.Venue", "Venue")
+                        .WithMany("Bookings")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("App.Domain.ValueObjects.ScheduleWindow", "Schedule", b1 =>
+                        {
+                            b1.Property<Guid>("BookingId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateTime>("EndsAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("EndsAt");
+
+                            b1.Property<DateTime>("StartsAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("StartsAt");
+
+                            b1.HasKey("BookingId");
+
+                            b1.ToTable("Bookings");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BookingId");
+                        });
+
+                    b.OwnsOne("App.Domain.ValueObjects.Money", "SpaceCharge", b1 =>
+                        {
+                            b1.Property<Guid>("BookingId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("SpaceChargeAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("SpaceChargeCurrency");
+
+                            b1.HasKey("BookingId");
+
+                            b1.ToTable("Bookings");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BookingId");
+                        });
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Schedule")
+                        .IsRequired();
+
+                    b.Navigation("Space");
+
+                    b.Navigation("SpaceCharge")
+                        .IsRequired();
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.CateringOrder", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Booking", "Booking")
+                        .WithMany("CateringOrders")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("App.Domain.ValueObjects.Money", "TotalPrice", b1 =>
+                        {
+                            b1.Property<Guid>("CateringOrderId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("TotalPriceAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("TotalPriceCurrency");
+
+                            b1.HasKey("CateringOrderId");
+
+                            b1.ToTable("CateringOrders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CateringOrderId");
+                        });
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("TotalPrice")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.CateringOrderLine", b =>
+                {
+                    b.HasOne("App.Domain.Venues.CateringOrder", "CateringOrder")
+                        .WithMany("Lines")
+                        .HasForeignKey("CateringOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("App.Domain.ValueObjects.Money", "UnitPrice", b1 =>
+                        {
+                            b1.Property<Guid>("CateringOrderLineId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("UnitPriceAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("UnitPriceCurrency");
+
+                            b1.HasKey("CateringOrderLineId");
+
+                            b1.ToTable("CateringOrderLines");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CateringOrderLineId");
+                        });
+
+                    b.Navigation("CateringOrder");
+
+                    b.Navigation("UnitPrice")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.EquipmentAllocation", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Booking", "Booking")
+                        .WithMany("EquipmentAllocations")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("App.Domain.Venues.EquipmentInventoryItem", "EquipmentInventoryItem")
+                        .WithMany("Allocations")
+                        .HasForeignKey("EquipmentInventoryItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("App.Domain.Venues.Space", "Space")
+                        .WithMany("EquipmentAllocations")
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsOne("App.Domain.ValueObjects.ScheduleWindow", "Schedule", b1 =>
+                        {
+                            b1.Property<Guid>("EquipmentAllocationId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateTime>("EndsAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("EndsAt");
+
+                            b1.Property<DateTime>("StartsAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("StartsAt");
+
+                            b1.HasKey("EquipmentAllocationId");
+
+                            b1.ToTable("EquipmentAllocations");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EquipmentAllocationId");
+                        });
+
+                    b.OwnsOne("App.Domain.ValueObjects.Money", "TotalPrice", b1 =>
+                        {
+                            b1.Property<Guid>("EquipmentAllocationId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("TotalPriceAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("TotalPriceCurrency");
+
+                            b1.HasKey("EquipmentAllocationId");
+
+                            b1.ToTable("EquipmentAllocations");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EquipmentAllocationId");
+                        });
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("EquipmentInventoryItem");
+
+                    b.Navigation("Schedule")
+                        .IsRequired();
+
+                    b.Navigation("Space");
+
+                    b.Navigation("TotalPrice")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.EquipmentInventoryItem", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Venue", "Venue")
+                        .WithMany("EquipmentInventory")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("App.Domain.ValueObjects.Money", "UnitPrice", b1 =>
+                        {
+                            b1.Property<Guid>("EquipmentInventoryItemId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("UnitPriceAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("UnitPriceCurrency");
+
+                            b1.HasKey("EquipmentInventoryItemId");
+
+                            b1.ToTable("EquipmentInventoryItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EquipmentInventoryItemId");
+                        });
+
+                    b.Navigation("UnitPrice")
+                        .IsRequired();
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Space", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Space", "ParentSpace")
+                        .WithMany("CombinedSpaces")
+                        .HasForeignKey("ParentSpaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("App.Domain.Venues.Venue", "Venue")
+                        .WithMany("Spaces")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("App.Domain.ValueObjects.CapacityProfile", "CapacityProfile", b1 =>
+                        {
+                            b1.Property<Guid>("SpaceId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Maximum")
+                                .HasColumnType("integer")
+                                .HasColumnName("CapacityMaximum");
+
+                            b1.Property<int>("Minimum")
+                                .HasColumnType("integer")
+                                .HasColumnName("CapacityMinimum");
+
+                            b1.Property<int>("Recommended")
+                                .HasColumnType("integer")
+                                .HasColumnName("CapacityRecommended");
+
+                            b1.HasKey("SpaceId");
+
+                            b1.ToTable("Spaces");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SpaceId");
+                        });
+
+                    b.OwnsOne("App.Domain.ValueObjects.Money", "HourlyRate", b1 =>
+                        {
+                            b1.Property<Guid>("SpaceId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("HourlyRateAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("HourlyRateCurrency");
+
+                            b1.HasKey("SpaceId");
+
+                            b1.ToTable("Spaces");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SpaceId");
+                        });
+
+                    b.Navigation("CapacityProfile")
+                        .IsRequired();
+
+                    b.Navigation("HourlyRate")
+                        .IsRequired();
+
+                    b.Navigation("ParentSpace");
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.SpaceLayout", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Space", "Space")
+                        .WithMany("Layouts")
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Space");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Venue", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Company", "Company")
+                        .WithMany("Venues")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("App.Domain.ValueObjects.CapacityProfile", "CapacityProfile", b1 =>
+                        {
+                            b1.Property<Guid>("VenueId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Maximum")
+                                .HasColumnType("integer")
+                                .HasColumnName("CapacityMaximum");
+
+                            b1.Property<int>("Minimum")
+                                .HasColumnType("integer")
+                                .HasColumnName("CapacityMinimum");
+
+                            b1.Property<int>("Recommended")
+                                .HasColumnType("integer")
+                                .HasColumnName("CapacityRecommended");
+
+                            b1.HasKey("VenueId");
+
+                            b1.ToTable("Venues");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VenueId");
+                        });
+
+                    b.OwnsOne("App.Domain.ValueObjects.Money", "DefaultHourlyRate", b1 =>
+                        {
+                            b1.Property<Guid>("VenueId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("DefaultHourlyRateAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("DefaultHourlyRateCurrency");
+
+                            b1.HasKey("VenueId");
+
+                            b1.ToTable("Venues");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VenueId");
+                        });
+
+                    b.Navigation("CapacityProfile")
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("DefaultHourlyRate")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.VenueAccessRequest", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Company", "Company")
+                        .WithMany("AccessRequests")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("App.Domain.Identity.AppUser", "RequestorUser")
+                        .WithMany("SubmittedVenueAccessRequests")
+                        .HasForeignKey("RequestorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("App.Domain.Identity.AppUser", "ReviewedByUser")
+                        .WithMany("ReviewedVenueAccessRequests")
+                        .HasForeignKey("ReviewedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("App.Domain.Venues.Venue", "Venue")
+                        .WithMany("AccessRequests")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Company");
+
+                    b.Navigation("RequestorUser");
+
+                    b.Navigation("ReviewedByUser");
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.VenueMembership", b =>
+                {
+                    b.HasOne("App.Domain.Venues.Company", "Company")
+                        .WithMany("Memberships")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("App.Domain.Identity.AppUser", "User")
+                        .WithMany("VenueMemberships")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("App.Domain.Venues.Venue", "Venue")
+                        .WithMany("Memberships")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Venue");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("App.Domain.Identity.AppRole", null)
@@ -329,7 +1307,67 @@ namespace App.DAL.EF.Migrations
 
             modelBuilder.Entity("App.Domain.Identity.AppUser", b =>
                 {
+                    b.Navigation("CreatedBookings");
+
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("ReviewedVenueAccessRequests");
+
+                    b.Navigation("SubmittedVenueAccessRequests");
+
+                    b.Navigation("VenueMemberships");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Booking", b =>
+                {
+                    b.Navigation("CateringOrders");
+
+                    b.Navigation("EquipmentAllocations");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.CateringOrder", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Company", b =>
+                {
+                    b.Navigation("AccessRequests");
+
+                    b.Navigation("Memberships");
+
+                    b.Navigation("Venues");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.EquipmentInventoryItem", b =>
+                {
+                    b.Navigation("Allocations");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Space", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("CombinedSpaces");
+
+                    b.Navigation("EquipmentAllocations");
+
+                    b.Navigation("Layouts");
+                });
+
+            modelBuilder.Entity("App.Domain.Venues.Venue", b =>
+                {
+                    b.Navigation("AccessRequests");
+
+                    b.Navigation("ActiveUsers");
+
+                    b.Navigation("Bookings");
+
+                    b.Navigation("EquipmentInventory");
+
+                    b.Navigation("Memberships");
+
+                    b.Navigation("Spaces");
                 });
 #pragma warning restore 612, 618
         }

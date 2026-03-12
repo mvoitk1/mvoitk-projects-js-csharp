@@ -1,23 +1,23 @@
 ## 1. Domain Foundation
 
-- [ ] 1.1 Define core domain entities and enums for companies, venues, venue memberships/access requests, spaces, layouts, bookings, catering orders, and equipment allocation in `App.Domain`
-- [ ] 1.2 Add value objects or helper abstractions for status, pricing, capacity, and scheduling concepts needed by the mock flows
-- [ ] 1.3 Replace the starter role assumptions with product roles so `User`, `CompanyEmployee`, and `CompanyManager` can be enforced consistently, and define the platform-admin responsibility if venue review remains cross-venue
-- [ ] 1.4 Define the active-venue context model so multi-venue employees and managers can select the venue that scopes dashboards, bookings, catering, and management screens
+- [x] 1.1 Define core domain entities and enums for companies, venues, venue memberships/access requests, spaces, layouts, bookings, catering orders, and equipment allocation in `App.Domain`
+- [x] 1.2 Add value objects or helper abstractions for status, pricing, capacity, and scheduling concepts needed by the mock flows
+- [x] 1.3 Replace the starter role assumptions with product roles so `User`, `CompanyEmployee`, and `CompanyManager` can be enforced consistently, and define the platform-admin responsibility if venue review remains cross-venue
+- [x] 1.4 Define the active-venue context model so multi-venue employees and managers can select the venue that scopes dashboards, bookings, catering, and management screens
 
 ## 2. Persistence Layer
 
-- [ ] 2.1 Add `DbSet` registrations and entity configuration for the new venue domain inside `App.DAL.EF`
-- [ ] 2.2 Create EF Core migrations for the initial venue operations schema and verify it remains compatible with the existing Identity schema
-- [ ] 2.3 Add or update seed data so public discovery, request review, employee dashboard, and admin configuration screens have realistic development data
+- [x] 2.1 Add `DbSet` registrations and entity configuration for the new venue domain inside `App.DAL.EF`
+- [x] 2.2 Create EF Core migrations for the initial venue operations schema and verify it remains compatible with the existing Identity schema
+- [x] 2.3 Add or update seed data so public discovery, request review, employee dashboard, and admin configuration screens have realistic development data
 
 ## 3. Business Logic Layer
 
-- [ ] 3.1 Implement public discovery and venue request services for landing/browse data and venue access request submission
-- [ ] 3.2 Implement employee workspace services that aggregate bookings, event coordination details, and catering order summaries
-- [ ] 3.3 Implement venue membership and access-control services for rights assignment, blocked states, and active-venue selection
-- [ ] 3.4 Implement venue admin services for dashboard metrics, request triage actions, and spaces/layout configuration workflows
-- [ ] 3.5 Add DTOs or mapping models needed to move data cleanly between DAL/BLL and MVC views or API endpoints
+- [x] 3.1 Implement public discovery and venue request services for landing/browse data and venue access request submission
+- [x] 3.2 Implement employee workspace services that aggregate bookings, event coordination details, and catering order summaries
+- [x] 3.3 Implement venue membership and access-control services for rights assignment, blocked states, and active-venue selection
+- [x] 3.4 Implement venue admin services for dashboard metrics, request triage actions, and spaces/layout configuration workflows
+- [x] 3.5 Add DTOs or mapping models needed to move data cleanly between DAL/BLL and MVC views or API endpoints
 
 ## 4. Public And Identity UI
 

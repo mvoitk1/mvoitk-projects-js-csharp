@@ -1,4 +1,5 @@
 ﻿using App.Domain.Identity;
+using App.Domain.Venues;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
     public DbSet<AppRefreshToken> RefreshTokens { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<Venue> Venues { get; set; }
+    public DbSet<VenueMembership> VenueMemberships { get; set; }
+    public DbSet<VenueAccessRequest> VenueAccessRequests { get; set; }
+    public DbSet<Space> Spaces { get; set; }
+    public DbSet<SpaceLayout> SpaceLayouts { get; set; }
+    public DbSet<Booking> Bookings { get; set; }
+    public DbSet<CateringOrder> CateringOrders { get; set; }
+    public DbSet<CateringOrderLine> CateringOrderLines { get; set; }
+    public DbSet<EquipmentInventoryItem> EquipmentInventoryItems { get; set; }
+    public DbSet<EquipmentAllocation> EquipmentAllocations { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         // Configure all DateTime properties to use UTC
         ConfigureDateTimeAsUtc(builder);

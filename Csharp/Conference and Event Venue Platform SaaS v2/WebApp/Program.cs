@@ -1,3 +1,4 @@
+using App.BLL;
 using WebApp.Helpers;
 using WebApp.Setup;
 
@@ -8,6 +9,7 @@ builder.Services.AddAppDatabase(builder.Configuration, builder.Environment);
 builder.Services.AddAppIdentity();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<AppNameService>();
+builder.Services.AddVenuePlatformServices();
 builder.Services.AddAppControllers();
 builder.Services.AddForwardedHeaders();
 builder.Services.AddAppCors();

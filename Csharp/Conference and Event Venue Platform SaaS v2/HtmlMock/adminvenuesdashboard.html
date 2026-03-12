@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VenueFlow | Admin Venue Command</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --bg-deep: #040a14;
+            --panel: rgba(10, 22, 38, 0.86);
+            --panel-strong: rgba(13, 29, 49, 0.94);
+            --panel-soft: rgba(18, 39, 62, 0.78);
+            --line: rgba(126, 169, 219, 0.18);
+            --line-strong: rgba(126, 169, 219, 0.36);
+            --text: #e8f1fb;
+            --muted: #8aa0b9;
+            --accent: #49dcb1;
+            --accent-deep: #1b9f82;
+            --warning: #ffb84d;
+            --danger: #ff6b6b;
+            --info: #5ebcff;
+            --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "Trebuchet MS", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(73, 220, 177, 0.16), transparent 22%),
+                radial-gradient(circle at right 20%, rgba(94, 188, 255, 0.12), transparent 24%),
+                linear-gradient(160deg, #08111c 0%, #07111f 44%, #030812 100%);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 24px 24px;
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 92%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .page-shell {
+            width: min(1480px, calc(100% - 28px));
+            margin: 18px auto;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            background: rgba(4, 12, 22, 0.72);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: 300px minmax(0, 1fr);
+            min-height: calc(100vh - 36px);
+        }
+
+        .sidebar {
+            padding: 28px 22px;
+            background:
+                linear-gradient(180deg, rgba(8, 18, 31, 0.98), rgba(6, 13, 23, 0.98)),
+                linear-gradient(160deg, rgba(73, 220, 177, 0.06), transparent 60%);
+            border-right: 1px solid var(--line);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 26px;
+            font-family: "Courier New", monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-size: 0.95rem;
+        }
+
+        .brand-mark {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: var(--bg);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--info));
+            box-shadow: 0 12px 26px rgba(73, 220, 177, 0.25);
+        }
+
+        .sidebar-card,
+        .panel,
+        .hero,
+        .metric,
+        .venue-row,
+        .signal-card {
+            background: linear-gradient(180deg, rgba(15, 30, 50, 0.96), rgba(9, 20, 34, 0.94));
+            border: 1px solid var(--line);
+        }
+
+        .sidebar-card {
+            padding: 18px;
+            border-radius: 22px;
+        }
+
+        .eyebrow,
+        .nav a,
+        .chip,
+        .status,
+        .data,
+        .meta {
+            font-family: "Courier New", monospace;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(73, 220, 177, 0.22);
+            color: var(--accent);
+            background: rgba(73, 220, 177, 0.08);
+            font-size: 0.76rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-card strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+
+        .sidebar-note,
+        .hero p,
+        .panel-subtitle,
+        .meta {
+            color: var(--muted);
+            line-height: 1.65;
+            font-size: 0.92rem;
+        }
+
+        .nav {
+            display: grid;
+            gap: 8px;
+            margin: 24px 0;
+        }
+
+        .nav a {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            color: #adc0d7;
+            font-size: 0.86rem;
+            letter-spacing: 0.04em;
+            transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .nav a.active,
+        .nav a:hover {
+            transform: translateX(3px);
+            border-color: var(--line-strong);
+            color: var(--text);
+            background: rgba(94, 188, 255, 0.08);
+        }
+
+        .main {
+            padding: 26px;
+        }
+
+        .topbar,
+        .hero,
+        .stats-grid,
+        .content-grid,
+        .panel-head,
+        .venue-row,
+        .signal-grid {
+            display: flex;
+        }
+
+        .topbar,
+        .panel-head {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar {
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .alert-strip {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 184, 77, 0.22);
+            color: #ffe0a7;
+            background: linear-gradient(90deg, rgba(255, 184, 77, 0.16), rgba(255, 107, 107, 0.08));
+        }
+
+        .alert-strip strong {
+            font-family: "Courier New", monospace;
+            letter-spacing: 0.06em;
+        }
+
+        .button,
+        .chip,
+        .status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+        }
+
+        .button {
+            padding: 12px 18px;
+            border: 1px solid transparent;
+            color: var(--bg);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #7bedc7);
+            box-shadow: 0 14px 28px rgba(73, 220, 177, 0.18);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(73, 220, 177, 0.26);
+        }
+
+        .button.ghost {
+            color: var(--text);
+            border-color: var(--line-strong);
+            background: rgba(94, 188, 255, 0.06);
+            box-shadow: none;
+        }
+
+        .hero {
+            justify-content: space-between;
+            gap: 28px;
+            padding: 28px;
+            margin-bottom: 20px;
+            border-radius: 28px;
+            background:
+                linear-gradient(135deg, rgba(94, 188, 255, 0.08), rgba(73, 220, 177, 0.06)),
+                linear-gradient(180deg, rgba(15, 30, 50, 0.96), rgba(9, 20, 34, 0.94));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -120px -120px auto;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(73, 220, 177, 0.18), transparent 68%);
+        }
+
+        .hero h1,
+        .panel h2,
+        .metric strong,
+        .venue-name,
+        .signal-card strong {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            letter-spacing: -0.05em;
+        }
+
+        .hero h1 {
+            max-width: 720px;
+            font-size: clamp(2.7rem, 5vw, 4.5rem);
+            line-height: 0.92;
+        }
+
+        .hero-side {
+            min-width: 290px;
+            display: grid;
+            gap: 12px;
+            align-content: start;
+        }
+
+        .chip {
+            justify-content: flex-start;
+            padding: 11px 14px;
+            border: 1px solid var(--line-strong);
+            color: #cae7ff;
+            background: rgba(94, 188, 255, 0.08);
+            font-size: 0.82rem;
+            letter-spacing: 0.05em;
+        }
+
+        .stats-grid {
+            gap: 14px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            flex: 1 1 180px;
+            padding: 18px;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 5px;
+            background: linear-gradient(180deg, var(--accent), var(--info));
+        }
+
+        .metric strong {
+            display: block;
+            font-size: 1.9rem;
+            margin-bottom: 8px;
+        }
+
+        .metric span {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .content-grid {
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .primary-column {
+            flex: 1.45;
+            display: grid;
+            gap: 16px;
+        }
+
+        .secondary-column {
+            flex: 0.92;
+            display: grid;
+            gap: 16px;
+        }
+
+        .panel {
+            padding: 22px;
+            border-radius: 24px;
+        }
+
+        .panel h2 {
+            font-size: 1.75rem;
+        }
+
+        .panel-subtitle {
+            margin-top: 8px;
+        }
+
+        .venue-table,
+        .signal-grid {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .venue-row {
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 18px;
+            border-radius: 18px;
+        }
+
+        .venue-name {
+            font-size: 1.18rem;
+            margin-bottom: 8px;
+        }
+
+        .meta {
+            max-width: 620px;
+        }
+
+        .venue-data {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .status,
+        .data {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+        }
+
+        .data {
+            border-radius: 999px;
+            color: #cae7ff;
+            background: rgba(94, 188, 255, 0.08);
+            border: 1px solid rgba(94, 188, 255, 0.16);
+        }
+
+        .status.live {
+            color: #88ffd7;
+            background: rgba(73, 220, 177, 0.12);
+        }
+
+        .status.watch {
+            color: #ffd48a;
+            background: rgba(255, 184, 77, 0.12);
+        }
+
+        .status.alert {
+            color: #ffb0b0;
+            background: rgba(255, 107, 107, 0.12);
+        }
+
+        .signal-card {
+            padding: 18px;
+            border-radius: 18px;
+        }
+
+        .signal-card strong {
+            display: block;
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+
+        .list {
+            margin: 18px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        @media (max-width: 1120px) {
+            .page-grid,
+            .content-grid {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .hero,
+            .venue-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero-side,
+            .venue-data {
+                width: 100%;
+            }
+
+            .venue-data {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-shell {
+                width: min(100%, calc(100% - 14px));
+                margin: 7px auto;
+                border-radius: 22px;
+            }
+
+            .sidebar,
+            .main {
+                padding: 18px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="page-grid">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">VF</div>
+                <span>Admin Grid</span>
+            </div>
+
+            <section class="sidebar-card">
+                <span class="eyebrow">Control Layer</span>
+                <strong>Venue command board</strong>
+                <p class="sidebar-note">This admin surface is intentionally separated from the owner experience: denser telemetry, faster triage, and operational status-first hierarchy.</p>
+            </section>
+
+            <nav class="nav">
+                <a class="active" href="adminvenuesdashboard.html">Venue Command</a>
+                <a href="adminvenuerequests.html">Approvals / Access</a>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div class="alert-strip">
+                    <strong>ALERT WINDOW 09:00-11:00</strong>
+                    <span>4 venues require manual action before weekend bookings lock.</span>
+                </div>
+                <a class="button" href="adminvenuerequests.html">Open approvals</a>
+            </div>
+
+            <section class="hero">
+                <div>
+                    <span class="eyebrow">Admin Venue Command</span>
+                    <h1>Platform-wide venue oversight built for triage, not browsing.</h1>
+                    <p>Track every venue by risk, staff coverage, occupancy, and revenue movement. This view is meant to feel like an operations console instead of a customer-facing dashboard.</p>
+                </div>
+                <div class="hero-side">
+                    <div class="chip">Pending venue requests / 12</div>
+                    <div class="chip">Rights assignments blocked / 9</div>
+                    <div class="chip">Critical venues / 4</div>
+                    <a class="button ghost" href="adminvenuerequests.html">Go to access decisions</a>
+                </div>
+            </section>
+
+            <section class="stats-grid">
+                <article class="metric">
+                    <strong>63</strong>
+                    <span>total active venues</span>
+                </article>
+                <article class="metric">
+                    <strong>87%</strong>
+                    <span>average occupancy</span>
+                </article>
+                <article class="metric">
+                    <strong>214</strong>
+                    <span>employees with access</span>
+                </article>
+                <article class="metric">
+                    <strong>3</strong>
+                    <span>data sync anomalies</span>
+                </article>
+            </section>
+
+            <div class="content-grid">
+                <section class="primary-column">
+                    <article class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Venue fleet</h2>
+                                <div class="panel-subtitle">Sorted by operational pressure and intervention priority.</div>
+                            </div>
+                            <div class="chip">mode / live-monitor</div>
+                        </div>
+
+                        <div class="venue-table">
+                            <article class="venue-row">
+                                <div>
+                                    <div class="venue-name">Harbor Summit Centre</div>
+                                    <div class="meta">Tallinn / conference-center / 5 spaces / recent booking +00:42 / staff healthy</div>
+                                </div>
+                                <div class="venue-data">
+                                    <span class="status live">LIVE</span>
+                                    <span class="data">occ 91%</span>
+                                    <span class="data">rev 28.4k</span>
+                                    <span class="data">staff 12</span>
+                                </div>
+                            </article>
+
+                            <article class="venue-row">
+                                <div>
+                                    <div class="venue-name">North Hall Events</div>
+                                    <div class="meta">Tartu / event-hall / price package stale / bookings slowing over last 7 days</div>
+                                </div>
+                                <div class="venue-data">
+                                    <span class="status watch">WATCH</span>
+                                    <span class="data">occ 64%</span>
+                                    <span class="data">rev 11.9k</span>
+                                    <span class="data">staff 6</span>
+                                </div>
+                            </article>
+
+                            <article class="venue-row">
+                                <div>
+                                    <div class="venue-name">Riverside Loft</div>
+                                    <div class="meta">Parnu / boutique-venue / employee access review overdue / owner response delayed</div>
+                                </div>
+                                <div class="venue-data">
+                                    <span class="status alert">ALERT</span>
+                                    <span class="data">occ 48%</span>
+                                    <span class="data">rev 7.2k</span>
+                                    <span class="data">staff 1</span>
+                                </div>
+                            </article>
+
+                            <article class="venue-row">
+                                <div>
+                                    <div class="venue-name">Aurora Hotel Forum</div>
+                                    <div class="meta">Tallinn / hotel-venue / demand high / catering and layouts fully synced</div>
+                                </div>
+                                <div class="venue-data">
+                                    <span class="status live">LIVE</span>
+                                    <span class="data">occ 88%</span>
+                                    <span class="data">rev 34.7k</span>
+                                    <span class="data">staff 19</span>
+                                </div>
+                            </article>
+
+                            <article class="venue-row">
+                                <div>
+                                    <div class="venue-name">Greenline Campus Hub</div>
+                                    <div class="meta">Narva / newly-approved / first-month volatility / onboarding checklist still open</div>
+                                </div>
+                                <div class="venue-data">
+                                    <span class="status watch">NEW</span>
+                                    <span class="data">occ 37%</span>
+                                    <span class="data">rev 3.4k</span>
+                                    <span class="data">staff 4</span>
+                                </div>
+                            </article>
+                        </div>
+                    </article>
+                </section>
+
+                <aside class="secondary-column">
+                    <article class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Signal blocks</h2>
+                                <div class="panel-subtitle">Short-range indicators for admin response.</div>
+                            </div>
+                        </div>
+                        <div class="signal-grid">
+                            <article class="signal-card">
+                                <strong>12</strong>
+                                <span class="meta">venue approvals queued</span>
+                            </article>
+                            <article class="signal-card">
+                                <strong>9</strong>
+                                <span class="meta">employee rights pending</span>
+                            </article>
+                            <article class="signal-card">
+                                <strong>4</strong>
+                                <span class="meta">venues under manual review</span>
+                            </article>
+                        </div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Action protocol</h2>
+                                <div class="panel-subtitle">Suggested order for admin intervention.</div>
+                            </div>
+                        </div>
+                        <ul class="list">
+                            <li>Resolve approval queue before assigning employee access.</li>
+                            <li>Escalate venues with low staffing against upcoming bookings.</li>
+                            <li>Prioritize revenue-drop venues where data quality is already clean.</li>
+                            <li>Use access-review logs to catch orphaned employee permissions.</li>
+                        </ul>
+                    </article>
+                </aside>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

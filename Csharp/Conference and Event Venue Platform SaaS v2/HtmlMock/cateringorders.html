@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VenueFlow | Catering Orders</title>
+    <style>
+        :root {
+            --sand: #f5efe5;
+            --sand-deep: #e7dac6;
+            --forest: #1f2a2a;
+            --forest-soft: #30423e;
+            --cream: rgba(255, 250, 244, 0.9);
+            --cream-strong: rgba(255, 248, 241, 0.96);
+            --text: #1d201d;
+            --muted: #5d615a;
+            --accent: #b45d3c;
+            --accent-dark: #8d4226;
+            --line: rgba(76, 57, 43, 0.12);
+            --shadow: 0 24px 60px rgba(23, 23, 23, 0.16);
+            --success: #3c6b57;
+            --warning: #a26534;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(232, 192, 165, 0.78), transparent 26%),
+                radial-gradient(circle at bottom right, rgba(45, 84, 74, 0.18), transparent 34%),
+                linear-gradient(135deg, #efe5d4 0%, #f8f3ec 46%, #ece2d6 100%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .page-shell {
+            width: min(1380px, calc(100% - 28px));
+            margin: 18px auto;
+            border-radius: 34px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 250, 244, 0.36);
+            box-shadow: var(--shadow);
+            background: rgba(255, 248, 241, 0.55);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            min-height: calc(100vh - 36px);
+        }
+
+        .sidebar {
+            padding: 28px 22px;
+            color: #f7f0e8;
+            background:
+                linear-gradient(rgba(22, 31, 31, 0.36), rgba(22, 31, 31, 0.44)),
+                linear-gradient(165deg, #6d7c71 0%, #324441 42%, #1d2423 100%);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            font-size: 1rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 240, 224, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-card,
+        .sidebar-promo,
+        .panel,
+        .option-card,
+        .summary-card,
+        .timeline-item {
+            border: 1px solid rgba(255, 244, 232, 0.12);
+            background: rgba(255, 250, 245, 0.08);
+            backdrop-filter: blur(8px);
+        }
+
+        .sidebar-card,
+        .sidebar-promo {
+            padding: 18px;
+            border-radius: 24px;
+        }
+
+        .eyebrow,
+        .nav a,
+        .sidebar-note,
+        .chip,
+        .muted,
+        .hero-copy p,
+        .panel-subtitle,
+        .option-copy p,
+        .summary-meta,
+        .timeline-item p,
+        .toast {
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            color: #f0d5bd;
+            background: rgba(255, 245, 232, 0.1);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-note {
+            margin: 0;
+            color: rgba(249, 239, 229, 0.78);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .nav {
+            margin: 28px 0;
+            display: grid;
+            gap: 8px;
+        }
+
+        .nav a {
+            padding: 12px 14px;
+            border-radius: 16px;
+            color: rgba(247, 240, 232, 0.84);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav a.active,
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff8f0;
+            transform: translateX(2px);
+        }
+
+        .sidebar-promo h3,
+        .panel-title,
+        .option-copy h3,
+        .hero-copy h1,
+        .stat strong,
+        .summary-amount,
+        .timeline-item strong {
+            margin: 0;
+            letter-spacing: -0.04em;
+        }
+
+        .sidebar-promo h3 {
+            font-size: 1.35rem;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-promo p {
+            margin: 0 0 14px;
+            color: rgba(247, 240, 232, 0.8);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .main {
+            padding: 28px;
+        }
+
+        .topbar,
+        .hero,
+        .panel-head,
+        .content-grid,
+        .option-top,
+        .summary-row,
+        .timeline-item {
+            display: flex;
+        }
+
+        .topbar,
+        .panel-head,
+        .option-top,
+        .summary-row {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar {
+            margin-bottom: 24px;
+        }
+
+        .button,
+        .chip,
+        .ghost-button {
+            border-radius: 999px;
+        }
+
+        .button,
+        .ghost-button {
+            padding: 12px 18px;
+            font-weight: 700;
+            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .ghost-button {
+            color: var(--forest-soft);
+            background: rgba(255, 251, 247, 0.74);
+            border: 1px solid var(--line);
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            cursor: pointer;
+            color: #fff7f0;
+            background: var(--accent);
+            box-shadow: 0 14px 28px rgba(180, 93, 60, 0.22);
+        }
+
+        .ghost-button {
+            cursor: pointer;
+        }
+
+        .button:hover,
+        .ghost-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button:hover {
+            background: var(--accent-dark);
+        }
+
+        .hero {
+            align-items: end;
+            justify-content: space-between;
+            gap: 22px;
+            padding: 30px;
+            margin-bottom: 22px;
+            border-radius: 30px;
+            background:
+                linear-gradient(rgba(255, 251, 247, 0.46), rgba(255, 251, 247, 0.75)),
+                linear-gradient(120deg, rgba(255, 213, 184, 0.56), rgba(255, 248, 241, 0.32));
+            border: 1px solid rgba(255, 255, 255, 0.42);
+        }
+
+        .hero-copy h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 0.95;
+        }
+
+        .hero-copy p {
+            margin: 16px 0 0;
+            max-width: 760px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(150px, 1fr));
+            gap: 14px;
+            min-width: min(100%, 360px);
+        }
+
+        .stat {
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(255, 250, 245, 0.72);
+            border: 1px solid rgba(76, 57, 43, 0.1);
+        }
+
+        .stat strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.55rem;
+        }
+
+        .stat span {
+            color: var(--muted);
+            font-family: "Trebuchet MS", sans-serif;
+            font-size: 0.88rem;
+        }
+
+        .content-grid {
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        .primary-column {
+            flex: 1.35;
+            display: grid;
+            gap: 18px;
+        }
+
+        .secondary-column {
+            flex: 0.9;
+            display: grid;
+            gap: 18px;
+        }
+
+        .panel {
+            padding: 22px;
+            border-radius: 28px;
+            background: var(--cream);
+            border: 1px solid var(--line);
+        }
+
+        .panel-title {
+            font-size: 1.6rem;
+        }
+
+        .panel-subtitle {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+            background: rgba(48, 66, 62, 0.08);
+            color: var(--forest-soft);
+        }
+
+        .search-bar {
+            margin-top: 18px;
+            padding: 14px 18px;
+            width: 100%;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--text);
+        }
+
+        .option-list {
+            margin-top: 18px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .option-card {
+            padding: 20px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.58);
+            border: 1px solid rgba(76, 57, 43, 0.08);
+            transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .option-card:hover,
+        .option-card.active {
+            transform: translateY(-2px);
+            border-color: rgba(180, 93, 60, 0.34);
+            box-shadow: 0 14px 28px rgba(31, 42, 42, 0.08);
+        }
+
+        .option-copy h3 {
+            font-size: 1.22rem;
+            margin-bottom: 6px;
+        }
+
+        .option-copy p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .tag-row,
+        .action-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag-row {
+            margin: 14px 0 16px;
+        }
+
+        .tag {
+            padding: 8px 12px;
+            border-radius: 999px;
+            color: var(--forest-soft);
+            background: rgba(48, 66, 62, 0.08);
+            font-family: "Trebuchet MS", sans-serif;
+            font-size: 0.82rem;
+        }
+
+        .select-button {
+            border: 1px solid var(--line);
+            background: rgba(255, 251, 247, 0.74);
+            color: var(--forest-soft);
+        }
+
+        .select-button.active {
+            background: rgba(180, 93, 60, 0.14);
+            color: var(--accent-dark);
+            border-color: rgba(180, 93, 60, 0.26);
+        }
+
+        .summary-card {
+            padding: 22px;
+            border-radius: 28px;
+            background: var(--cream);
+            border: 1px solid var(--line);
+        }
+
+        .summary-card h2 {
+            margin: 0 0 14px;
+            font-size: 1.5rem;
+            letter-spacing: -0.04em;
+        }
+
+        .summary-amount {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 4px;
+        }
+
+        .summary-meta {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .summary-stack {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .summary-row {
+            padding: 14px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.62);
+            border: 1px solid rgba(76, 57, 43, 0.08);
+            gap: 12px;
+        }
+
+        .summary-row span:last-child {
+            font-weight: 700;
+        }
+
+        .summary-actions {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .toast {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            color: var(--success);
+            background: rgba(60, 107, 87, 0.12);
+            border: 1px solid rgba(60, 107, 87, 0.16);
+            line-height: 1.5;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .timeline-item {
+            justify-content: space-between;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(76, 57, 43, 0.08);
+        }
+
+        .timeline-item strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 1.02rem;
+        }
+
+        .timeline-item p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .timeline-badge {
+            align-self: flex-start;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-family: "Trebuchet MS", sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--warning);
+            background: rgba(162, 101, 52, 0.12);
+        }
+
+        @media (max-width: 1120px) {
+            .page-grid,
+            .content-grid,
+            .hero {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 820px) {
+            .page-shell {
+                width: min(100%, calc(100% - 16px));
+                margin: 8px auto;
+                border-radius: 24px;
+            }
+
+            .sidebar,
+            .main {
+                padding: 22px 18px;
+            }
+
+            .topbar,
+            .option-top,
+            .summary-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hero {
+                padding: 22px;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="page-grid">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">VF</div>
+                <span>VenueFlow</span>
+            </div>
+
+            <section class="sidebar-card">
+                <span class="eyebrow">Active Event</span>
+                <strong style="display:block; font-size:1.3rem; margin-bottom:6px;">Global Health Forum 2026</strong>
+                <p class="sidebar-note">Main hall dinner service for 180 guests with two coffee breaks and an evening networking reception.</p>
+            </section>
+
+            <nav class="nav">
+                <a href="dashboardpage.html">Dashboard</a>
+                <a href="browsevenues.html">Browse Venues</a>
+                <a href="mybookingsview.html">My Bookings</a>
+                <a href="spaceslayouts.html">Spaces & Layouts</a>
+                <a class="active" href="cateringorders.html">Catering Orders</a>
+                <a href="#">Recurring Templates</a>
+                <a href="#">Invoices & Billing</a>
+            </nav>
+
+            <section class="sidebar-promo">
+                <span class="eyebrow">Service Window</span>
+                <h3>Submit final menu by May 07</h3>
+                <p>Venue operations need the final headcount and selected catering package one week before guest arrival.</p>
+                <a class="button" href="#">Share with venue team</a>
+            </section>
+        </aside>
+
+        <main class="main">
+            <div class="content-grid">
+                <div class="primary-column">
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 class="panel-title">Catering Options</h2>
+                                <p class="panel-subtitle">Choose multiple catering packages to attach to the current venue or space order. A direct payment flow is also available for faster approval.</p>
+                            </div>
+                            <div class="chips">
+                                <span class="chip">Venue approved menus</span>
+                                <span class="chip">Mock selection flow</span>
+                                <span class="chip">Live summary</span>
+                            </div>
+                        </div>
+
+                        <input class="search-bar" id="search" type="search" placeholder="Search breakfast, buffet, plated dinner, vegan, or reception">
+
+                        <div class="option-list" id="optionList">
+                            <article class="option-card active" data-name="Nordic Breakfast Table" data-price="3420" data-per-guest="19" data-service="Breakfast setup · 7:30 AM" data-notes="Fresh pastries, fruit, yogurt, artisan coffee, and tea for early arrivals.">
+                                <div class="option-top">
+                                    <div class="option-copy">
+                                        <h3>Nordic Breakfast Table</h3>
+                                        <p>Fresh pastries, fruit, yogurt, artisan coffee, and tea for early arrivals.</p>
+                                    </div>
+                                    <button class="ghost-button select-button active" type="button">Selected</button>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag">EUR 19 / guest</span>
+                                    <span class="tag">Breakfast setup · 7:30 AM</span>
+                                    <span class="tag">Vegetarian friendly</span>
+                                </div>
+                                <div class="action-row">
+                                    <span class="chip">Fits plenary arrival</span>
+                                    <span class="chip">Fast service</span>
+                                </div>
+                            </article>
+
+                            <article class="option-card" data-name="Executive Coffee Break" data-price="2160" data-per-guest="12" data-service="Morning break · 10:30 AM" data-notes="Coffee, tea, juices, cookies, and small seasonal snacks for mid-session refresh.">
+                                <div class="option-top">
+                                    <div class="option-copy">
+                                        <h3>Executive Coffee Break</h3>
+                                        <p>Coffee, tea, juices, cookies, and small seasonal snacks for mid-session refresh.</p>
+                                    </div>
+                                    <button class="ghost-button select-button" type="button">Select</button>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag">EUR 12 / guest</span>
+                                    <span class="tag">Morning break · 10:30 AM</span>
+                                    <span class="tag">Low setup load</span>
+                                </div>
+                                <div class="action-row">
+                                    <span class="chip">Easy add-on</span>
+                                    <span class="chip">Pairs with keynote agenda</span>
+                                </div>
+                            </article>
+
+                            <article class="option-card" data-name="Garden Lunch Buffet" data-price="4860" data-per-guest="27" data-service="Lunch buffet · 12:30 PM" data-notes="Seasonal buffet with hot mains, salads, dessert bites, and labeled dietary stations.">
+                                <div class="option-top">
+                                    <div class="option-copy">
+                                        <h3>Garden Lunch Buffet</h3>
+                                        <p>Seasonal buffet with hot mains, salads, dessert bites, and labeled dietary stations.</p>
+                                    </div>
+                                    <button class="ghost-button select-button" type="button">Select</button>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag">EUR 27 / guest</span>
+                                    <span class="tag">Lunch buffet · 12:30 PM</span>
+                                    <span class="tag">Vegan options included</span>
+                                </div>
+                                <div class="action-row">
+                                    <span class="chip">Best for 150+ guests</span>
+                                    <span class="chip">Shared service island</span>
+                                </div>
+                            </article>
+
+                            <article class="option-card" data-name="Signature Plated Dinner" data-price="7560" data-per-guest="42" data-service="Dinner service · 6:30 PM" data-notes="Three-course plated dinner with table service, bread course, and dessert selection.">
+                                <div class="option-top">
+                                    <div class="option-copy">
+                                        <h3>Signature Plated Dinner</h3>
+                                        <p>Three-course plated dinner with table service, bread course, and dessert selection.</p>
+                                    </div>
+                                    <button class="ghost-button select-button" type="button">Select</button>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag">EUR 42 / guest</span>
+                                    <span class="tag">Dinner service · 6:30 PM</span>
+                                    <span class="tag">Premium service staff</span>
+                                </div>
+                                <div class="action-row">
+                                    <span class="chip">Ideal for gala seating</span>
+                                    <span class="chip">Works with AV run-of-show</span>
+                                </div>
+                            </article>
+
+                            <article class="option-card" data-name="Networking Reception Canapes" data-price="5220" data-per-guest="29" data-service="Reception service · 8:00 PM" data-notes="Passed canapes, dessert bites, sparkling water, and soft bar support for networking hour.">
+                                <div class="option-top">
+                                    <div class="option-copy">
+                                        <h3>Networking Reception Canapes</h3>
+                                        <p>Passed canapes, dessert bites, sparkling water, and soft bar support for networking hour.</p>
+                                    </div>
+                                    <button class="ghost-button select-button" type="button">Select</button>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag">EUR 29 / guest</span>
+                                    <span class="tag">Reception service · 8:00 PM</span>
+                                    <span class="tag">Standing format</span>
+                                </div>
+                                <div class="action-row">
+                                    <span class="chip">Add after plenary</span>
+                                    <span class="chip">Supports sponsor mingling</span>
+                                </div>
+                            </article>
+
+                            <article class="option-card" data-name="All-Day Delegate Package" data-price="11160" data-per-guest="62" data-service="Full-day coverage" data-notes="Breakfast, two coffee breaks, lunch buffet, hydration stations, and evening snack reset.">
+                                <div class="option-top">
+                                    <div class="option-copy">
+                                        <h3>All-Day Delegate Package</h3>
+                                        <p>Breakfast, two coffee breaks, lunch buffet, hydration stations, and evening snack reset.</p>
+                                    </div>
+                                    <button class="ghost-button select-button" type="button">Select</button>
+                                </div>
+                                <div class="tag-row">
+                                    <span class="tag">EUR 62 / guest</span>
+                                    <span class="tag">Full-day coverage</span>
+                                    <span class="tag">Best value bundle</span>
+                                </div>
+                                <div class="action-row">
+                                    <span class="chip">Single approval path</span>
+                                    <span class="chip">Matches conference agenda</span>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="secondary-column">
+                    <section class="summary-card">
+                        <span class="eyebrow" style="background: rgba(60, 107, 87, 0.12); color: var(--success);">Selected Catering</span>
+                        <h2 id="summaryName">1 catering option selected</h2>
+                        <strong class="summary-amount" id="summaryPrice">EUR 3,420</strong>
+                        <div class="summary-meta" id="summaryNotes">Build a combined catering order by selecting multiple meal and service blocks for the same event.</div>
+
+                        <div class="summary-stack">
+                            <div class="summary-row">
+                                <span>Selected items</span>
+                                <span id="summaryItems">Nordic Breakfast Table</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Guest count</span>
+                                <span>180 guests</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Service slots</span>
+                                <span id="summaryService">Breakfast setup · 7:30 AM</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Combined per guest</span>
+                                <span id="summaryPerGuest">EUR 19</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-actions">
+                            <button class="button" id="addToOrder" type="button">Add to venue/space order</button>
+                            <button class="ghost-button" id="payNow" type="button">Pay catering now</button>
+                        </div>
+
+                        <div class="toast" id="toast">Selected package is ready. You can attach it to the booking order or mark it as paid right away.</div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 class="panel-title">Approval Flow</h2>
+                                <p class="panel-subtitle">The next steps change depending on whether catering stays attached to the venue booking or is paid separately.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline">
+                            <article class="timeline-item">
+                                <div>
+                                    <strong>Add to venue or space order</strong>
+                                    <p>Catering stays on the same booking record and is sent with the room setup order for venue approval.</p>
+                                </div>
+                                <span class="timeline-badge">Bundled</span>
+                            </article>
+
+                            <article class="timeline-item">
+                                <div>
+                                    <strong>Pay catering immediately</strong>
+                                    <p>Marks the catering package as separately paid while keeping the venue booking active for room and staffing charges.</p>
+                                </div>
+                                <span class="timeline-badge">Direct pay</span>
+                            </article>
+
+                            <article class="timeline-item">
+                                <div>
+                                    <strong>Final headcount sync</strong>
+                                    <p>Guest count updates can still adjust the selected package before the final menu deadline.</p>
+                                </div>
+                                <span class="timeline-badge">Flexible</span>
+                            </article>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    const optionCards = Array.from(document.querySelectorAll('.option-card'));
+    const searchInput = document.getElementById('search');
+    const summaryName = document.getElementById('summaryName');
+    const summaryPrice = document.getElementById('summaryPrice');
+    const summaryNotes = document.getElementById('summaryNotes');
+    const summaryItems = document.getElementById('summaryItems');
+    const summaryService = document.getElementById('summaryService');
+    const summaryPerGuest = document.getElementById('summaryPerGuest');
+    const toast = document.getElementById('toast');
+    const addToOrder = document.getElementById('addToOrder');
+    const payNow = document.getElementById('payNow');
+
+    const formatPrice = (value) => `EUR ${Number(value).toLocaleString('en-US')}`;
+
+    function getSelectedCards() {
+        return optionCards.filter((card) => card.classList.contains('active'));
+    }
+
+    function updateSummary() {
+        const selectedCards = getSelectedCards();
+
+        if (selectedCards.length === 0) {
+            summaryName.textContent = 'No catering options selected';
+            summaryPrice.textContent = 'EUR 0';
+            summaryNotes.textContent = 'Select one or more catering options to build a venue-linked order or prepare a direct payment.';
+            summaryItems.textContent = 'None selected';
+            summaryService.textContent = 'No service windows selected';
+            summaryPerGuest.textContent = 'EUR 0';
+            toast.textContent = 'Choose one or more catering options to continue.';
+            return;
+        }
+
+        const totalPrice = selectedCards.reduce((sum, card) => sum + Number(card.dataset.price), 0);
+        const totalPerGuest = selectedCards.reduce((sum, card) => sum + Number(card.dataset.perGuest), 0);
+        const selectedNames = selectedCards.map((card) => card.dataset.name);
+        const selectedServices = selectedCards.map((card) => card.dataset.service);
+
+        summaryName.textContent = `${selectedCards.length} catering option${selectedCards.length === 1 ? '' : 's'} selected`;
+        summaryPrice.textContent = formatPrice(totalPrice);
+        summaryNotes.textContent = selectedCards.length === 1
+            ? selectedCards[0].dataset.notes
+            : 'The selected packages are grouped into one combined catering order for this event booking.';
+        summaryItems.textContent = selectedNames.join(', ');
+        summaryService.textContent = selectedServices.join(' + ');
+        summaryPerGuest.textContent = `EUR ${totalPerGuest}`;
+        toast.textContent = `${selectedCards.length} catering option${selectedCards.length === 1 ? '' : 's'} selected. Add them to the venue/space order or pay for them now.`;
+    }
+
+    function toggleCard(card) {
+        const nextActiveState = !card.classList.contains('active');
+        card.classList.toggle('active', nextActiveState);
+
+        const button = card.querySelector('.select-button');
+        button.classList.toggle('active', nextActiveState);
+        button.textContent = nextActiveState ? 'Selected' : 'Select';
+
+        updateSummary();
+    }
+
+    optionCards.forEach((card) => {
+        card.querySelector('.select-button').addEventListener('click', () => toggleCard(card));
+    });
+
+    addToOrder.addEventListener('click', () => {
+        const selectedCards = getSelectedCards();
+        if (selectedCards.length === 0) {
+            toast.textContent = 'Select at least one catering option before adding it to the venue/space order.';
+            return;
+        }
+
+        toast.textContent = `${selectedCards.length} catering option${selectedCards.length === 1 ? ' was' : 's were'} added to the active venue/space order for Global Health Forum 2026.`;
+    });
+
+    payNow.addEventListener('click', () => {
+        const selectedCards = getSelectedCards();
+        if (selectedCards.length === 0) {
+            toast.textContent = 'Select at least one catering option before starting direct payment.';
+            return;
+        }
+
+        toast.textContent = `${selectedCards.length} catering option${selectedCards.length === 1 ? ' was' : 's were'} marked for direct catering payment. Venue space charges stay on the booking order.`;
+    });
+
+    searchInput.addEventListener('input', (event) => {
+        const term = event.target.value.trim().toLowerCase();
+
+        optionCards.forEach((card) => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(term) ? '' : 'none';
+        });
+    });
+
+    updateSummary();
+</script>
+</body>
+</html>

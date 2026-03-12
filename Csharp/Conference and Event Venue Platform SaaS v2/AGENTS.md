@@ -6,7 +6,7 @@ This is a Conference & Event Venue Platform SaaS application for venues that man
 
 ## Technology Stack
 
-- **Backend**: ASP.NET Core MVC (.NET 8)
+- **Backend**: ASP.NET Core MVC (.NET 10)
 - **Database**: PostgreSQL with Entity Framework Core
 - **Authentication**: ASP.NET Core Identity
 - **API**: RESTful API with Swagger/OpenAPI
@@ -75,9 +75,10 @@ This project follows these principles:
 
 | Role | Responsibilities |
 |------|------------------|
+| User | Base authenticated account before venue membership or elevated access is assigned |
 | CompanyEmployee | Handles bookings and day-of event coordination |
 | CompanyManager | Manages space configuration, pricing, room setup |
-| CompanyAdmin | Manages venue, partners, business settings |
+| Admin | Platform-level administrative role for cross-venue review, onboarding decisions, and access control |
 
 ## Subscription Tiers
 
@@ -115,13 +116,20 @@ This project follows these principles:
 When working on this codebase:
 
 1. **Follow the existing architecture** - Don't introduce new layers without justification
-2. **Use EF Core conventions** - Follow the patterns in existing migrations and DbContext
-3. **Maintain localization** - Add resource keys to `.resx` files for user-facing strings
-4. **Write tests** - Add unit tests for new business logic in `WebApp.Tests/`
-5. **Consider migrations** - If adding new entities, create a migration: `dotnet ef migrations add <Name>`
-6. **Respect SOLID** - Keep services focused and dependencies injected
-7. **Apply Clean Code** - Write readable code with meaningful names, small functions
-8. **Apply KISS** - Prefer simple solutions over complex ones
-9. **Apply DRY** - Extract duplicated logic into shared methods/services
-10. **Apply YAGNI** - Don't add functionality until it's explicitly needed
-11. **Apply Onion Architecture** - Core domain should not depend on infrastructure concerns
+2. **Treat the current codebase as scaffolding** - Existing starter pages, roles, and placeholder assets are a base to build from, not product truth
+3. **Use the implementation plan as the source of product truth** - Prefer the active OpenSpec change, design, tasks, and `HtmlMock/` flows over starter-template conventions
+4. **Use this role model unless the user changes it** - `User`, `CompanyEmployee`, `CompanyManager`, and `Admin`
+5. **Target framework is `net10.0`** - Do not downgrade to .NET 8 unless the user explicitly requests it
+6. **Maintain localization** - Add resource keys to `.resx` files for user-facing strings
+7. **Write tests** - Add unit tests for new business logic in `WebApp.Tests/`
+8. **Consider migrations** - If adding new entities, create a migration: `dotnet ef migrations add <Name>`
+9. **Respect SOLID** - Keep services focused and dependencies injected
+10. **Apply Clean Code** - Write readable code with meaningful names, small functions
+11. **Apply KISS** - Prefer simple solutions over complex ones
+12. **Apply DRY** - Extract duplicated logic into shared methods/services
+13. **Apply YAGNI** - Don't add functionality until it's explicitly needed
+14. **Apply Onion Architecture** - Core domain should not depend on infrastructure concerns
+15. **Log user prompts** - If the user gives you a prompt intended for future reuse or tracking, write that prompt into `AI/ai-prompts.md`
+16. **Use EF Core conventions** - Follow the patterns in existing migrations and DbContext unless the implementation plan requires replacing scaffold conventions
+17. **Assume some web assets are unrelated leftovers** - In particular, `WebApp/wwwroot/js/screens/*` appears to be demo/starter content and should only be kept if it is intentionally reused
+18. **Prefer removal over preservation for unrelated scaffold/demo code** - Do not keep irrelevant starter artifacts just for continuity

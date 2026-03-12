@@ -4,7 +4,7 @@ schema: spec-driven
 # This is shown to AI when creating artifacts.
 context: |
   ## Technology Stack
-  - Backend: ASP.NET Core MVC
+  - Backend: ASP.NET Core MVC on .NET 10 (`net10.0`)
   - Database: PostgreSQL with EF Core
   - Authentication: ASP.NET Core Identity
   - API: RESTful API with Swagger
@@ -28,12 +28,20 @@ context: |
     - App.Resources - Localization resources
     - WebApp - Main MVC application
     - WebApp.Tests - Unit and integration tests
+  
+  ## Implementation Notes
+  - The current repository is a starter base to build from, not a finished product implementation
+  - Existing scaffolded roles, seeded roles, placeholder pages, and starter assets can be changed to match the implementation plan
+  - The intended role model is: `User`, `CompanyEmployee`, `CompanyManager`, and `Admin`
+  - Use the active OpenSpec change, its design/tasks/specs, and the `HtmlMock/` files as the authoritative product direction
+  - Prefer removing or replacing unrelated starter/demo artifacts over preserving them for compatibility
+  - `WebApp/wwwroot/js/screens/*` should be treated as likely unrelated demo/starter assets unless the implementation intentionally reuses them
 
 # Per-artifact rules
 rules:
   proposal:
     - Focus on venue management features (spaces, equipment, catering, bookings, invoicing)
-    - Consider user roles: CompanyEmployee, CompanyManager, CompanyAdmin
+    - Use the role model `User`, `CompanyEmployee`, `CompanyManager`, and `Admin` unless the user explicitly changes it
     - Include subscription tiering: Standard (single-venue), Premium (multi-venue)
     - Address scalability for different venue sizes
     - Apply YAGNI: Only propose features that are explicitly needed
@@ -42,7 +50,7 @@ rules:
     - Follow existing N-Tier architecture (Domain, DAL, BLL, UI)
     - Use EF Core for database operations
     - Implement proper separation of concerns
-    - Consider the existing project structure when proposing changes
+    - Consider the existing project structure when proposing changes, but treat starter scaffolding as replaceable
     - Apply Clean Code: Write readable, maintainable code
     - Apply KISS: Keep solutions simple and straightforward
     - Apply DRY: Avoid code duplication, extract common logic
@@ -52,6 +60,6 @@ rules:
     - Break implementation into Domain → DAL → BLL → UI layers
     - Include database migrations when needed
     - Add unit tests for business logic
-    - Consider backward compatibility with existing features
+    - Do not assume scaffolded roles, placeholder pages, or unrelated demo assets must be preserved for backward compatibility
     - Refactor existing code when improving - remove duplication (DRY)
     - Remove unused code and features (YAGNI)

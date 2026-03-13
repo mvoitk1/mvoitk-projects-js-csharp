@@ -133,6 +133,12 @@ a {
     align-items: center;
 }
 
+.public-nav-form {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
 .public-lang-link {
     padding: 8px 10px;
     color: var(--muted);

@@ -34,6 +34,21 @@ a {
   box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
 }
 
+.login-partial-form {
+  margin: 0;
+}
+
+.login-partial-logout {
+  min-width: 6rem;
+  font-weight: 600;
+}
+
+@media (min-width: 576px) {
+  .login-partial-logout {
+    margin-left: 0.25rem;
+  }
+}
+
 button.accept-policy {
   font-size: 1rem;
   line-height: inherit;

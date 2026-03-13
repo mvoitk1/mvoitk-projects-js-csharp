@@ -15,6 +15,7 @@
     <div class="workspace-grid">
         @await Html.PartialAsync("_EmployeeSidebar", workspaceLayout)
         <main class="workspace-main">
+            @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceTopBar.cshtml")
             @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceMessages.cshtml")
             @RenderBody()
         </main>

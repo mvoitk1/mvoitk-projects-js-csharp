@@ -1,0 +1,9 @@
+<div class="workspace-topbar">
+    <div class="workspace-topbar-account">
+        <span class="workspace-topbar-label">@App.Resources.Views.Shared._Layout.Hello</span>
+        <a class="workspace-topbar-user" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">@User.Identity?.Name</a>
+    </div>
+    <form method="post" class="workspace-topbar-form" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+        <button type="submit" class="workspace-topbar-logout">@App.Resources.Views.Shared._Layout.Logout</button>
+    </form>
+</div>

@@ -11,6 +11,10 @@ public interface IVenueAdminService
         Guid reviewedByUserId,
         ReviewVenueAccessRequestDto dto,
         CancellationToken cancellationToken = default);
+    Task ArchiveRejectedVenueAsync(
+        Guid reviewedByUserId,
+        Guid requestId,
+        CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SpaceConfigurationDto>> GetSpaceConfigurationsAsync(
         Guid userId,
         Guid venueId,

@@ -1,0 +1,14 @@
+@using App.Resources.Views.Workspace
+@model WebApp.ViewModels.Workspace.WorkspaceContextViewModel
+
+@if (Model.ActiveVenue?.IsRejectedVenue == true)
+{
+    <section class="workspace-message is-error">
+        <strong>@Pages.WorkspaceVenueRejectedTitle</strong>
+        <p>@Pages.WorkspaceVenueRejectedDescription</p>
+        @if (!string.IsNullOrWhiteSpace(Model.ActiveVenue.RejectionNotes))
+        {
+            <p>@Model.ActiveVenue.RejectionNotes</p>
+        }
+    </section>
+}

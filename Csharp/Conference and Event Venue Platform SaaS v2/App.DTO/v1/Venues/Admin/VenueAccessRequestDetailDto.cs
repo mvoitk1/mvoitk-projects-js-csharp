@@ -3,7 +3,9 @@ namespace App.DTO.v1.Venues.Admin;
 public class VenueAccessRequestDetailDto : VenueAccessRequestListItemDto
 {
     public Guid RequestorUserId { get; init; }
+    public string? RequestorEmail { get; init; }
     public Guid? ReviewedByUserId { get; init; }
+    public string? ReviewedByEmail { get; init; }
     public Guid? CompanyId { get; init; }
     public Guid? VenueId { get; init; }
     public string? ContactPhone { get; init; }

@@ -50,7 +50,30 @@ public class VenueMembershipService(AppDbContext context) : IVenueMembershipServ
                         item.VenueId == user.ActiveVenueId.Value,
                 cancellationToken);
 
-        return membership?.ToActiveVenueSelectionResultDto();
+        if (membership == null)
+        {
+            return null;
+        }
+
+        var result = membership.ToActiveVenueSelectionResultDto();
+        var rejectedRequest = await context.VenueAccessRequests
+            .AsNoTracking()
+            .Where(item => item.VenueId == membership.VenueId && item.Status == VenueAccessRequestStatus.Rejected)
+            .OrderByDescending(item => item.ReviewedAt ?? item.SubmittedAt)
+            .Select(item => item.ReviewNotes)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new ActiveVenueSelectionResultDto
+        {
+            VenueId = result.VenueId,
+            MembershipId = result.MembershipId,
+            VenueName = result.VenueName,
+            CompanyName = result.CompanyName,
+            AccessLevel = result.AccessLevel,
+            VenueStatus = result.VenueStatus,
+            IsRejectedVenue = membership.Venue.Status == VenueLifecycleStatus.Archived && rejectedRequest != null,
+            RejectionNotes = rejectedRequest
+        };
     }
 
     public async Task<ActiveVenueSelectionResultDto> SetActiveVenueAsync(
@@ -59,6 +82,7 @@ public class VenueMembershipService(AppDbContext context) : IVenueMembershipServ
         CancellationToken cancellationToken = default)
     {
         var membership = await context.VenueMemberships
+            .AsTracking()
             .Include(item => item.Company)
             .Include(item => item.Venue)
             .SingleOrDefaultAsync(
@@ -76,10 +100,11 @@ public class VenueMembershipService(AppDbContext context) : IVenueMembershipServ
             throw new InvalidOperationException("This venue membership is blocked from active selection.");
         }
 
-        var user = await context.Users.SingleAsync(item => item.Id == userId, cancellationToken);
+        var user = await context.Users.AsTracking().SingleAsync(item => item.Id == userId, cancellationToken);
         user.ActiveVenueId = venueId;
 
         var memberships = await context.VenueMemberships
+            .AsTracking()
             .Where(item => item.UserId == userId)
             .ToListAsync(cancellationToken);
 
@@ -116,6 +141,7 @@ public class VenueMembershipService(AppDbContext context) : IVenueMembershipServ
         }
 
         var membership = await context.VenueMemberships
+            .AsTracking()
             .Include(item => item.Company)
             .Include(item => item.Venue)
             .SingleOrDefaultAsync(
@@ -144,10 +170,11 @@ public class VenueMembershipService(AppDbContext context) : IVenueMembershipServ
 
         if (dto.IsDefaultVenue)
         {
-            var user = await context.Users.SingleAsync(item => item.Id == dto.UserId, cancellationToken);
+            var user = await context.Users.AsTracking().SingleAsync(item => item.Id == dto.UserId, cancellationToken);
             user.ActiveVenueId = dto.VenueId;
 
             var otherMemberships = await context.VenueMemberships
+                .AsTracking()
                 .Where(item => item.UserId == dto.UserId && item.Id != membership.Id)
                 .ToListAsync(cancellationToken);
 
@@ -176,6 +203,7 @@ public class VenueMembershipService(AppDbContext context) : IVenueMembershipServ
         var status = ParseMembershipStatus(dto.Status);
 
         var membership = await context.VenueMemberships
+            .AsTracking()
             .Include(item => item.Company)
             .Include(item => item.Venue)
             .SingleOrDefaultAsync(item => item.Id == membershipId, cancellationToken);
@@ -192,7 +220,7 @@ public class VenueMembershipService(AppDbContext context) : IVenueMembershipServ
         if (!status.CanOperate())
         {
             membership.IsDefaultVenue = false;
-            var user = await context.Users.SingleAsync(item => item.Id == membership.UserId, cancellationToken);
+            var user = await context.Users.AsTracking().SingleAsync(item => item.Id == membership.UserId, cancellationToken);
             if (user.ActiveVenueId == membership.VenueId)
             {
                 user.ActiveVenueId = null;

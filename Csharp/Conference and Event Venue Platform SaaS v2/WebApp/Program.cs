@@ -1,5 +1,6 @@
 using App.BLL;
 using WebApp.Helpers;
+using WebApp.Services;
 using WebApp.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,7 @@ builder.Services.AddAppIdentity();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<AppNameService>();
 builder.Services.AddVenuePlatformServices();
+builder.Services.AddScoped<IVenueOperatorIdentityRoleSyncService, VenueOperatorIdentityRoleSyncService>();
 builder.Services.AddAppControllers();
 builder.Services.AddForwardedHeaders();
 builder.Services.AddAppCors();

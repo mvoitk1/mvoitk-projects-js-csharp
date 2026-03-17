@@ -11,6 +11,8 @@ namespace WebApp.Areas.Identity.Pages.Account;
 [AllowAnonymous]
 public class LoginModel(SignInManager<AppUser> signInManager) : PageModel
 {
+    private const string DefaultWorkspaceUrl = "/workspace";
+
     [BindProperty]
     public InputModel Input { get; set; } = new();
 
@@ -24,7 +26,9 @@ public class LoginModel(SignInManager<AppUser> signInManager) : PageModel
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
-        ReturnUrl = returnUrl ?? Url.Content("~/");
+        ReturnUrl = string.IsNullOrWhiteSpace(returnUrl)
+            ? DefaultWorkspaceUrl
+            : returnUrl;
 
         if (!ModelState.IsValid)
         {

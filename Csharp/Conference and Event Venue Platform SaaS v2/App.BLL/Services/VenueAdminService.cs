@@ -92,6 +92,8 @@ public class VenueAdminService(AppDbContext context, IVenueMembershipService mem
         CancellationToken cancellationToken = default)
     {
         var request = await context.VenueAccessRequests
+            .Include(item => item.RequestorUser)
+            .Include(item => item.ReviewedByUser)
             .AsNoTracking()
             .SingleOrDefaultAsync(item => item.Id == requestId, cancellationToken);
 
@@ -128,6 +130,7 @@ public class VenueAdminService(AppDbContext context, IVenueMembershipService mem
         }
 
         var request = await context.VenueAccessRequests
+            .AsTracking()
             .SingleOrDefaultAsync(item => item.Id == dto.RequestId, cancellationToken);
 
         if (request == null)
@@ -142,6 +145,11 @@ public class VenueAdminService(AppDbContext context, IVenueMembershipService mem
         request.ApprovedAccessLevel = status == VenueAccessRequestStatus.Approved && !string.IsNullOrWhiteSpace(dto.ApprovedAccessLevel)
             ? Enum.Parse<VenueAccessLevel>(dto.ApprovedAccessLevel, true)
             : null;
+
+        if (request.Status == VenueAccessRequestStatus.Approved)
+        {
+            await EnsureApprovedRequestLinkedVenueAsync(request, cancellationToken);
+        }
 
         await context.SaveChangesAsync(cancellationToken);
 
@@ -174,6 +182,164 @@ public class VenueAdminService(AppDbContext context, IVenueMembershipService mem
         }
 
         return await GetVenueAccessRequestAsync(request.Id, cancellationToken);
+    }
+
+    public async Task ArchiveRejectedVenueAsync(
+        Guid reviewedByUserId,
+        Guid requestId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await VenueAccessValidation.UserHasRoleAsync(context, reviewedByUserId, AppRoles.Admin, cancellationToken))
+        {
+            throw new InvalidOperationException("Only platform admins can archive rejected venues.");
+        }
+
+        var request = await context.VenueAccessRequests
+            .AsTracking()
+            .SingleOrDefaultAsync(item => item.Id == requestId, cancellationToken);
+
+        if (request == null)
+        {
+            throw new KeyNotFoundException("Venue access request was not found.");
+        }
+
+        if (request.Status != VenueAccessRequestStatus.Rejected)
+        {
+            throw new InvalidOperationException("Only rejected venue requests can archive their linked venue.");
+        }
+
+        if (!request.VenueId.HasValue)
+        {
+            throw new InvalidOperationException("This rejected request is not linked to a venue that can be archived.");
+        }
+
+        var venueId = request.VenueId.Value;
+        var venue = await context.Venues
+            .AsTracking()
+            .SingleOrDefaultAsync(item => item.Id == venueId, cancellationToken);
+
+        if (venue == null)
+        {
+            throw new KeyNotFoundException("Venue was not found.");
+        }
+
+        venue.Status = VenueLifecycleStatus.Archived;
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureApprovedRequestLinkedVenueAsync(
+        VenueAccessRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request.CompanyId.HasValue && request.VenueId.HasValue)
+        {
+            return;
+        }
+
+        var company = request.CompanyId.HasValue
+            ? await context.Companies.AsTracking().SingleAsync(item => item.Id == request.CompanyId.Value, cancellationToken)
+            : await context.Companies.AsTracking().SingleOrDefaultAsync(
+                item => item.Name == request.CompanyName,
+                cancellationToken);
+
+        if (company == null)
+        {
+            company = new Company
+            {
+                Name = request.CompanyName.Trim(),
+                RegistrationCode = await GenerateUniqueRegistrationCodeAsync(request.CompanyName, cancellationToken),
+                ContactEmail = request.ContactEmail.Trim(),
+                ContactPhone = string.IsNullOrWhiteSpace(request.ContactPhone) ? null : request.ContactPhone.Trim(),
+                Notes = request.Notes
+            };
+
+            context.Companies.Add(company);
+        }
+
+        request.Company = company;
+
+        var venue = request.VenueId.HasValue
+            ? await context.Venues.AsTracking().SingleAsync(item => item.Id == request.VenueId.Value, cancellationToken)
+            : await context.Venues.AsTracking().SingleOrDefaultAsync(
+                item => item.CompanyId == company.Id &&
+                        item.Name == request.VenueName,
+                cancellationToken);
+
+        if (venue == null)
+        {
+            venue = new Venue
+            {
+                Company = company,
+                Name = request.VenueName.Trim(),
+                Slug = await GenerateUniqueVenueSlugAsync(request.VenueName, cancellationToken),
+                City = request.City.Trim(),
+                Country = request.Country.Trim(),
+                AddressLine1 = request.AddressLine1.Trim(),
+                Description = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+                Status = VenueLifecycleStatus.Active
+            };
+
+            context.Venues.Add(venue);
+        }
+
+        request.Venue = venue;
+    }
+
+    private async Task<string> GenerateUniqueRegistrationCodeAsync(string companyName, CancellationToken cancellationToken)
+    {
+        var stem = new string(companyName
+            .ToUpperInvariant()
+            .Where(char.IsLetterOrDigit)
+            .Take(12)
+            .ToArray());
+
+        if (string.IsNullOrWhiteSpace(stem))
+        {
+            stem = "VENUE";
+        }
+
+        for (var suffix = 1; suffix < 10_000; suffix++)
+        {
+            var candidate = $"{stem}-{suffix:D3}";
+            var exists = await context.Companies.AnyAsync(item => item.RegistrationCode == candidate, cancellationToken);
+            if (!exists)
+            {
+                return candidate;
+            }
+        }
+
+        throw new InvalidOperationException("Unable to generate a unique company registration code.");
+    }
+
+    private async Task<string> GenerateUniqueVenueSlugAsync(string venueName, CancellationToken cancellationToken)
+    {
+        var normalized = new string(venueName
+            .Trim()
+            .ToLowerInvariant()
+            .Select(character => char.IsLetterOrDigit(character) ? character : '-')
+            .ToArray());
+
+        var parts = normalized
+            .Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var stem = string.Join('-', parts);
+
+        if (string.IsNullOrWhiteSpace(stem))
+        {
+            stem = "venue";
+        }
+
+        for (var suffix = 0; suffix < 10_000; suffix++)
+        {
+            var candidate = suffix == 0 ? stem : $"{stem}-{suffix}";
+            var exists = await context.Venues.AnyAsync(item => item.Slug == candidate, cancellationToken);
+            if (!exists)
+            {
+                return candidate;
+            }
+        }
+
+        throw new InvalidOperationException("Unable to generate a unique venue slug.");
     }
 
     public async Task<IReadOnlyList<SpaceConfigurationDto>> GetSpaceConfigurationsAsync(
@@ -213,6 +379,7 @@ public class VenueAdminService(AppDbContext context, IVenueMembershipService mem
 
         var space = dto.SpaceId.HasValue
             ? await context.Spaces
+                .AsTracking()
                 .Include(item => item.Layouts)
                 .SingleOrDefaultAsync(item => item.Id == dto.SpaceId.Value && item.VenueId == venueId, cancellationToken)
             : null;

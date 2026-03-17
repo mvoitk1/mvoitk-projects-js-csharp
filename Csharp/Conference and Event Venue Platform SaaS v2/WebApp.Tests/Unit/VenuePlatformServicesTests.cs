@@ -137,6 +137,163 @@ public class VenuePlatformServicesTests
     }
 
     [Fact]
+    public async Task ReviewVenueAccessRequestAsync_PersistsChangesWithNoTrackingContext()
+    {
+        await using var context = CreateContext(useNoTrackingQueryBehavior: true);
+        var fixture = await SeedVenueFixtureAsync(context);
+        var membershipService = new VenueMembershipService(context);
+        var adminService = new VenueAdminService(context, membershipService);
+
+        await adminService.ReviewVenueAccessRequestAsync(
+            fixture.Admin.Id,
+            new ReviewVenueAccessRequestDto
+            {
+                RequestId = fixture.PendingRequest.Id,
+                Status = VenueAccessRequestStatus.Approved.ToString(),
+                ReviewNotes = "Approved with no-tracking context."
+            });
+
+        var savedRequest = await context.VenueAccessRequests
+            .AsNoTracking()
+            .SingleAsync(request => request.Id == fixture.PendingRequest.Id);
+
+        Assert.Equal(VenueAccessRequestStatus.Approved, savedRequest.Status);
+        Assert.NotNull(savedRequest.ReviewedAt);
+        Assert.NotNull(savedRequest.CompanyId);
+        Assert.NotNull(savedRequest.VenueId);
+    }
+
+    [Fact]
+    public async Task ArchiveRejectedVenueAsync_ArchivesRejectedVenueAndPreservesRequest()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var adminService = new VenueAdminService(context, new VenueMembershipService(context));
+
+        var company = new Company
+        {
+            Name = "Rejected Venue Group",
+            RegistrationCode = "RVG-001",
+            ContactEmail = "ops@rejectedvenue.test"
+        };
+
+        var venue = new Venue
+        {
+            Company = company,
+            Name = "Rejected Venue",
+            Slug = "rejected-venue",
+            City = "Tallinn",
+            Country = "Estonia",
+            AddressLine1 = "Sadama 7",
+            Status = VenueLifecycleStatus.Active
+        };
+
+        var rejectedRequest = new VenueAccessRequest
+        {
+            RequestorUser = fixture.Requester,
+            Company = company,
+            Venue = venue,
+            CompanyName = company.Name,
+            VenueName = venue.Name,
+            ContactName = "Marta Saar",
+            ContactEmail = "marta@rejectedvenue.test",
+            City = venue.City,
+            Country = venue.Country,
+            AddressLine1 = venue.AddressLine1,
+            EstimatedMonthlyBookings = 3,
+            Status = VenueAccessRequestStatus.Rejected
+        };
+
+        context.AddRange(company, venue, rejectedRequest);
+        await context.SaveChangesAsync();
+
+        foreach (var entry in context.ChangeTracker.Entries().ToList())
+        {
+            entry.State = EntityState.Detached;
+        }
+
+        await adminService.ArchiveRejectedVenueAsync(fixture.Admin.Id, rejectedRequest.Id);
+
+        var archivedRequest = await context.VenueAccessRequests.SingleAsync(item => item.Id == rejectedRequest.Id);
+        var archivedVenue = await context.Venues.SingleAsync(item => item.Id == venue.Id);
+
+        Assert.Equal(VenueAccessRequestStatus.Rejected, archivedRequest.Status);
+        Assert.Equal(VenueLifecycleStatus.Archived, archivedVenue.Status);
+        Assert.True(await context.Companies.AnyAsync(item => item.Id == company.Id));
+    }
+
+    [Fact]
+    public async Task ArchiveRejectedVenueAsync_PreservesVenueMembershipsAndActiveVenue()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var adminService = new VenueAdminService(context, new VenueMembershipService(context));
+
+        var company = new Company
+        {
+            Name = "Rejected Venue Group",
+            RegistrationCode = "RVG-002",
+            ContactEmail = "ops2@rejectedvenue.test"
+        };
+
+        var venue = new Venue
+        {
+            Company = company,
+            Name = "Rejected Venue Two",
+            Slug = "rejected-venue-two",
+            City = "Tallinn",
+            Country = "Estonia",
+            AddressLine1 = "Sadama 8",
+            Status = VenueLifecycleStatus.Active
+        };
+
+        var rejectedRequest = new VenueAccessRequest
+        {
+            RequestorUser = fixture.Requester,
+            Company = company,
+            Venue = venue,
+            CompanyName = company.Name,
+            VenueName = venue.Name,
+            ContactName = "Marta Saar",
+            ContactEmail = "marta@rejectedvenue.test",
+            City = venue.City,
+            Country = venue.Country,
+            AddressLine1 = venue.AddressLine1,
+            EstimatedMonthlyBookings = 3,
+            Status = VenueAccessRequestStatus.Rejected
+        };
+
+        var membership = new VenueMembership
+        {
+            Company = company,
+            Venue = venue,
+            User = fixture.Requester,
+            AccessLevel = VenueAccessLevel.Manager,
+            Status = VenueMembershipStatus.Active,
+            IsDefaultVenue = true
+        };
+
+        fixture.Requester.ActiveVenueId = venue.Id;
+
+        context.AddRange(company, venue, rejectedRequest, membership);
+        await context.SaveChangesAsync();
+
+        foreach (var entry in context.ChangeTracker.Entries().ToList())
+        {
+            entry.State = EntityState.Detached;
+        }
+
+        await adminService.ArchiveRejectedVenueAsync(fixture.Admin.Id, rejectedRequest.Id);
+
+        var archivedVenue = await context.Venues.SingleAsync(item => item.Id == venue.Id);
+        Assert.Equal(VenueLifecycleStatus.Archived, archivedVenue.Status);
+        Assert.True(await context.VenueMemberships.AnyAsync(item => item.VenueId == venue.Id));
+        var requester = await context.Users.SingleAsync(item => item.Id == fixture.Requester.Id);
+        Assert.Equal(venue.Id, requester.ActiveVenueId);
+        Assert.True(await context.VenueAccessRequests.AnyAsync(item => item.Id == rejectedRequest.Id));
+    }
+
+    [Fact]
     public async Task SaveSpaceConfigurationAsync_UpdatesLayouts()
     {
         await using var context = CreateContext();
@@ -184,10 +341,14 @@ public class VenuePlatformServicesTests
         Assert.Contains(updated.Layouts, layout => layout.LayoutType == LayoutType.Banquet.ToString());
     }
 
-    private static AppDbContext CreateContext()
+    private static AppDbContext CreateContext(bool useNoTrackingQueryBehavior = false)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .UseQueryTrackingBehavior(
+                useNoTrackingQueryBehavior
+                    ? QueryTrackingBehavior.NoTrackingWithIdentityResolution
+                    : QueryTrackingBehavior.TrackAll)
             .Options;
 
         var context = new AppDbContext(options);

@@ -1,5 +1,6 @@
 @using App.Resources.Views.Workspace
-@model WebApp.ViewModels.Workspace.WorkspaceLayoutViewModel
+@using WebApp.Helpers
+@model WebApp.ViewModels.Workspace.WorkspaceHomePageViewModel
 @{
     Layout = "_PublicLayout";
     ViewData["Title"] = Pages.WorkspaceTitle;
@@ -7,7 +8,48 @@
 
 <section class="workspace-redirect-card">
     <p class="eyebrow">@Pages.WorkspaceTitle</p>
-    <h1>@Pages.NoVenueMembershipTitle</h1>
-    <p>@Pages.NoVenueMembershipBody</p>
+    <h1>@(Model.Layout.Context.HasVenueAccess ? Pages.WorkspaceAccessReadyTitle : Pages.NoVenueMembershipTitle)</h1>
+    <p>@(Model.Layout.Context.HasVenueAccess ? Pages.WorkspaceAccessReadyBody : Pages.NoVenueMembershipBody)</p>
     <a class="public-button" asp-controller="Venues" asp-action="RequestVenue">@Pages.ReturnToPublicSite</a>
+</section>
+
+<section class="workspace-panel">
+    <div class="section-heading">
+        <h2>@Pages.WorkspaceRequestsTitle</h2>
+        <p>@Pages.WorkspaceRequestsDescription</p>
+    </div>
+
+    @if (!Model.HasRequests)
+    {
+        <p>@Pages.WorkspaceRequestsEmpty</p>
+    }
+    else
+    {
+        <div class="card-stack compact">
+            @foreach (var request in Model.Requests)
+            {
+                <article class="workspace-card compact">
+                    <div class="card-top">
+                        <strong>@request.VenueName</strong>
+                        <span class="status-pill @WorkspacePresentation.ToBadgeClass(request.Status)">@WorkspacePresentation.ToStatusLabel(request.Status)</span>
+                    </div>
+                    <p>@request.CompanyName</p>
+                    <p>@Pages.RequestSubmittedLabel: @request.SubmittedAt:g</p>
+                    <p>@Pages.RequestReviewedLabel: @(request.ReviewedAt?.ToString("g") ?? "-")</p>
+                    @if (request.Status == "Approved" && request.HasAssignedMembership)
+                    {
+                        <p>@Pages.WorkspaceRequestApprovedWithMembership</p>
+                    }
+                    else if (request.Status == "Approved")
+                    {
+                        <p>@Pages.WorkspaceRequestApprovedPendingAccess</p>
+                    }
+                    else if (request.Status == "Rejected")
+                    {
+                        <p>@Pages.WorkspaceRequestRejected</p>
+                    }
+                </article>
+            }
+        </div>
+    }
 </section>

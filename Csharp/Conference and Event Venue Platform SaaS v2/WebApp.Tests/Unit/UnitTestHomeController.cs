@@ -44,6 +44,11 @@ file sealed class FakePublicVenueDiscoveryService : IPublicVenueDiscoveryService
     public Task<IReadOnlyList<PublicVenueSummaryDto>> GetBrowseVenuesAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<PublicVenueSummaryDto>>([]);
 
+    public Task<IReadOnlyList<UserVenueAccessRequestSummaryDto>> GetUserVenueAccessRequestsAsync(
+        Guid requestorUserId,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<UserVenueAccessRequestSummaryDto>>([]);
+
     public Task<VenueAccessRequestSubmissionResultDto> SubmitVenueAccessRequestAsync(
         Guid requestorUserId,
         SubmitVenueAccessRequestDto dto,

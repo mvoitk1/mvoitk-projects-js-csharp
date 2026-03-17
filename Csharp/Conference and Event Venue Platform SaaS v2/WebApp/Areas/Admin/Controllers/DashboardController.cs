@@ -1,5 +1,6 @@
 using App.BLL.Services;
 using App.Domain.Identity;
+using App.Domain.Venues;
 using App.Resources.Views.Workspace;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,13 @@ public class DashboardController(
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         var context = await BuildWorkspaceContextAsync(cancellationToken);
+        if (context.ActiveVenue != null &&
+            Enum.TryParse<VenueAccessLevel>(context.ActiveVenue.AccessLevel, true, out var accessLevel) &&
+            accessLevel != VenueAccessLevel.Manager)
+        {
+            return RedirectToAction("Index", "Dashboard", new { area = "Employee" });
+        }
+
         if (context.ActiveVenue == null)
         {
             return View(new AdminDashboardPageViewModel

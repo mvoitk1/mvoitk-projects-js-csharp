@@ -10,6 +10,16 @@
   <data name="VenueSelectorButton" xml:space="preserve"><value>Switch venue</value></data>
   <data name="NoVenueMembershipTitle" xml:space="preserve"><value>No venue access yet</value></data>
   <data name="NoVenueMembershipBody" xml:space="preserve"><value>Your account does not have an active venue membership. Submit a venue request or ask an admin to assign access.</value></data>
+  <data name="WorkspaceAccessReadyTitle" xml:space="preserve"><value>Your venue access is ready</value></data>
+  <data name="WorkspaceAccessReadyBody" xml:space="preserve"><value>Your account now has venue access in the database. If you are still seeing this page, sign out and back in to refresh your workspace role.</value></data>
+  <data name="WorkspaceRequestsTitle" xml:space="preserve"><value>Your venue requests</value></data>
+  <data name="WorkspaceRequestsDescription" xml:space="preserve"><value>Track submitted venue onboarding requests and their latest review status here.</value></data>
+  <data name="WorkspaceRequestsEmpty" xml:space="preserve"><value>You have not submitted any venue requests yet.</value></data>
+  <data name="WorkspaceRequestApprovedPendingAccess" xml:space="preserve"><value>Approved. A platform admin still needs to assign venue membership before the full workspace becomes available.</value></data>
+  <data name="WorkspaceRequestApprovedWithMembership" xml:space="preserve"><value>Approved and access assigned. Refresh your session to open the venue workspace.</value></data>
+  <data name="WorkspaceRequestRejected" xml:space="preserve"><value>Rejected. The venue was not approved for onboarding.</value></data>
+  <data name="WorkspaceVenueRejectedTitle" xml:space="preserve"><value>This venue has been rejected</value></data>
+  <data name="WorkspaceVenueRejectedDescription" xml:space="preserve"><value>The platform admin archived this venue after rejecting its onboarding request. Venue employees and managers can still see the venue context and review notes here.</value></data>
   <data name="VenueRequiredMessage" xml:space="preserve"><value>Select a venue before opening this workspace.</value></data>
   <data name="NavEmployeeDashboard" xml:space="preserve"><value>Dashboard</value></data>
   <data name="NavEmployeeBookings" xml:space="preserve"><value>Bookings</value></data>
@@ -76,8 +86,28 @@
   <data name="RequestReviewNotesLabel" xml:space="preserve"><value>Review notes</value></data>
   <data name="RequestReviewAccessLabel" xml:space="preserve"><value>Approved access level</value></data>
   <data name="RequestReviewAssignLabel" xml:space="preserve"><value>Assign venue membership after approval</value></data>
+  <data name="RequestReviewOnboardingNotice" xml:space="preserve"><value>This request is an initial venue onboarding application. Approving it creates the company and venue records from the submitted details.</value></data>
+  <data name="RequestReviewMembershipPendingSetup" xml:space="preserve"><value>After approval, you can assign venue access for the requester from the same review page.</value></data>
   <data name="RequestReviewSaveButton" xml:space="preserve"><value>Save review decision</value></data>
   <data name="RequestReviewSuccess" xml:space="preserve"><value>Venue request updated.</value></data>
+  <data name="RequestReviewFailed" xml:space="preserve"><value>The venue request review could not be saved.</value></data>
+  <data name="RequestArchiveRejectedVenueTitle" xml:space="preserve"><value>Archive rejected venue</value></data>
+  <data name="RequestArchiveRejectedVenueDescription" xml:space="preserve"><value>Keep the rejected venue and request records, but archive the venue so its rejected status is visible to venue employees and managers.</value></data>
+  <data name="RequestArchiveRejectedVenueButton" xml:space="preserve"><value>Archive rejected venue</value></data>
+  <data name="RequestArchiveRejectedVenueSuccess" xml:space="preserve"><value>Rejected venue archived.</value></data>
+  <data name="RequestSubmittedByLabel" xml:space="preserve"><value>Submitted by</value></data>
+  <data name="RequestSubmittedByUserIdLabel" xml:space="preserve"><value>Requester account ID</value></data>
+  <data name="RequestReviewedByLabel" xml:space="preserve"><value>Reviewed by</value></data>
+  <data name="RequestCompanyNameLabel" xml:space="preserve"><value>Company</value></data>
+  <data name="RequestVenueNameLabel" xml:space="preserve"><value>Venue</value></data>
+  <data name="RequestContactNameLabel" xml:space="preserve"><value>Contact name</value></data>
+  <data name="RequestContactEmailLabel" xml:space="preserve"><value>Contact email</value></data>
+  <data name="RequestContactPhoneLabel" xml:space="preserve"><value>Contact phone</value></data>
+  <data name="RequestCityLabel" xml:space="preserve"><value>City</value></data>
+  <data name="RequestCountryLabel" xml:space="preserve"><value>Country</value></data>
+  <data name="RequestAddressLabel" xml:space="preserve"><value>Address</value></data>
+  <data name="RequestEstimatedMonthlyBookingsLabel" xml:space="preserve"><value>Estimated monthly bookings</value></data>
+  <data name="RequestSubmittedNotesLabel" xml:space="preserve"><value>Submitted notes</value></data>
   <data name="SpacesTitle" xml:space="preserve"><value>VenueFlow | Spaces &amp; layouts</value></data>
   <data name="SpacesEyebrow" xml:space="preserve"><value>Space configuration</value></data>
   <data name="SpacesHeadline" xml:space="preserve"><value>Maintain venue spaces, capacity profiles, and layout options from the manager workspace.</value></data>

@@ -35,6 +35,33 @@ public class PublicVenueDiscoveryService(AppDbContext context) : IPublicVenueDis
         return venues.Select(venue => venue.ToPublicSummaryDto()).ToList();
     }
 
+    public async Task<IReadOnlyList<UserVenueAccessRequestSummaryDto>> GetUserVenueAccessRequestsAsync(
+        Guid requestorUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var requests = await context.VenueAccessRequests
+            .AsNoTracking()
+            .Where(item => item.RequestorUserId == requestorUserId)
+            .Select(item => new UserVenueAccessRequestSummaryDto
+            {
+                RequestId = item.Id,
+                CompanyName = item.CompanyName,
+                VenueName = item.VenueName,
+                Status = item.Status.ToString(),
+                SubmittedAt = item.SubmittedAt,
+                ReviewedAt = item.ReviewedAt,
+                ApprovedAccessLevel = item.ApprovedAccessLevel != null ? item.ApprovedAccessLevel.ToString() : null,
+                HasAssignedMembership = item.VenueId.HasValue &&
+                                        context.VenueMemberships.Any(membership =>
+                                            membership.UserId == item.RequestorUserId &&
+                                            membership.VenueId == item.VenueId.Value)
+            })
+            .OrderByDescending(item => item.SubmittedAt)
+            .ToListAsync(cancellationToken);
+
+        return requests;
+    }
+
     public async Task<VenueAccessRequestSubmissionResultDto> SubmitVenueAccessRequestAsync(
         Guid requestorUserId,
         SubmitVenueAccessRequestDto dto,

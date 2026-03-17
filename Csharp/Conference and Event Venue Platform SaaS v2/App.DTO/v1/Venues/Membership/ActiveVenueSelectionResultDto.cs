@@ -7,4 +7,7 @@ public class ActiveVenueSelectionResultDto
     public string VenueName { get; init; } = default!;
     public string CompanyName { get; init; } = default!;
     public string AccessLevel { get; init; } = default!;
+    public string VenueStatus { get; init; } = default!;
+    public bool IsRejectedVenue { get; init; }
+    public string? RejectionNotes { get; init; }
 }

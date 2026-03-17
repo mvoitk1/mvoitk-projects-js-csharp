@@ -1,5 +1,6 @@
 using App.BLL.Services;
 using App.Domain.Identity;
+using App.Domain.Venues;
 using App.DTO.v1.Venues.Admin;
 using App.Resources.Views.Workspace;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,13 @@ public class SpacesController(
     public async Task<IActionResult> Index(Guid? spaceId, CancellationToken cancellationToken)
     {
         var context = await BuildWorkspaceContextAsync(cancellationToken);
+        if (context.ActiveVenue != null &&
+            Enum.TryParse<VenueAccessLevel>(context.ActiveVenue.AccessLevel, true, out var accessLevel) &&
+            accessLevel != VenueAccessLevel.Manager)
+        {
+            return RedirectToAction("Index", "Dashboard", new { area = "Employee" });
+        }
+
         var spaces = context.ActiveVenue == null
             ? []
             : await venueAdminService.GetSpaceConfigurationsAsync(User.UserId(), context.ActiveVenue.VenueId, cancellationToken);
@@ -49,6 +57,13 @@ public class SpacesController(
     public async Task<IActionResult> Save(SpaceConfigurationFormViewModel form, CancellationToken cancellationToken)
     {
         var context = await BuildWorkspaceContextAsync(cancellationToken);
+        if (context.ActiveVenue != null &&
+            Enum.TryParse<VenueAccessLevel>(context.ActiveVenue.AccessLevel, true, out var accessLevel) &&
+            accessLevel != VenueAccessLevel.Manager)
+        {
+            return RedirectToAction("Index", "Dashboard", new { area = "Employee" });
+        }
+
         if (context.ActiveVenue == null)
         {
             TempData["WorkspaceError"] = Pages.VenueRequiredMessage;

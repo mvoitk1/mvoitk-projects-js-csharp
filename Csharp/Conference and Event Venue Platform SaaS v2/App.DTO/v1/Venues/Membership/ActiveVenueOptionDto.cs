@@ -7,6 +7,7 @@ public class ActiveVenueOptionDto
     public string VenueName { get; init; } = default!;
     public string CompanyName { get; init; } = default!;
     public string AccessLevel { get; init; } = default!;
+    public string VenueStatus { get; init; } = default!;
     public string MembershipStatus { get; init; } = default!;
     public bool IsCurrentVenue { get; init; }
     public bool IsDefaultVenue { get; init; }

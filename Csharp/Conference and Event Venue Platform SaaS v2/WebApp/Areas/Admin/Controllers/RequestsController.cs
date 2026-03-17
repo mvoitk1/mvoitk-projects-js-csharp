@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Helpers;
 using WebApp.Infrastructure;
+using WebApp.Services;
 using WebApp.ViewModels.Workspace;
 
 namespace WebApp.Areas.Admin.Controllers;
@@ -14,17 +15,14 @@ namespace WebApp.Areas.Admin.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public class RequestsController(
     IVenueMembershipService venueMembershipService,
-    IVenueAdminService venueAdminService) : WorkspaceControllerBase(venueMembershipService)
+    IVenueAdminService venueAdminService,
+    IVenueOperatorIdentityRoleSyncService venueOperatorIdentityRoleSyncService) : WorkspaceControllerBase(venueMembershipService)
 {
     public async Task<IActionResult> Index(Guid? requestId, CancellationToken cancellationToken)
     {
         var context = await BuildWorkspaceContextAsync(cancellationToken);
         var requests = await venueAdminService.GetVenueAccessRequestsAsync(cancellationToken);
-        var selectedRequest = requestId.HasValue
-            ? await venueAdminService.GetVenueAccessRequestAsync(requestId.Value, cancellationToken)
-            : requests.FirstOrDefault() is { RequestId: var firstId }
-                ? await venueAdminService.GetVenueAccessRequestAsync(firstId, cancellationToken)
-                : null;
+        var selectedRequest = await ResolveSelectedRequestAsync(requests, requestId, cancellationToken);
 
         return View(new VenueRequestsPageViewModel
         {
@@ -42,7 +40,9 @@ public class RequestsController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Review(ReviewVenueAccessRequestViewModel form, CancellationToken cancellationToken)
+    public async Task<IActionResult> Review(
+        [Bind(Prefix = nameof(VenueRequestsPageViewModel.ReviewForm))] ReviewVenueAccessRequestViewModel form,
+        CancellationToken cancellationToken)
     {
         var context = await BuildWorkspaceContextAsync(cancellationToken);
         if (!ModelState.IsValid)
@@ -52,7 +52,7 @@ public class RequestsController(
 
         try
         {
-            await venueAdminService.ReviewVenueAccessRequestAsync(
+            var reviewedRequest = await venueAdminService.ReviewVenueAccessRequestAsync(
                 User.UserId(),
                 new ReviewVenueAccessRequestDto
                 {
@@ -62,6 +62,10 @@ public class RequestsController(
                     ApprovedAccessLevel = form.ApprovedAccessLevel,
                     AssignMembership = form.AssignMembership
                 },
+                cancellationToken);
+
+            await venueOperatorIdentityRoleSyncService.SyncUserRolesAsync(
+                reviewedRequest.RequestorUserId,
                 cancellationToken);
 
             TempData["WorkspaceSuccess"] = Pages.RequestReviewSuccess;
@@ -74,6 +78,30 @@ public class RequestsController(
         }
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ArchiveRejectedVenue(Guid requestId, CancellationToken cancellationToken)
+    {
+        var context = await BuildWorkspaceContextAsync(cancellationToken);
+
+        try
+        {
+            await venueAdminService.ArchiveRejectedVenueAsync(User.UserId(), requestId, cancellationToken);
+            TempData["WorkspaceSuccess"] = Pages.RequestArchiveRejectedVenueSuccess;
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            var selectedRequestId = await ResolveFallbackSelectionAsync(requestId, cancellationToken);
+            return await BuildIndexResultAsync(
+                context,
+                selectedRequestId,
+                new ReviewVenueAccessRequestViewModel { RequestId = selectedRequestId },
+                cancellationToken);
+        }
+    }
+
     private async Task<ViewResult> BuildIndexResultAsync(
         WorkspaceContextViewModel context,
         Guid requestId,
@@ -81,7 +109,7 @@ public class RequestsController(
         CancellationToken cancellationToken)
     {
         var requests = await venueAdminService.GetVenueAccessRequestsAsync(cancellationToken);
-        var selectedRequest = await venueAdminService.GetVenueAccessRequestAsync(requestId, cancellationToken);
+        var selectedRequest = await ResolveSelectedRequestAsync(requests, requestId, cancellationToken);
 
         return View("Index", new VenueRequestsPageViewModel
         {
@@ -95,5 +123,25 @@ public class RequestsController(
             SelectedRequest = selectedRequest,
             ReviewForm = form
         });
+    }
+
+    private async Task<VenueAccessRequestDetailDto?> ResolveSelectedRequestAsync(
+        IReadOnlyList<VenueAccessRequestListItemDto> requests,
+        Guid? requestId,
+        CancellationToken cancellationToken)
+    {
+        var selectedRequestId = requestId.HasValue && requests.Any(item => item.RequestId == requestId.Value)
+            ? requestId.Value
+            : requests.FirstOrDefault()?.RequestId;
+
+        return selectedRequestId.HasValue
+            ? await venueAdminService.GetVenueAccessRequestAsync(selectedRequestId.Value, cancellationToken)
+            : null;
+    }
+
+    private async Task<Guid> ResolveFallbackSelectionAsync(Guid deletedOrFailedRequestId, CancellationToken cancellationToken)
+    {
+        var requests = await venueAdminService.GetVenueAccessRequestsAsync(cancellationToken);
+        return requests.FirstOrDefault(item => item.RequestId != deletedOrFailedRequestId)?.RequestId ?? Guid.Empty;
     }
 }

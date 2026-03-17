@@ -17,6 +17,7 @@
         <main class="workspace-main">
             @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceTopBar.cshtml")
             @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceMessages.cshtml")
+            @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceRejectedVenueNotice.cshtml", workspaceLayout.Context)
             @RenderBody()
         </main>
     </div>

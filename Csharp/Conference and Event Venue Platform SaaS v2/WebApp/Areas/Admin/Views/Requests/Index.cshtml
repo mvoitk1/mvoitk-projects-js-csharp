@@ -54,10 +54,23 @@ else
                 <dl class="detail-grid">
                     <div><dt>@Pages.RequestSubmittedLabel</dt><dd>@Model.SelectedRequest.SubmittedAt:g</dd></div>
                     <div><dt>@Pages.RequestReviewedLabel</dt><dd>@(Model.SelectedRequest.ReviewedAt?.ToString("g") ?? "-")</dd></div>
-                    <div><dt>@Pages.BookingClientLabel</dt><dd>@Model.SelectedRequest.ContactName</dd></div>
-                    <div><dt>@Pages.BookingSpaceLabel</dt><dd>@Model.SelectedRequest.AddressLine1</dd></div>
+                    <div><dt>@Pages.RequestSubmittedByLabel</dt><dd>@(Model.SelectedRequest.RequestorEmail ?? "-")</dd></div>
+                    <div><dt>@Pages.RequestReviewedByLabel</dt><dd>@(Model.SelectedRequest.ReviewedByEmail ?? "-")</dd></div>
+                    <div><dt>@Pages.RequestSubmittedByUserIdLabel</dt><dd>@Model.SelectedRequest.RequestorUserId</dd></div>
+                    <div><dt>@Pages.RequestCompanyNameLabel</dt><dd>@Model.SelectedRequest.CompanyName</dd></div>
+                    <div><dt>@Pages.RequestVenueNameLabel</dt><dd>@Model.SelectedRequest.VenueName</dd></div>
+                    <div><dt>@Pages.RequestContactNameLabel</dt><dd>@Model.SelectedRequest.ContactName</dd></div>
+                    <div><dt>@Pages.RequestContactEmailLabel</dt><dd>@Model.SelectedRequest.ContactEmail</dd></div>
+                    <div><dt>@Pages.RequestContactPhoneLabel</dt><dd>@(Model.SelectedRequest.ContactPhone ?? "-")</dd></div>
+                    <div><dt>@Pages.RequestCityLabel</dt><dd>@Model.SelectedRequest.City</dd></div>
+                    <div><dt>@Pages.RequestCountryLabel</dt><dd>@Model.SelectedRequest.Country</dd></div>
+                    <div><dt>@Pages.RequestAddressLabel</dt><dd>@Model.SelectedRequest.AddressLine1</dd></div>
+                    <div><dt>@Pages.RequestEstimatedMonthlyBookingsLabel</dt><dd>@Model.SelectedRequest.EstimatedMonthlyBookings</dd></div>
                 </dl>
-                <p>@Model.SelectedRequest.Notes</p>
+                <section class="sidebar-panel inline">
+                    <strong>@Pages.RequestSubmittedNotesLabel</strong>
+                    <p>@(string.IsNullOrWhiteSpace(Model.SelectedRequest.Notes) ? "-" : Model.SelectedRequest.Notes)</p>
+                </section>
 
                 @if (Model.SelectedRequest.AssignedMembership != null)
                 {
@@ -65,6 +78,27 @@ else
                         <strong>@Pages.AssignmentSummaryTitle</strong>
                         <p>@Model.SelectedRequest.VenueName</p>
                         <p>@Model.SelectedRequest.AssignedMembership.AccessLevel</p>
+                    </section>
+                }
+
+                @if (!Model.SelectedRequest.CanAssignRights)
+                {
+                    <section class="sidebar-panel inline">
+                        <strong>@Pages.RequestReviewOnboardingNotice</strong>
+                        <p>@Pages.RequestReviewMembershipPendingSetup</p>
+                    </section>
+                }
+
+                @if (Model.SelectedRequest.Status == "Rejected" && Model.SelectedRequest.VenueId.HasValue)
+                {
+                    <section class="sidebar-panel inline">
+                        <strong>@Pages.RequestArchiveRejectedVenueTitle</strong>
+                        <p>@Pages.RequestArchiveRejectedVenueDescription</p>
+                        <form asp-area="Admin" asp-controller="Requests" asp-action="ArchiveRejectedVenue" method="post" class="workspace-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="requestId" value="@Model.SelectedRequest.RequestId" />
+                            <button class="primary-button" type="submit">@Pages.RequestArchiveRejectedVenueButton</button>
+                        </form>
                     </section>
                 }
 
@@ -81,22 +115,28 @@ else
                             <option value="Rejected">@Pages.StatusRejected</option>
                         </select>
                     </div>
-                    <div class="field">
-                        <label asp-for="ReviewForm.ApprovedAccessLevel"></label>
-                        <select asp-for="ReviewForm.ApprovedAccessLevel">
-                            <option value="">-</option>
-                            <option value="Employee">Employee</option>
-                            <option value="Manager">Manager</option>
-                        </select>
-                    </div>
+                    @if (Model.SelectedRequest.CanAssignRights)
+                    {
+                        <div class="field">
+                            <label asp-for="ReviewForm.ApprovedAccessLevel"></label>
+                            <select asp-for="ReviewForm.ApprovedAccessLevel">
+                                <option value="">-</option>
+                                <option value="Employee">Employee</option>
+                                <option value="Manager">Manager</option>
+                            </select>
+                        </div>
+                    }
                     <div class="field">
                         <label asp-for="ReviewForm.ReviewNotes"></label>
                         <textarea asp-for="ReviewForm.ReviewNotes" rows="4"></textarea>
                     </div>
-                    <label class="checkbox-field">
-                        <input asp-for="ReviewForm.AssignMembership" />
-                        <span>@Pages.RequestReviewAssignLabel</span>
-                    </label>
+                    @if (Model.SelectedRequest.CanAssignRights)
+                    {
+                        <label class="checkbox-field">
+                            <input asp-for="ReviewForm.AssignMembership" />
+                            <span>@Pages.RequestReviewAssignLabel</span>
+                        </label>
+                    }
                     <button class="primary-button" type="submit">@Pages.RequestReviewSaveButton</button>
                 </form>
             }

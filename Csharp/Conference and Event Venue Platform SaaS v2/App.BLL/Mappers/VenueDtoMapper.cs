@@ -103,6 +103,7 @@ internal static class VenueDtoMapper
         VenueName = membership.Venue.Name,
         CompanyName = membership.Company.Name,
         AccessLevel = membership.AccessLevel.ToString(),
+        VenueStatus = membership.Venue.Status.ToString(),
         MembershipStatus = membership.Status.ToString(),
         IsCurrentVenue = activeVenueId == membership.VenueId,
         IsDefaultVenue = membership.IsDefaultVenue,
@@ -115,7 +116,8 @@ internal static class VenueDtoMapper
         MembershipId = membership.Id,
         VenueName = membership.Venue.Name,
         CompanyName = membership.Company.Name,
-        AccessLevel = membership.AccessLevel.ToString()
+        AccessLevel = membership.AccessLevel.ToString(),
+        VenueStatus = membership.Venue.Status.ToString()
     };
 
     public static VenueMembershipSummaryDto ToMembershipSummaryDto(this VenueMembership membership) => new()
@@ -147,7 +149,9 @@ internal static class VenueDtoMapper
         Status = request.Status.ToString(),
         SubmittedAt = request.SubmittedAt,
         ReviewedAt = request.ReviewedAt,
-        CanAssignRights = request.Status.AllowsMembershipAssignment() && request.VenueId.HasValue
+        CanAssignRights = request.Status.AllowsMembershipAssignment() &&
+                          request.CompanyId.HasValue &&
+                          request.VenueId.HasValue
     };
 
     public static VenueAccessRequestDetailDto ToAccessRequestDetailDto(this VenueAccessRequest request, VenueMembership? membership) => new()
@@ -163,9 +167,13 @@ internal static class VenueDtoMapper
         Status = request.Status.ToString(),
         SubmittedAt = request.SubmittedAt,
         ReviewedAt = request.ReviewedAt,
-        CanAssignRights = request.Status.AllowsMembershipAssignment() && request.VenueId.HasValue,
+        CanAssignRights = request.Status.AllowsMembershipAssignment() &&
+                          request.CompanyId.HasValue &&
+                          request.VenueId.HasValue,
         RequestorUserId = request.RequestorUserId,
+        RequestorEmail = request.RequestorUser.Email,
         ReviewedByUserId = request.ReviewedByUserId,
+        ReviewedByEmail = request.ReviewedByUser != null ? request.ReviewedByUser.Email : null,
         CompanyId = request.CompanyId,
         VenueId = request.VenueId,
         ContactPhone = request.ContactPhone,

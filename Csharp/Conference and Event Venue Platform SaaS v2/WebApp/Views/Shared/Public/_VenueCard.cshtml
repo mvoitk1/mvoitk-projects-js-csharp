@@ -1,31 +1,39 @@
 @using App.Resources.Views.Public
 @model WebApp.ViewModels.Public.PublicVenueCardViewModel
 
-<article class="venue-card">
-    <div class="venue-card-top">
-        <div>
-            <p class="eyebrow">@Model.City, @Model.Country</p>
-            <h3>@Model.Name</h3>
+<a
+    class="venue-card-link"
+    asp-controller="Venues"
+    asp-action="Details"
+    asp-route-slug="@Model.Slug"
+    aria-label="@($"{Pages.VenueViewSpacesCta}: {Model.Name}")">
+    <article class="venue-card">
+        <div class="venue-card-top">
+            <div>
+                <p class="eyebrow">@Model.City, @Model.Country</p>
+                <h3>@Model.Name</h3>
+            </div>
+            <span class="venue-rate">@Model.HourlyRate</span>
         </div>
-        <span class="venue-rate">@Model.HourlyRate</span>
-    </div>
-    @if (!string.IsNullOrWhiteSpace(Model.Description))
-    {
-        <p class="venue-copy">@Model.Description</p>
-    }
-    <dl class="venue-stats">
-        <div>
-            <dt>@Pages.VenueCapacityLabel</dt>
-            <dd>@Model.Capacity</dd>
-        </div>
-        <div>
-            <dt>@Pages.VenueSpacesLabel</dt>
-            <dd>@Model.SpaceCount</dd>
-        </div>
-        <div>
-            <dt>@Pages.VenueBookingsLabel</dt>
-            <dd>@Model.UpcomingBookingsCount</dd>
-        </div>
-    </dl>
-    <p class="venue-address"><strong>@Pages.VenueAddressLabel:</strong> @Model.AddressLine1</p>
-</article>
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="venue-copy">@Model.Description</p>
+        }
+        <dl class="venue-stats">
+            <div>
+                <dt>@Pages.VenueCapacityLabel</dt>
+                <dd>@Model.Capacity</dd>
+            </div>
+            <div>
+                <dt>@Pages.VenueSpacesLabel</dt>
+                <dd>@Model.SpaceCount</dd>
+            </div>
+            <div>
+                <dt>@Pages.VenueBookingsLabel</dt>
+                <dd>@Model.UpcomingBookingsCount</dd>
+            </div>
+        </dl>
+        <p class="venue-address"><strong>@Pages.VenueAddressLabel:</strong> @Model.AddressLine1</p>
+        <span class="venue-card-cta">@Pages.VenueViewSpacesCta</span>
+    </article>
+</a>

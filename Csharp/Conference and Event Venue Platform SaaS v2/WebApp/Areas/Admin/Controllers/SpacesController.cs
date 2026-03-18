@@ -17,7 +17,7 @@ public class SpacesController(
     IVenueMembershipService venueMembershipService,
     IVenueAdminService venueAdminService) : WorkspaceControllerBase(venueMembershipService)
 {
-    public async Task<IActionResult> Index(Guid? spaceId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(Guid? spaceId, bool create = false, CancellationToken cancellationToken = default)
     {
         var context = await BuildWorkspaceContextAsync(cancellationToken);
         if (context.ActiveVenue != null &&
@@ -31,9 +31,9 @@ public class SpacesController(
             ? []
             : await venueAdminService.GetSpaceConfigurationsAsync(User.UserId(), context.ActiveVenue.VenueId, cancellationToken);
 
-        var selectedSpace = spaceId.HasValue
+        var selectedSpace = !create && spaceId.HasValue
             ? spaces.FirstOrDefault(item => item.SpaceId == spaceId.Value)
-            : spaces.FirstOrDefault();
+            : !create ? spaces.FirstOrDefault() : null;
 
         return View(new SpacesPageViewModel
         {
@@ -45,8 +45,12 @@ public class SpacesController(
             },
             Spaces = spaces,
             SelectedSpace = selectedSpace,
+            IsCreatingNewSpace = create || selectedSpace == null,
             Form = selectedSpace?.ToFormViewModel() ?? new SpaceConfigurationFormViewModel
             {
+                Status = SpaceStatus.Draft.ToString(),
+                MinimumBookingDurationMinutes = 60,
+                HourlyRateAmount = 0.01m,
                 Layouts = [new SpaceLayoutFormViewModel()]
             }
         });
@@ -72,7 +76,7 @@ public class SpacesController(
 
         if (!ModelState.IsValid)
         {
-            return await BuildIndexResultAsync(context, form.SpaceId, form, cancellationToken);
+            return await BuildIndexResultAsync(context, form.SpaceId, form, form.SpaceId == null, cancellationToken);
         }
 
         try
@@ -114,7 +118,7 @@ public class SpacesController(
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or ArgumentOutOfRangeException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            return await BuildIndexResultAsync(context, form.SpaceId, form, cancellationToken);
+            return await BuildIndexResultAsync(context, form.SpaceId, form, form.SpaceId == null, cancellationToken);
         }
     }
 
@@ -122,10 +126,11 @@ public class SpacesController(
         WorkspaceContextViewModel context,
         Guid? spaceId,
         SpaceConfigurationFormViewModel form,
+        bool isCreatingNewSpace,
         CancellationToken cancellationToken)
     {
         var spaces = await venueAdminService.GetSpaceConfigurationsAsync(User.UserId(), RequireActiveVenue(context).VenueId, cancellationToken);
-        var selectedSpace = spaceId.HasValue
+        var selectedSpace = !isCreatingNewSpace && spaceId.HasValue
             ? spaces.FirstOrDefault(item => item.SpaceId == spaceId.Value)
             : null;
 
@@ -144,6 +149,7 @@ public class SpacesController(
             },
             Spaces = spaces,
             SelectedSpace = selectedSpace,
+            IsCreatingNewSpace = isCreatingNewSpace,
             Form = form
         });
     }

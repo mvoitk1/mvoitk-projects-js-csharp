@@ -112,8 +112,17 @@
   <data name="SpacesEyebrow" xml:space="preserve"><value>Space configuration</value></data>
   <data name="SpacesHeadline" xml:space="preserve"><value>Maintain venue spaces, capacity profiles, and layout options from the manager workspace.</value></data>
   <data name="SpacesDescription" xml:space="preserve"><value>Changes are submitted through the BLL configuration workflow so controller code stays thin.</value></data>
+  <data name="SpacesListTitle" xml:space="preserve"><value>Venue spaces</value></data>
+  <data name="SpacesListDescription" xml:space="preserve"><value>Create new rooms, then keep booking rules, pricing, and layouts aligned for the active venue.</value></data>
+  <data name="SpacesCreateButton" xml:space="preserve"><value>Create new space</value></data>
   <data name="SpacesEmpty" xml:space="preserve"><value>No spaces are configured for this venue yet.</value></data>
   <data name="SpaceFormTitle" xml:space="preserve"><value>Edit space configuration</value></data>
+  <data name="SpaceCreateTitle" xml:space="preserve"><value>Create a venue space</value></data>
+  <data name="SpaceEditTitle" xml:space="preserve"><value>Edit venue space</value></data>
+  <data name="SpaceParametersTitle" xml:space="preserve"><value>Space parameters</value></data>
+  <data name="SpaceParametersDescription" xml:space="preserve"><value>Define the operational details managers use for pricing, availability, and setup planning.</value></data>
+  <data name="SpaceListLayoutsCount" xml:space="preserve"><value>{0} layouts</value></data>
+  <data name="SpaceListCapacityLabel" xml:space="preserve"><value>Recommended capacity</value></data>
   <data name="SpaceNameLabel" xml:space="preserve"><value>Space name</value></data>
   <data name="SpaceCodeLabel" xml:space="preserve"><value>Code</value></data>
   <data name="SpaceStatusLabel" xml:space="preserve"><value>Status</value></data>
@@ -130,6 +139,8 @@
   <data name="SpaceLayoutCapacityLabel" xml:space="preserve"><value>Capacity</value></data>
   <data name="SpaceLayoutDefaultLabel" xml:space="preserve"><value>Default</value></data>
   <data name="SpaceLayoutNotesLabel" xml:space="preserve"><value>Layout notes</value></data>
+  <data name="SpaceLayoutAddButton" xml:space="preserve"><value>Add another layout</value></data>
+  <data name="SpaceLayoutRemoveButton" xml:space="preserve"><value>Remove layout</value></data>
   <data name="SpaceSaveButton" xml:space="preserve"><value>Save space configuration</value></data>
   <data name="SpaceSaveSuccess" xml:space="preserve"><value>Space configuration saved.</value></data>
   <data name="RequiredField" xml:space="preserve"><value>This field is required.</value></data>
@@ -156,6 +167,8 @@
   <data name="StatusApproved" xml:space="preserve"><value>Approved</value></data>
   <data name="StatusRejected" xml:space="preserve"><value>Rejected</value></data>
   <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusMaintenance" xml:space="preserve"><value>Maintenance</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
   <data name="StatusSuspended" xml:space="preserve"><value>Suspended</value></data>
   <data name="StatusBlocked" xml:space="preserve"><value>Blocked</value></data>
 </root>

@@ -15,6 +15,8 @@ public static class WorkspacePresentation
         "approved" => Pages.StatusApproved,
         "rejected" => Pages.StatusRejected,
         "active" => Pages.StatusActive,
+        "maintenance" => Pages.StatusMaintenance,
+        "archived" => Pages.StatusArchived,
         "suspended" => Pages.StatusSuspended,
         "blocked" => Pages.StatusBlocked,
         _ => value ?? string.Empty
@@ -23,8 +25,8 @@ public static class WorkspacePresentation
     public static string ToBadgeClass(string? value) => value?.ToLowerInvariant() switch
     {
         "confirmed" or "approved" or "active" => "is-good",
-        "pendingapproval" or "pendingreview" or "inreview" => "is-warn",
-        "cancelled" or "rejected" or "suspended" or "blocked" => "is-bad",
+        "pendingapproval" or "pendingreview" or "inreview" or "maintenance" => "is-warn",
+        "cancelled" or "rejected" or "suspended" or "blocked" or "archived" => "is-bad",
         _ => "is-neutral"
     };
 

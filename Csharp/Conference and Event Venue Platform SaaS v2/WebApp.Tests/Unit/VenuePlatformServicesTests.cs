@@ -294,6 +294,46 @@ public class VenuePlatformServicesTests
     }
 
     [Fact]
+    public async Task SaveSpaceConfigurationAsync_CreatesNewSpaceForVenue()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var adminService = new VenueAdminService(context, new VenueMembershipService(context));
+
+        var created = await adminService.SaveSpaceConfigurationAsync(
+            fixture.Manager.Id,
+            fixture.PrimaryVenue.Id,
+            new UpsertSpaceConfigurationDto
+            {
+                Name = "Skyline Studio",
+                Code = "SKY",
+                Status = SpaceStatus.Draft.ToString(),
+                Description = "Flexible studio for workshops and hybrid sessions.",
+                MinimumBookingDurationMinutes = 120,
+                HourlyRateAmount = 150m,
+                Currency = "EUR",
+                MinimumCapacity = 8,
+                RecommendedCapacity = 24,
+                MaximumCapacity = 40,
+                Layouts =
+                [
+                    new UpsertSpaceLayoutDto
+                    {
+                        Name = "Workshop",
+                        LayoutType = LayoutType.Classroom.ToString(),
+                        Capacity = 24,
+                        IsDefault = true
+                    }
+                ]
+            });
+
+        Assert.NotEqual(Guid.Empty, created.SpaceId);
+        Assert.Equal("Skyline Studio", created.Name);
+        Assert.Single(created.Layouts);
+        Assert.Equal(2, await context.Spaces.CountAsync(item => item.VenueId == fixture.PrimaryVenue.Id));
+    }
+
+    [Fact]
     public async Task SaveSpaceConfigurationAsync_UpdatesLayouts()
     {
         await using var context = CreateContext();

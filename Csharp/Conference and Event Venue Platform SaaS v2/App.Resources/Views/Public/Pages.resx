@@ -123,6 +123,42 @@
   <data name="VenueAddressLabel" xml:space="preserve">
     <value>Address</value>
   </data>
+  <data name="VenueViewSpacesCta" xml:space="preserve">
+    <value>View spaces</value>
+  </data>
+  <data name="VenueDetailsTitle" xml:space="preserve">
+    <value>VenueFlow | {0}</value>
+  </data>
+  <data name="VenueDetailsEyebrow" xml:space="preserve">
+    <value>Venue details</value>
+  </data>
+  <data name="VenueDetailsFallbackDescription" xml:space="preserve">
+    <value>Review this venue and the individual spaces currently available in the public catalog.</value>
+  </data>
+  <data name="VenueDetailsBackToBrowse" xml:space="preserve">
+    <value>Back to venues</value>
+  </data>
+  <data name="VenueDetailsOverviewTitle" xml:space="preserve">
+    <value>Venue overview</value>
+  </data>
+  <data name="VenueDetailsSpacesTitle" xml:space="preserve">
+    <value>Spaces in this venue</value>
+  </data>
+  <data name="VenueDetailsSpacesDescription" xml:space="preserve">
+    <value>Select a venue to inspect the rooms and capacity profile it currently offers.</value>
+  </data>
+  <data name="VenueDetailsSpacesEmpty" xml:space="preserve">
+    <value>No spaces are published for this venue yet.</value>
+  </data>
+  <data name="VenueSpaceMinimumDurationLabel" xml:space="preserve">
+    <value>Minimum booking</value>
+  </data>
+  <data name="VenueSpaceStatusLabel" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="VenueSpaceMinutesValue" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
   <data name="RequestTitle" xml:space="preserve">
     <value>VenueFlow | Request your venue</value>
   </data>

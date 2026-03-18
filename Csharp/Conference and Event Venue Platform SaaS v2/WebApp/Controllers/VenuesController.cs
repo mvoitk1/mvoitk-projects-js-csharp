@@ -18,6 +18,19 @@ public class VenuesController(IPublicVenueDiscoveryService publicVenueDiscoveryS
         return View("Browse", venues.ToBrowseViewModel());
     }
 
+    [HttpGet("/venues/{slug}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Details(string slug, CancellationToken cancellationToken)
+    {
+        var venue = await publicVenueDiscoveryService.GetVenueAsync(slug, cancellationToken);
+        if (venue == null)
+        {
+            return NotFound();
+        }
+
+        return View(venue.ToDetailsViewModel());
+    }
+
     [HttpGet("/venues/request")]
     [Authorize]
     public IActionResult RequestVenue()

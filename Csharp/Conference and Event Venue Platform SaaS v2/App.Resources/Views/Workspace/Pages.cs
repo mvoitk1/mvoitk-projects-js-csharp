@@ -118,8 +118,17 @@ public static class Pages
     public static string SpacesEyebrow => Get();
     public static string SpacesHeadline => Get();
     public static string SpacesDescription => Get();
+    public static string SpacesListTitle => Get();
+    public static string SpacesListDescription => Get();
+    public static string SpacesCreateButton => Get();
     public static string SpacesEmpty => Get();
     public static string SpaceFormTitle => Get();
+    public static string SpaceCreateTitle => Get();
+    public static string SpaceEditTitle => Get();
+    public static string SpaceParametersTitle => Get();
+    public static string SpaceParametersDescription => Get();
+    public static string SpaceListLayoutsCount => Get();
+    public static string SpaceListCapacityLabel => Get();
     public static string SpaceNameLabel => Get();
     public static string SpaceCodeLabel => Get();
     public static string SpaceStatusLabel => Get();
@@ -136,6 +145,8 @@ public static class Pages
     public static string SpaceLayoutCapacityLabel => Get();
     public static string SpaceLayoutDefaultLabel => Get();
     public static string SpaceLayoutNotesLabel => Get();
+    public static string SpaceLayoutAddButton => Get();
+    public static string SpaceLayoutRemoveButton => Get();
     public static string SpaceSaveButton => Get();
     public static string SpaceSaveSuccess => Get();
     public static string RequiredField => Get();
@@ -162,6 +173,8 @@ public static class Pages
     public static string StatusApproved => Get();
     public static string StatusRejected => Get();
     public static string StatusActive => Get();
+    public static string StatusMaintenance => Get();
+    public static string StatusArchived => Get();
     public static string StatusSuspended => Get();
     public static string StatusBlocked => Get();
 }

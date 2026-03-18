@@ -6,6 +6,7 @@ public interface IPublicVenueDiscoveryService
 {
     Task<PublicLandingPageDto> GetLandingPageAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PublicVenueSummaryDto>> GetBrowseVenuesAsync(CancellationToken cancellationToken = default);
+    Task<PublicVenueDetailDto?> GetVenueAsync(string slug, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<UserVenueAccessRequestSummaryDto>> GetUserVenueAccessRequestsAsync(
         Guid requestorUserId,
         CancellationToken cancellationToken = default);

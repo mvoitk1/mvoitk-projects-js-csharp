@@ -35,6 +35,19 @@ public class PublicVenueDiscoveryService(AppDbContext context) : IPublicVenueDis
         return venues.Select(venue => venue.ToPublicSummaryDto()).ToList();
     }
 
+    public async Task<PublicVenueDetailDto?> GetVenueAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return null;
+        }
+
+        var venue = await QueryActiveVenues()
+            .SingleOrDefaultAsync(item => item.Slug == slug.Trim(), cancellationToken);
+
+        return venue?.ToPublicDetailDto();
+    }
+
     public async Task<IReadOnlyList<UserVenueAccessRequestSummaryDto>> GetUserVenueAccessRequestsAsync(
         Guid requestorUserId,
         CancellationToken cancellationToken = default)

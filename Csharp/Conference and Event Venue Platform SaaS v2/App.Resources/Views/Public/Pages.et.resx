@@ -49,6 +49,18 @@
   <data name="VenueSpacesLabel" xml:space="preserve"><value>Ruumid</value></data>
   <data name="VenueBookingsLabel" xml:space="preserve"><value>Tulevased broneeringud</value></data>
   <data name="VenueAddressLabel" xml:space="preserve"><value>Aadress</value></data>
+  <data name="VenueViewSpacesCta" xml:space="preserve"><value>Vaata ruume</value></data>
+  <data name="VenueDetailsTitle" xml:space="preserve"><value>VenueFlow | {0}</value></data>
+  <data name="VenueDetailsEyebrow" xml:space="preserve"><value>Venue detailvaade</value></data>
+  <data name="VenueDetailsFallbackDescription" xml:space="preserve"><value>Vaata selle venue üldpilti ja avalikus kataloogis olevaid ruume.</value></data>
+  <data name="VenueDetailsBackToBrowse" xml:space="preserve"><value>Tagasi venue'de juurde</value></data>
+  <data name="VenueDetailsOverviewTitle" xml:space="preserve"><value>Venue ülevaade</value></data>
+  <data name="VenueDetailsSpacesTitle" xml:space="preserve"><value>Selle venue ruumid</value></data>
+  <data name="VenueDetailsSpacesDescription" xml:space="preserve"><value>Valitud venue alt näed ruume ja nende mahutavust, mis on praegu avalikult nähtavad.</value></data>
+  <data name="VenueDetailsSpacesEmpty" xml:space="preserve"><value>Sellel venue'l ei ole veel avalikke ruume.</value></data>
+  <data name="VenueSpaceMinimumDurationLabel" xml:space="preserve"><value>Minimaalne broneering</value></data>
+  <data name="VenueSpaceStatusLabel" xml:space="preserve"><value>Olek</value></data>
+  <data name="VenueSpaceMinutesValue" xml:space="preserve"><value>{0} min</value></data>
   <data name="RequestTitle" xml:space="preserve"><value>VenueFlow | Lisa oma venue</value></data>
   <data name="RequestEyebrow" xml:space="preserve"><value>Venue onboarding request</value></data>
   <data name="RequestHeadline" xml:space="preserve"><value>Saada oma ettevõtte ja venue andmed, et platvormi tiim saaks onboarding'u üle vaadata.</value></data>

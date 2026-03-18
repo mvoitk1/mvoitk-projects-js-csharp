@@ -844,8 +844,8 @@
             ]
         },
         {
-            id: "nordic",
-            name: "Nordic Exchange House",
+            id: "meridian",
+            name: "Meridian Board Suite",
             description: "Executive-focused venue in Singapore Civic Core, ideal for board meetings, training, and recurring sessions.",
             status: "Template fit",
             statusClass: "success",
@@ -867,7 +867,7 @@
                     capacity: 24,
                     blurb: "Premium leadership-table setup with conferencing, private service, and note-taking support.",
                     fit: "Executive meeting",
-                    summaryHeadline: "Nordic Exchange House with Boardroom layout",
+                    summaryHeadline: "Meridian Board Suite with Boardroom layout",
                     summaryCopy: "A focused executive setup with premium table service, conferencing, and a quieter client-facing atmosphere.",
                     spaces: [
                         {
@@ -888,7 +888,7 @@
                     capacity: 34,
                     blurb: "Interactive workshop arrangement for coaching sessions, reviews, and facilitated training.",
                     fit: "Discussion-heavy",
-                    summaryHeadline: "Nordic Exchange House with U-Shape layout",
+                    summaryHeadline: "Meridian Board Suite with U-Shape layout",
                     summaryCopy: "A facilitator-led room setup with direct line of sight, presentation space, and stronger discussion flow.",
                     spaces: [
                         {
@@ -909,7 +909,7 @@
                     capacity: 48,
                     blurb: "Compact training setup with power access and clear teaching lines for recurring sessions.",
                     fit: "Training day",
-                    summaryHeadline: "Nordic Exchange House with Classroom layout",
+                    summaryHeadline: "Meridian Board Suite with Classroom layout",
                     summaryCopy: "Optimized for repeated training events with compact seating, equipment access, and nearby refreshment space.",
                     spaces: [
                         {
@@ -928,7 +928,11 @@
         }
     ];
 
-    let activeVenueId = "atlas";
+    const searchParams = new URLSearchParams(window.location.search);
+    const requestedVenueId = searchParams.get("venue");
+    const initialVenueId = venueData.some((venue) => venue.id === requestedVenueId) ? requestedVenueId : "atlas";
+
+    let activeVenueId = initialVenueId;
     let activeLayoutId = "theater";
 
     const venueList = document.getElementById("venueList");
@@ -944,7 +948,7 @@
     const summaryCopy = document.getElementById("summaryCopy");
 
     function getActiveVenue() {
-        return venueData.find((venue) => venue.id === activeVenueId);
+        return venueData.find((venue) => venue.id === activeVenueId) ?? venueData[0];
     }
 
     function getActiveLayout() {
@@ -1056,6 +1060,11 @@
     }
 
     function render() {
+        const venue = getActiveVenue();
+        if (!venue.layouts.some((layout) => layout.id === activeLayoutId)) {
+            activeLayoutId = venue.layouts[0].id;
+        }
+
         renderVenues();
         renderLayouts();
         renderSpaces();

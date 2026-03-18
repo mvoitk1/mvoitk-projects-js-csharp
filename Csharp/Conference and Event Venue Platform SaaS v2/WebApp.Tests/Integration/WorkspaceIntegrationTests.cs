@@ -111,6 +111,100 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
     }
 
     [Fact]
+    public async Task BrowseVenues_VenueCardLinksToVenueSpacesPage()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/venues");
+        response.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(response);
+        var venueLink = Assert.Single(
+            document.QuerySelectorAll("a.venue-card-link").OfType<IHtmlAnchorElement>(),
+            item => item.PathName.EndsWith("/venues/northstar-conference-center"));
+
+        var detailsResponse = await client.GetAsync(venueLink.Href);
+        detailsResponse.EnsureSuccessStatusCode();
+
+        var markup = await detailsResponse.Content.ReadAsStringAsync();
+        Assert.Contains("Northstar Conference Center", markup);
+        Assert.Contains("Aurora Hall", markup);
+        Assert.Contains("Breakout Studio", markup);
+    }
+
+    [Fact]
+    public async Task LandingPage_FeaturedVenueCardLinksToVenueSpacesPage()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/");
+        response.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(response);
+        var venueLink = Assert.Single(
+            document.QuerySelectorAll("a.venue-card-link").OfType<IHtmlAnchorElement>(),
+            item => item.PathName.EndsWith("/venues/northstar-conference-center"));
+
+        var ariaLabel = venueLink.GetAttribute("aria-label");
+        Assert.NotNull(ariaLabel);
+        Assert.Contains("Northstar Conference Center", ariaLabel);
+
+        var detailsResponse = await client.GetAsync(venueLink.Href);
+        detailsResponse.EnsureSuccessStatusCode();
+
+        var markup = await detailsResponse.Content.ReadAsStringAsync();
+        Assert.Contains("Northstar Conference Center", markup);
+        Assert.Contains("Aurora Hall", markup);
+    }
+
+    [Fact]
+    public async Task ManagerCanCreateSpaceWithinActiveVenue()
+    {
+        using var client = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(client, "manager@northstarvenues.test", SeedPassword);
+
+        var beforeCount = await CountSpacesAsync("northstar-conference-center");
+
+        var spacesPage = await client.GetAsync("/Admin/Spaces?create=true");
+        spacesPage.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(spacesPage);
+        var form = Assert.Single(
+            document.QuerySelectorAll("form").OfType<IHtmlFormElement>(),
+            item => item.Action.EndsWith("/Admin/Spaces/Save"));
+
+        var postResponse = await client.SendAsync(
+            form,
+            new Dictionary<string, string>
+            {
+                ["Form.Name"] = "Skyline Studio",
+                ["Form.Code"] = "SKY",
+                ["Form.Status"] = "Draft",
+                ["Form.Description"] = "Flexible studio for breakouts and hybrid calls.",
+                ["Form.MinimumBookingDurationMinutes"] = "120",
+                ["Form.HourlyRateAmount"] = "175",
+                ["Form.Currency"] = "EUR",
+                ["Form.MinimumCapacity"] = "10",
+                ["Form.RecommendedCapacity"] = "28",
+                ["Form.MaximumCapacity"] = "40",
+                ["Form.Layouts[0].Name"] = "Workshop",
+                ["Form.Layouts[0].LayoutType"] = "Classroom",
+                ["Form.Layouts[0].Capacity"] = "28",
+                ["Form.Layouts[0].IsDefault"] = "true",
+                ["Form.Layouts[0].Notes"] = "Movable tables and wall display."
+            });
+
+        Assert.Equal(HttpStatusCode.Redirect, postResponse.StatusCode);
+
+        var afterCount = await CountSpacesAsync("northstar-conference-center");
+        Assert.Equal(beforeCount + 1, afterCount);
+
+        var createdSpace = await GetSpaceByCodeAsync("northstar-conference-center", "SKY");
+        Assert.Equal("Skyline Studio", createdSpace.Name);
+        Assert.Equal(SpaceStatus.Draft, createdSpace.Status);
+    }
+
+    [Fact]
     public async Task ManagerCanSwitchVenueContextFromWorkspace()
     {
         await SetManagerSecondaryVenueAccessLevelAsync(VenueAccessLevel.Manager);
@@ -564,6 +658,22 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         return await Task.FromResult(db.Venues.Single(venue => venue.Slug == slug));
+    }
+
+    private async Task<int> CountSpacesAsync(string venueSlug)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.Spaces.CountAsync(item => item.Venue.Slug == venueSlug);
+    }
+
+    private async Task<Space> GetSpaceByCodeAsync(string venueSlug, string code)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.Spaces
+            .Include(item => item.Venue)
+            .SingleAsync(item => item.Venue.Slug == venueSlug && item.Code == code);
     }
 
     private async Task<Guid> GetFirstVenueRequestIdAsync()

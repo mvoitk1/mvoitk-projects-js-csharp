@@ -45,6 +45,36 @@ internal static class VenueDtoMapper
         UpcomingBookingsCount = venue.Bookings.Count(booking => booking.Schedule.StartsAt >= DateTime.UtcNow)
     };
 
+    public static PublicVenueDetailDto ToPublicDetailDto(this Venue venue) => new()
+    {
+        VenueId = venue.Id,
+        Name = venue.Name,
+        Slug = venue.Slug,
+        City = venue.City,
+        Country = venue.Country,
+        AddressLine1 = venue.AddressLine1,
+        Description = venue.Description,
+        DefaultHourlyRate = venue.DefaultHourlyRate.ToDto(),
+        Capacity = venue.CapacityProfile.ToDto(),
+        UpcomingBookingsCount = venue.Bookings.Count(booking => booking.Schedule.StartsAt >= DateTime.UtcNow),
+        Spaces = venue.Spaces
+            .OrderBy(space => space.Name)
+            .Select(space => space.ToPublicSpaceSummaryDto())
+            .ToList()
+    };
+
+    public static PublicSpaceSummaryDto ToPublicSpaceSummaryDto(this Space space) => new()
+    {
+        SpaceId = space.Id,
+        Name = space.Name,
+        Code = space.Code,
+        Description = space.Description,
+        Status = space.Status.ToString(),
+        MinimumBookingDurationMinutes = space.MinimumBookingDurationMinutes,
+        HourlyRate = space.HourlyRate.ToDto(),
+        Capacity = space.CapacityProfile.ToDto()
+    };
+
     public static EmployeeBookingSummaryDto ToEmployeeBookingSummaryDto(this Booking booking) => new()
     {
         BookingId = booking.Id,

@@ -1,5 +1,6 @@
 @model SpacesPageViewModel
 @{
+    var layoutTypeOptions = Enum.GetNames<App.Domain.Venues.LayoutType>();
     ViewData["Title"] = Pages.SpacesTitle;
     ViewData["WorkspaceLayout"] = Model.Layout;
 }
@@ -14,6 +15,18 @@
 
 <section class="split-grid">
     <article class="workspace-panel">
+        <div class="panel-actions">
+            <div>
+                <h2>@Pages.SpacesListTitle</h2>
+                <p>@Pages.SpacesListDescription</p>
+            </div>
+            <a class="text-button"
+               asp-area="Admin"
+               asp-controller="Spaces"
+               asp-action="Index"
+               asp-route-create="true">@Pages.SpacesCreateButton</a>
+        </div>
+
         @if (Model.Spaces.Count == 0)
         {
             <h2>@Pages.SpacesEmpty</h2>
@@ -33,7 +46,8 @@
                             <span class="status-pill @WorkspacePresentation.ToBadgeClass(space.Status)">@WorkspacePresentation.ToStatusLabel(space.Status)</span>
                         </div>
                         <p>@space.Code</p>
-                        <p>@space.Layouts.Count layouts</p>
+                        <p>@string.Format(Pages.SpaceListLayoutsCount, space.Layouts.Count)</p>
+                        <p>@Pages.SpaceListCapacityLabel: @space.Capacity.Recommended</p>
                     </a>
                 }
             </div>
@@ -41,94 +55,248 @@
     </article>
 
     <article class="workspace-panel">
-        <h2>@Pages.SpaceFormTitle</h2>
+        <div class="panel-actions">
+            <div>
+                <h2>@(Model.IsCreatingNewSpace ? Pages.SpaceCreateTitle : Pages.SpaceEditTitle)</h2>
+                <p>@Pages.SpaceParametersDescription</p>
+            </div>
+            @if (!Model.IsCreatingNewSpace)
+            {
+                <a class="text-button"
+                   asp-area="Admin"
+                   asp-controller="Spaces"
+                   asp-action="Index"
+                   asp-route-create="true">@Pages.SpacesCreateButton</a>
+            }
+        </div>
+
         <form asp-area="Admin" asp-controller="Spaces" asp-action="Save" method="post" class="workspace-form">
             @Html.AntiForgeryToken()
             <input asp-for="Form.SpaceId" type="hidden" />
             <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
-            <div class="form-row-grid">
-                <div class="field">
-                    <label asp-for="Form.Name"></label>
-                    <input asp-for="Form.Name" />
-                    <span asp-validation-for="Form.Name"></span>
+
+            <section class="space-parameter-grid">
+                <div class="layout-section-header">
+                    <div>
+                        <strong>@Pages.SpaceParametersTitle</strong>
+                        <p>@Pages.SpaceParametersDescription</p>
+                    </div>
                 </div>
-                <div class="field">
-                    <label asp-for="Form.Code"></label>
-                    <input asp-for="Form.Code" />
-                    <span asp-validation-for="Form.Code"></span>
-                </div>
-            </div>
-            <div class="field">
-                <label asp-for="Form.Status"></label>
-                <select asp-for="Form.Status">
-                    <option value="Active">@Pages.StatusActive</option>
-                    <option value="Suspended">@Pages.StatusSuspended</option>
-                </select>
-            </div>
-            <div class="field">
-                <label asp-for="Form.Description"></label>
-                <textarea asp-for="Form.Description" rows="3"></textarea>
-            </div>
-            <div class="form-row-grid">
-                <div class="field">
-                    <label asp-for="Form.MinimumBookingDurationMinutes"></label>
-                    <input asp-for="Form.MinimumBookingDurationMinutes" />
-                </div>
-                <div class="field">
-                    <label asp-for="Form.HourlyRateAmount"></label>
-                    <input asp-for="Form.HourlyRateAmount" />
-                </div>
-                <div class="field">
-                    <label asp-for="Form.Currency"></label>
-                    <input asp-for="Form.Currency" />
-                </div>
-            </div>
-            <div class="form-row-grid">
-                <div class="field">
-                    <label asp-for="Form.MinimumCapacity"></label>
-                    <input asp-for="Form.MinimumCapacity" />
-                </div>
-                <div class="field">
-                    <label asp-for="Form.RecommendedCapacity"></label>
-                    <input asp-for="Form.RecommendedCapacity" />
-                </div>
-                <div class="field">
-                    <label asp-for="Form.MaximumCapacity"></label>
-                    <input asp-for="Form.MaximumCapacity" />
-                </div>
-            </div>
-            <h3>@Pages.SpaceLayoutsTitle</h3>
-            @for (var i = 0; i < Model.Form.Layouts.Count; i++)
-            {
-                <div class="layout-grid">
-                    <input asp-for="Form.Layouts[i].LayoutId" type="hidden" />
+
+                @if (!Model.IsCreatingNewSpace && Model.SelectedSpace != null)
+                {
+                    <div class="space-parameter-summary">
+                        <p>@Model.SelectedSpace.Description</p>
+                        <div class="space-meta-grid">
+                            <div>
+                                <strong>@Pages.SpaceStatusLabel</strong>
+                                <span class="status-pill @WorkspacePresentation.ToBadgeClass(Model.SelectedSpace.Status)">@WorkspacePresentation.ToStatusLabel(Model.SelectedSpace.Status)</span>
+                            </div>
+                            <div>
+                                <strong>@Pages.SpaceHourlyRateLabel</strong>
+                                <span>@WorkspacePresentation.FormatMoney(Model.SelectedSpace.HourlyRate.Amount, Model.SelectedSpace.HourlyRate.Currency)</span>
+                            </div>
+                            <div>
+                                <strong>@Pages.SpaceRecommendedCapacityLabel</strong>
+                                <span>@Model.SelectedSpace.Capacity.Recommended</span>
+                            </div>
+                            <div>
+                                <strong>@Pages.SpaceLayoutsTitle</strong>
+                                <span>@Model.SelectedSpace.Layouts.Count</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="form-row-grid">
                     <div class="field">
-                        <label asp-for="Form.Layouts[i].Name"></label>
-                        <input asp-for="Form.Layouts[i].Name" />
+                        <label asp-for="Form.Name"></label>
+                        <input asp-for="Form.Name" />
+                        <span asp-validation-for="Form.Name"></span>
                     </div>
                     <div class="field">
-                        <label asp-for="Form.Layouts[i].LayoutType"></label>
-                        <input asp-for="Form.Layouts[i].LayoutType" />
-                    </div>
-                    <div class="field">
-                        <label asp-for="Form.Layouts[i].Capacity"></label>
-                        <input asp-for="Form.Layouts[i].Capacity" />
-                    </div>
-                    <div class="field checkbox-field">
-                        <input asp-for="Form.Layouts[i].IsDefault" />
-                        <span>@Pages.SpaceLayoutDefaultLabel</span>
-                    </div>
-                    <div class="field">
-                        <label asp-for="Form.Layouts[i].Notes"></label>
-                        <input asp-for="Form.Layouts[i].Notes" />
+                        <label asp-for="Form.Code"></label>
+                        <input asp-for="Form.Code" />
+                        <span asp-validation-for="Form.Code"></span>
                     </div>
                 </div>
-            }
+                <div class="field">
+                    <label asp-for="Form.Status"></label>
+                    <select asp-for="Form.Status">
+                        <option value="Draft">@Pages.StatusDraft</option>
+                        <option value="Active">@Pages.StatusActive</option>
+                        <option value="Maintenance">@Pages.StatusMaintenance</option>
+                        <option value="Archived">@Pages.StatusArchived</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label asp-for="Form.Description"></label>
+                    <textarea asp-for="Form.Description" rows="3"></textarea>
+                </div>
+                <div class="form-row-grid">
+                    <div class="field">
+                        <label asp-for="Form.MinimumBookingDurationMinutes"></label>
+                        <input asp-for="Form.MinimumBookingDurationMinutes" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Form.HourlyRateAmount"></label>
+                        <input asp-for="Form.HourlyRateAmount" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Form.Currency"></label>
+                        <input asp-for="Form.Currency" />
+                    </div>
+                </div>
+                <div class="form-row-grid">
+                    <div class="field">
+                        <label asp-for="Form.MinimumCapacity"></label>
+                        <input asp-for="Form.MinimumCapacity" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Form.RecommendedCapacity"></label>
+                        <input asp-for="Form.RecommendedCapacity" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Form.MaximumCapacity"></label>
+                        <input asp-for="Form.MaximumCapacity" />
+                    </div>
+                </div>
+
+                <div class="layout-section-header">
+                    <div>
+                        <strong>@Pages.SpaceLayoutsTitle</strong>
+                        <p>@Pages.SpacesListDescription</p>
+                    </div>
+                    <button class="text-button" type="button" data-add-layout>@Pages.SpaceLayoutAddButton</button>
+                </div>
+
+                <div data-layout-list>
+                    @for (var i = 0; i < Model.Form.Layouts.Count; i++)
+                    {
+                        <div class="layout-grid" data-layout-row>
+                            <input asp-for="Form.Layouts[i].LayoutId" type="hidden" />
+                            <div class="field">
+                                <label asp-for="Form.Layouts[i].Name"></label>
+                                <input asp-for="Form.Layouts[i].Name" />
+                            </div>
+                            <div class="field">
+                                <label asp-for="Form.Layouts[i].LayoutType"></label>
+                                <select asp-for="Form.Layouts[i].LayoutType">
+                                    <option value=""></option>
+                                    @foreach (var layoutType in layoutTypeOptions)
+                                    {
+                                        <option value="@layoutType">@layoutType</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label asp-for="Form.Layouts[i].Capacity"></label>
+                                <input asp-for="Form.Layouts[i].Capacity" />
+                            </div>
+                            <div class="field checkbox-field">
+                                <input asp-for="Form.Layouts[i].IsDefault" />
+                                <span>@Pages.SpaceLayoutDefaultLabel</span>
+                            </div>
+                            <div class="field">
+                                <label asp-for="Form.Layouts[i].Notes"></label>
+                                <input asp-for="Form.Layouts[i].Notes" />
+                            </div>
+                            <div class="layout-actions">
+                                <button class="text-button layout-remove-button" type="button" data-remove-layout>@Pages.SpaceLayoutRemoveButton</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+
             <button class="primary-button" type="submit">@Pages.SpaceSaveButton</button>
         </form>
     </article>
 </section>
 
+<template id="space-layout-template">
+    <div class="layout-grid" data-layout-row>
+        <input type="hidden" name="Form.Layouts[__index__].LayoutId" value="" />
+        <div class="field">
+            <label>@Pages.SpaceLayoutNameLabel</label>
+            <input name="Form.Layouts[__index__].Name" value="" />
+        </div>
+        <div class="field">
+            <label>@Pages.SpaceLayoutTypeLabel</label>
+            <select name="Form.Layouts[__index__].LayoutType">
+                <option value=""></option>
+                @foreach (var layoutType in layoutTypeOptions)
+                {
+                    <option value="@layoutType">@layoutType</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <label>@Pages.SpaceLayoutCapacityLabel</label>
+            <input name="Form.Layouts[__index__].Capacity" value="0" />
+        </div>
+        <div class="field checkbox-field">
+            <input type="checkbox" name="Form.Layouts[__index__].IsDefault" value="true" />
+            <span>@Pages.SpaceLayoutDefaultLabel</span>
+        </div>
+        <div class="field">
+            <label>@Pages.SpaceLayoutNotesLabel</label>
+            <input name="Form.Layouts[__index__].Notes" value="" />
+        </div>
+        <div class="layout-actions">
+            <button class="text-button layout-remove-button" type="button" data-remove-layout>@Pages.SpaceLayoutRemoveButton</button>
+        </div>
+    </div>
+</template>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const form = document.querySelector(".workspace-form");
+            const layoutList = document.querySelector("[data-layout-list]");
+            const addButton = document.querySelector("[data-add-layout]");
+            const template = document.getElementById("space-layout-template");
+
+            if (!form || !layoutList || !addButton || !template) {
+                return;
+            }
+
+            const reindexRows = () => {
+                const rows = layoutList.querySelectorAll("[data-layout-row]");
+                rows.forEach((row, index) => {
+                    row.querySelectorAll("[name]").forEach((element) => {
+                        element.name = element.name.replace(/Form\\.Layouts\\[\\d+\\]/g, `Form.Layouts[${index}]`);
+                    });
+                });
+            };
+
+            const ensureOneRow = () => {
+                if (layoutList.querySelectorAll("[data-layout-row]").length === 0) {
+                    addButton.click();
+                }
+            };
+
+            addButton.addEventListener("click", () => {
+                const index = layoutList.querySelectorAll("[data-layout-row]").length;
+                layoutList.insertAdjacentHTML("beforeend", template.innerHTML.replace(/__index__/g, index.toString()));
+            });
+
+            layoutList.addEventListener("click", (event) => {
+                const trigger = event.target.closest("[data-remove-layout]");
+                if (!trigger) {
+                    return;
+                }
+
+                const row = trigger.closest("[data-layout-row]");
+                row?.remove();
+                reindexRows();
+                ensureOneRow();
+            });
+
+            form.addEventListener("submit", () => {
+                reindexRows();
+            });
+        })();
+    </script>
 }

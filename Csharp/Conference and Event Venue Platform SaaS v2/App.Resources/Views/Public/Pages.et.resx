@@ -43,7 +43,16 @@
   <data name="BrowseHeadline" xml:space="preserve"><value>Vaata aktiivseid venue'sid, ruumimahtu ja töökoormust enne broneerimisteekonna alustamist.</value></data>
   <data name="BrowseDescription" xml:space="preserve"><value>Iga kaart põhineb seemneandmetel, et discovery vaade püsiks kooskõlas päris broneerimis- ja haldusvoogudega.</value></data>
   <data name="BrowsePrimaryCta" xml:space="preserve"><value>Too oma venue platvormile</value></data>
+  <data name="BrowseFilterTitle" xml:space="preserve"><value>Filtreeri venue'sid</value></data>
+  <data name="BrowseFilterDescription" xml:space="preserve"><value>Ahenda avalikku kataloogi linna voi minimaalse mahutavuse jargi.</value></data>
+  <data name="BrowseFilterCityLabel" xml:space="preserve"><value>Linn</value></data>
+  <data name="BrowseFilterAllCitiesOption" xml:space="preserve"><value>Koik linnad</value></data>
+  <data name="BrowseFilterCapacityLabel" xml:space="preserve"><value>Mahutavus alates</value></data>
+  <data name="BrowseFilterCapacityPlaceholder" xml:space="preserve"><value>Naiteks 120</value></data>
+  <data name="BrowseFilterSubmitCta" xml:space="preserve"><value>Rakenda filtrid</value></data>
+  <data name="BrowseFilterClearCta" xml:space="preserve"><value>Eemalda filtrid</value></data>
   <data name="BrowseEmpty" xml:space="preserve"><value>Aktiivseid venue'sid pole veel saadaval.</value></data>
+  <data name="BrowseFilteredEmpty" xml:space="preserve"><value>Valitud linna ja mahutavuse filtritega sobivaid venue'sid ei leitud.</value></data>
   <data name="VenueFromRate" xml:space="preserve"><value>Alates {0}/{1}</value></data>
   <data name="VenueHourlyUnit" xml:space="preserve"><value>tund</value></data>
   <data name="VenueCapacityLabel" xml:space="preserve"><value>Mahutavus</value></data>
@@ -85,6 +94,55 @@
   <data name="SubmitRequestCta" xml:space="preserve"><value>Esita venue request</value></data>
   <data name="RequestSidebarTitle" xml:space="preserve"><value>Mis juhtub edasi</value></data>
   <data name="RequestSidebarBody" xml:space="preserve"><value>Administraatorid vaatavad venue üle, kinnitavad tööprofiili ja saavad heakskiidu korral anda company-manager õigused.</value></data>
+  <data name="BookingRequestTitle" xml:space="preserve"><value>Taotle ruumi broneeringut</value></data>
+  <data name="BookingRequestDescription" xml:space="preserve"><value>Vali ruum, sobiv paigutus ning lisa ajakava ja teenusvajadused, et venue tiim saaks saadavust üle vaadata.</value></data>
+  <data name="BookingRequestSignInPrompt" xml:space="preserve"><value>Selle venue broneeringu taotlemiseks logi sisse.</value></data>
+  <data name="BookingRequestSuccessTitle" xml:space="preserve"><value>Broneeringu taotlus esitatud</value></data>
+  <data name="BookingRequestSuccessBody" xml:space="preserve"><value>Sinu broneeringu taotlus ootab venue kinnitust. Järelpäringuks kasuta ID-d {0}.</value></data>
+  <data name="BookingRequestHelperText" xml:space="preserve"><value>Kasuta märkmevälju catering'u, ruumipaigutuse, hübriidürituse, ligipääsetavuse või tehnika vajaduste jaoks.</value></data>
+  <data name="BookingRequestSidebarTitle" xml:space="preserve"><value>Kinnitamise voog</value></data>
+  <data name="BookingRequestSidebarBody" xml:space="preserve"><value>Taotlus salvestatakse kinnituse ootele. Venue töötajad või managerid saavad detailid üle vaadata ja saadavuse korral kinnitada.</value></data>
+  <data name="BookingRequestLayoutOptional" xml:space="preserve"><value>Konkreetne paigutus puudub</value></data>
+  <data name="BookingRequestUnavailable" xml:space="preserve"><value>Valitud venue ruum ei ole selleks taotluseks saadaval.</value></data>
+  <data name="EventTitleLabel" xml:space="preserve"><value>Urituse nimi</value></data>
+  <data name="ClientNameLabel" xml:space="preserve"><value>Klient voi ettevote</value></data>
+  <data name="StartsAtLabel" xml:space="preserve"><value>Algusaeg</value></data>
+  <data name="EndsAtLabel" xml:space="preserve"><value>Loppaeg</value></data>
+  <data name="ExpectedAttendeesLabel" xml:space="preserve"><value>Eeldatav osalejate arv</value></data>
+  <data name="SpaceSelectionLabel" xml:space="preserve"><value>Ruum</value></data>
+  <data name="LayoutSelectionLabel" xml:space="preserve"><value>Eelistatud paigutus</value></data>
+  <data name="BookingRequestCateringOptionsHint" xml:space="preserve"><value>Vali catering paketid, mida soovid taotlusega kaasa saata. Hinnad on ligikaudsed ning arvestatud inimese kohta, kui pole teisiti margitud.</value></data>
+  <data name="BookingRequestSetupOptionsHint" xml:space="preserve"><value>Vali setup lisad, mida venue tiim peaks ette valmistama. Hinnad on ligikaudsed kogu urituse kohta.</value></data>
+  <data name="BookingRequestSetupOptionsLabel" xml:space="preserve"><value>Setup lisad</value></data>
+  <data name="BookingRequestSelectedCateringPrefix" xml:space="preserve"><value>Valitud catering valikud</value></data>
+  <data name="BookingRequestSelectedSetupPrefix" xml:space="preserve"><value>Valitud setup valikud</value></data>
+  <data name="CateringCategoryBreakfast" xml:space="preserve"><value>Hommikusook</value></data>
+  <data name="CateringCategoryBrunch" xml:space="preserve"><value>Brunch</value></data>
+  <data name="CateringCategoryLunch" xml:space="preserve"><value>Lounasook</value></data>
+  <data name="CateringCategoryDinner" xml:space="preserve"><value>Ohtusook</value></data>
+  <data name="CateringOptionContinentalBreakfast" xml:space="preserve"><value>Kontinentaalne hommikusook - 14 EUR/inimene</value></data>
+  <data name="CateringOptionCoffeeAndPastries" xml:space="preserve"><value>Kohv ja saiakesed - 8 EUR/inimene</value></data>
+  <data name="CateringOptionFreshFruitPlatter" xml:space="preserve"><value>Varske puuviljavaagen - 6 EUR/inimene</value></data>
+  <data name="CateringOptionBrunchBuffet" xml:space="preserve"><value>Brunch-buffet - 19 EUR/inimene</value></data>
+  <data name="CateringOptionBagelsAndSpreads" xml:space="preserve"><value>Bagelid ja maarded - 11 EUR/inimene</value></data>
+  <data name="CateringOptionSmoothieBar" xml:space="preserve"><value>Smuutibaar - 9 EUR/inimene</value></data>
+  <data name="CateringOptionSandwichLunch" xml:space="preserve"><value>Voileivavaagnad - 16 EUR/inimene</value></data>
+  <data name="CateringOptionHotLunchBuffet" xml:space="preserve"><value>Soe lounabuffet - 24 EUR/inimene</value></data>
+  <data name="CateringOptionSaladAndWrapSelection" xml:space="preserve"><value>Salati- ja wrappide valik - 15 EUR/inimene</value></data>
+  <data name="CateringOptionPlatedDinner" xml:space="preserve"><value>Serveeritud ohtusook - 39 EUR/inimene</value></data>
+  <data name="CateringOptionEveningCanapes" xml:space="preserve"><value>Ohtused suupisted - 18 EUR/inimene</value></data>
+  <data name="CateringOptionDessertAndCoffee" xml:space="preserve"><value>Magustoit ja kohviteenus - 10 EUR/inimene</value></data>
+  <data name="SetupOptionProjector" xml:space="preserve"><value>Projektor ja ekraan - 120 EUR/uritus</value></data>
+  <data name="SetupOptionCameraPackage" xml:space="preserve"><value>Kaamerapakett - 350 EUR/uritus</value></data>
+  <data name="SetupOptionDjBooth" xml:space="preserve"><value>DJ-pult - 280 EUR/uritus</value></data>
+  <data name="SetupOptionWirelessMicrophones" xml:space="preserve"><value>Juhtmevabad mikrofonid - 90 EUR/uritus</value></data>
+  <data name="SetupOptionStageLighting" xml:space="preserve"><value>Lavavalgustus - 220 EUR/uritus</value></data>
+  <data name="CateringNotesLabel" xml:space="preserve"><value>Catering'u nouded</value></data>
+  <data name="SetupRequirementsLabel" xml:space="preserve"><value>Setup nouded</value></data>
+  <data name="AdditionalRequirementsLabel" xml:space="preserve"><value>Lisavajadused</value></data>
+  <data name="SubmitBookingRequestCta" xml:space="preserve"><value>Esita broneeringu taotlus</value></data>
+  <data name="PositiveAttendeesRange" xml:space="preserve"><value>Eeldatav osalejate arv peab jaama vahemikku 1 kuni 5000.</value></data>
+  <data name="ScheduleEndAfterStart" xml:space="preserve"><value>Loppaeg peab olema parast algusaega.</value></data>
   <data name="AuthLoginTitle" xml:space="preserve"><value>VenueFlow | Logi sisse</value></data>
   <data name="AuthLoginEyebrow" xml:space="preserve"><value>Identity ligipääs</value></data>
   <data name="AuthLoginHeadline" xml:space="preserve"><value>Naase venue tööruumi sama Identity vooga, lihtsalt ilma starter-UI-ta.</value></data>

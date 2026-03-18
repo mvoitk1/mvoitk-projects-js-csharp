@@ -5,6 +5,23 @@ namespace WebApp.ViewModels.Public;
 
 public class PublicBookingRequestViewModel
 {
+    public static readonly IReadOnlyList<SelectableOptionGroup> CateringOptionGroups =
+    [
+        new(Pages.CateringCategoryBreakfast, [Pages.CateringOptionContinentalBreakfast, Pages.CateringOptionCoffeeAndPastries, Pages.CateringOptionFreshFruitPlatter]),
+        new(Pages.CateringCategoryBrunch, [Pages.CateringOptionBrunchBuffet, Pages.CateringOptionBagelsAndSpreads, Pages.CateringOptionSmoothieBar]),
+        new(Pages.CateringCategoryLunch, [Pages.CateringOptionSandwichLunch, Pages.CateringOptionHotLunchBuffet, Pages.CateringOptionSaladAndWrapSelection]),
+        new(Pages.CateringCategoryDinner, [Pages.CateringOptionPlatedDinner, Pages.CateringOptionEveningCanapes, Pages.CateringOptionDessertAndCoffee])
+    ];
+
+    public static readonly IReadOnlyList<string> SetupOptions =
+    [
+        Pages.SetupOptionProjector,
+        Pages.SetupOptionCameraPackage,
+        Pages.SetupOptionDjBooth,
+        Pages.SetupOptionWirelessMicrophones,
+        Pages.SetupOptionStageLighting
+    ];
+
     [Required(
         ErrorMessageResourceType = typeof(Pages),
         ErrorMessageResourceName = nameof(Pages.RequiredField))]
@@ -47,9 +64,15 @@ public class PublicBookingRequestViewModel
     [Display(Name = nameof(Pages.CateringNotesLabel), ResourceType = typeof(Pages))]
     public string? CateringNotes { get; set; }
 
+    public List<string> SelectedCateringOptions { get; set; } = [];
+
     [Display(Name = nameof(Pages.SetupRequirementsLabel), ResourceType = typeof(Pages))]
     public string? SetupRequirements { get; set; }
 
+    public List<string> SelectedSetupOptions { get; set; } = [];
+
     [Display(Name = nameof(Pages.AdditionalRequirementsLabel), ResourceType = typeof(Pages))]
     public string? AdditionalRequirements { get; set; }
+
+    public sealed record SelectableOptionGroup(string Label, IReadOnlyList<string> Options);
 }

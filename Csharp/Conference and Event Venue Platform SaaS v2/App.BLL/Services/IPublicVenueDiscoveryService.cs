@@ -5,7 +5,9 @@ namespace App.BLL.Services;
 public interface IPublicVenueDiscoveryService
 {
     Task<PublicLandingPageDto> GetLandingPageAsync(CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<PublicVenueSummaryDto>> GetBrowseVenuesAsync(CancellationToken cancellationToken = default);
+    Task<BrowseVenuesResultDto> GetBrowseVenuesAsync(
+        BrowseVenuesFilterDto? filter = null,
+        CancellationToken cancellationToken = default);
     Task<PublicVenueDetailDto?> GetVenueAsync(string slug, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<UserVenueAccessRequestSummaryDto>> GetUserVenueAccessRequestsAsync(
         Guid requestorUserId,

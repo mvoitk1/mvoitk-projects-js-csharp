@@ -12,9 +12,15 @@ public class VenuesController(IPublicVenueDiscoveryService publicVenueDiscoveryS
 {
     [HttpGet("/venues")]
     [AllowAnonymous]
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(string? city, int? minimumCapacity, CancellationToken cancellationToken)
     {
-        var venues = await publicVenueDiscoveryService.GetBrowseVenuesAsync(cancellationToken);
+        var venues = await publicVenueDiscoveryService.GetBrowseVenuesAsync(
+            new BrowseVenuesFilterDto
+            {
+                City = city,
+                MinimumCapacity = minimumCapacity
+            },
+            cancellationToken);
         return View("Browse", venues.ToBrowseViewModel());
     }
 
@@ -57,6 +63,15 @@ public class VenuesController(IPublicVenueDiscoveryService publicVenueDiscoveryS
 
         try
         {
+            var cateringNotes = ComposeSelectionBackedNotes(
+                Pages.BookingRequestSelectedCateringPrefix,
+                form.SelectedCateringOptions,
+                form.CateringNotes);
+            var setupRequirements = ComposeSelectionBackedNotes(
+                Pages.BookingRequestSelectedSetupPrefix,
+                form.SelectedSetupOptions,
+                form.SetupRequirements);
+
             var result = await publicVenueDiscoveryService.SubmitBookingRequestAsync(
                 User.UserId(),
                 slug,
@@ -69,8 +84,8 @@ public class VenuesController(IPublicVenueDiscoveryService publicVenueDiscoveryS
                     StartsAt = form.StartsAt,
                     EndsAt = form.EndsAt,
                     ExpectedAttendees = form.ExpectedAttendees,
-                    CateringNotes = form.CateringNotes,
-                    SetupRequirements = form.SetupRequirements,
+                    CateringNotes = cateringNotes,
+                    SetupRequirements = setupRequirements,
                     AdditionalRequirements = form.AdditionalRequirements
                 },
                 cancellationToken);
@@ -177,5 +192,25 @@ public class VenuesController(IPublicVenueDiscoveryService publicVenueDiscoveryS
                 ClientName = User.Identity?.Name ?? string.Empty
             }
         };
+    }
+
+    private static string? ComposeSelectionBackedNotes(
+        string selectedPrefix,
+        IReadOnlyCollection<string>? selectedOptions,
+        string? freeText)
+    {
+        var lines = new List<string>();
+
+        if (selectedOptions is { Count: > 0 })
+        {
+            lines.Add($"{selectedPrefix}: {string.Join(", ", selectedOptions)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(freeText))
+        {
+            lines.Add(freeText.Trim());
+        }
+
+        return lines.Count == 0 ? null : string.Join(Environment.NewLine, lines);
     }
 }

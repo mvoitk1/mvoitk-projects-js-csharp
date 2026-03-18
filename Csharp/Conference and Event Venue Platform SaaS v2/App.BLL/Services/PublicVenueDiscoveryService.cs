@@ -30,10 +30,41 @@ public class PublicVenueDiscoveryService(AppDbContext context) : IPublicVenueDis
         };
     }
 
-    public async Task<IReadOnlyList<PublicVenueSummaryDto>> GetBrowseVenuesAsync(CancellationToken cancellationToken = default)
+    public async Task<BrowseVenuesResultDto> GetBrowseVenuesAsync(
+        BrowseVenuesFilterDto? filter = null,
+        CancellationToken cancellationToken = default)
     {
-        var venues = await QueryActiveVenues().ToListAsync(cancellationToken);
-        return venues.Select(venue => venue.ToPublicSummaryDto()).ToList();
+        var normalizedFilter = NormalizeBrowseFilter(filter);
+        var cityOptions = await context.Venues
+            .AsNoTracking()
+            .Where(venue => venue.Status == VenueLifecycleStatus.Active)
+            .Select(venue => venue.City.Trim())
+            .Where(city => city != string.Empty)
+            .Distinct()
+            .OrderBy(city => city)
+            .ToListAsync(cancellationToken);
+
+        var query = QueryActiveVenues();
+
+        if (!string.IsNullOrWhiteSpace(normalizedFilter.City))
+        {
+            var city = normalizedFilter.City;
+            query = query.Where(venue => venue.City.ToLower() == city!.ToLower());
+        }
+
+        if (normalizedFilter.MinimumCapacity.HasValue)
+        {
+            query = query.Where(venue => venue.CapacityProfile.Maximum >= normalizedFilter.MinimumCapacity.Value);
+        }
+
+        var venues = await query.ToListAsync(cancellationToken);
+
+        return new BrowseVenuesResultDto
+        {
+            Venues = venues.Select(venue => venue.ToPublicSummaryDto()).ToList(),
+            AvailableCities = cityOptions,
+            Filters = normalizedFilter
+        };
     }
 
     public async Task<PublicVenueDetailDto?> GetVenueAsync(string slug, CancellationToken cancellationToken = default)
@@ -265,6 +296,18 @@ public class PublicVenueDiscoveryService(AppDbContext context) : IPublicVenueDis
                 .ThenInclude(space => space.Layouts)
             .Include(venue => venue.Bookings)
             .OrderBy(venue => venue.Name);
+
+    private static BrowseVenuesFilterDto NormalizeBrowseFilter(BrowseVenuesFilterDto? filter)
+    {
+        var city = string.IsNullOrWhiteSpace(filter?.City) ? null : filter.City.Trim();
+        var minimumCapacity = filter?.MinimumCapacity is > 0 ? filter.MinimumCapacity : null;
+
+        return new BrowseVenuesFilterDto
+        {
+            City = city,
+            MinimumCapacity = minimumCapacity
+        };
+    }
 
     private static Money CalculateSpaceCharge(Money hourlyRate, int durationMinutes)
     {

@@ -134,6 +134,28 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
     }
 
     [Fact]
+    public async Task BrowseVenues_FilterByCityAndCapacityUpdatesResults()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/venues?city=Tartu&minimumCapacity=150");
+        response.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(response);
+        var pageText = document.Body?.TextContent ?? string.Empty;
+
+        Assert.Contains("Summit Riverside Hub", pageText);
+        Assert.DoesNotContain("Northstar Conference Center", pageText);
+        Assert.DoesNotContain("Harbor Hall", pageText);
+
+        var citySelect = Assert.Single(document.QuerySelectorAll("select[name='city']").OfType<IHtmlSelectElement>());
+        Assert.Equal("Tartu", citySelect.Value);
+
+        var capacityInput = Assert.Single(document.QuerySelectorAll("input[name='minimumCapacity']").OfType<IHtmlInputElement>());
+        Assert.Equal("150", capacityInput.Value);
+    }
+
+    [Fact]
     public async Task LandingPage_FeaturedVenueCardLinksToVenueSpacesPage()
     {
         using var client = CreateClient();
@@ -188,7 +210,11 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
                 new KeyValuePair<string, string>("BookingRequest.StartsAt", DateTime.UtcNow.AddDays(15).ToString("yyyy-MM-ddTHH:mm")),
                 new KeyValuePair<string, string>("BookingRequest.EndsAt", DateTime.UtcNow.AddDays(15).AddHours(6).ToString("yyyy-MM-ddTHH:mm")),
                 new KeyValuePair<string, string>("BookingRequest.ExpectedAttendees", "60"),
+                new KeyValuePair<string, string>("BookingRequest.SelectedCateringOptions", "Coffee and pastries - 8 EUR/person"),
+                new KeyValuePair<string, string>("BookingRequest.SelectedCateringOptions", "Hot lunch buffet - 24 EUR/person"),
                 new KeyValuePair<string, string>("BookingRequest.CateringNotes", "Coffee, pastries, buffet lunch."),
+                new KeyValuePair<string, string>("BookingRequest.SelectedSetupOptions", "Projector and screen - 120 EUR/event"),
+                new KeyValuePair<string, string>("BookingRequest.SelectedSetupOptions", "DJ booth - 280 EUR/event"),
                 new KeyValuePair<string, string>("BookingRequest.SetupRequirements", "Classroom seating with stage screen."),
                 new KeyValuePair<string, string>("BookingRequest.AdditionalRequirements", "Need sign-in desk and wheelchair aisle.")
             ]));
@@ -202,6 +228,11 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         var createdBooking = await GetBookingByTitleAsync("Spring Strategy Day");
         Assert.Equal(BookingStatus.PendingApproval, createdBooking.Status);
         Assert.Equal("Spring Strategy Day", createdBooking.Title);
+        Assert.Contains("Projector and screen - 120 EUR/event", createdBooking.CoordinationNotes);
+        Assert.Contains("DJ booth - 280 EUR/event", createdBooking.CoordinationNotes);
+        Assert.Single(createdBooking.CateringOrders);
+        Assert.Contains("Coffee and pastries - 8 EUR/person", createdBooking.CateringOrders.Single().Notes);
+        Assert.Contains("Hot lunch buffet - 24 EUR/person", createdBooking.CateringOrders.Single().Notes);
     }
 
     [Fact]
@@ -952,6 +983,7 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         return await db.Bookings
+            .Include(item => item.CateringOrders)
             .SingleAsync(item => item.Title == title);
     }
 

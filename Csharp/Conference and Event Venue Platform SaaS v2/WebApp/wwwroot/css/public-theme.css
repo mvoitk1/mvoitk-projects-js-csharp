@@ -475,6 +475,7 @@ h1 {
 }
 
 .field input,
+.field select,
 .field textarea {
     width: 100%;
     border: 1px solid rgba(76, 57, 43, 0.16);
@@ -486,15 +487,75 @@ h1 {
 }
 
 .field input:focus,
+.field select:focus,
 .field textarea:focus {
     outline: none;
     border-color: rgba(180, 93, 60, 0.65);
     box-shadow: 0 0 0 4px rgba(180, 93, 60, 0.12);
 }
 
+.browse-filter-card {
+    margin-bottom: 24px;
+}
+
+.browse-filter-copy h2 {
+    margin: 0 0 10px;
+}
+
+.browse-filter-copy p {
+    margin: 0 0 18px;
+}
+
+.browse-filter-form {
+    display: grid;
+    gap: 18px;
+}
+
+.browse-filter-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .field-helper {
     color: var(--muted);
     font-size: 0.88rem;
+}
+
+.checkbox-group-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin: 0.75rem 0 1rem;
+}
+
+.selection-group {
+    border: 1px solid rgba(76, 57, 43, 0.12);
+    border-radius: 18px;
+    padding: 0.9rem 1rem 1rem;
+    background: rgba(255, 255, 255, 0.68);
+}
+
+.selection-group legend {
+    padding: 0 0.35rem;
+    color: var(--forest-soft);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-top: 0.65rem;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.checkbox-option input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
 }
 
 .field-validation-error,

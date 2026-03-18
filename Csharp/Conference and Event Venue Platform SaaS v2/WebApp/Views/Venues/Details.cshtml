@@ -175,11 +175,53 @@
                     </div>
                     <div class="field field-full">
                         <label asp-for="BookingRequest.CateringNotes"></label>
+                        <div class="field-helper">@Pages.BookingRequestCateringOptionsHint</div>
+                        <div class="checkbox-group-grid">
+                            @for (var groupIndex = 0; groupIndex < WebApp.ViewModels.Public.PublicBookingRequestViewModel.CateringOptionGroups.Count; groupIndex++)
+                            {
+                                var group = WebApp.ViewModels.Public.PublicBookingRequestViewModel.CateringOptionGroups[groupIndex];
+                                <fieldset class="selection-group">
+                                    <legend>@group.Label</legend>
+                                    @for (var optionIndex = 0; optionIndex < group.Options.Count; optionIndex++)
+                                    {
+                                        var option = group.Options[optionIndex];
+                                        var isSelected = Model.BookingRequest.SelectedCateringOptions.Contains(option);
+                                        <label class="checkbox-option">
+                                            <input
+                                                type="checkbox"
+                                                name="BookingRequest.SelectedCateringOptions"
+                                                value="@option"
+                                                checked="@isSelected" />
+                                            <span>@option</span>
+                                        </label>
+                                    }
+                                </fieldset>
+                            }
+                        </div>
                         <textarea asp-for="BookingRequest.CateringNotes" rows="4"></textarea>
                         <span asp-validation-for="BookingRequest.CateringNotes" class="field-validation-error"></span>
                     </div>
                     <div class="field field-full">
                         <label asp-for="BookingRequest.SetupRequirements"></label>
+                        <div class="field-helper">@Pages.BookingRequestSetupOptionsHint</div>
+                        <div class="checkbox-group-grid">
+                            <fieldset class="selection-group">
+                                <legend>@Pages.BookingRequestSetupOptionsLabel</legend>
+                                @for (var setupIndex = 0; setupIndex < WebApp.ViewModels.Public.PublicBookingRequestViewModel.SetupOptions.Count; setupIndex++)
+                                {
+                                    var option = WebApp.ViewModels.Public.PublicBookingRequestViewModel.SetupOptions[setupIndex];
+                                    var isSelected = Model.BookingRequest.SelectedSetupOptions.Contains(option);
+                                    <label class="checkbox-option">
+                                        <input
+                                            type="checkbox"
+                                            name="BookingRequest.SelectedSetupOptions"
+                                            value="@option"
+                                            checked="@isSelected" />
+                                        <span>@option</span>
+                                    </label>
+                                }
+                            </fieldset>
+                        </div>
                         <textarea asp-for="BookingRequest.SetupRequirements" rows="3"></textarea>
                         <span asp-validation-for="BookingRequest.SetupRequirements" class="field-validation-error"></span>
                     </div>

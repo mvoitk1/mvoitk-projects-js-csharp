@@ -74,8 +74,36 @@ public class VenuePlatformServicesTests
         Assert.Equal(BookingStatus.PendingApproval, booking.Status);
         Assert.Equal(fixture.Requester.Id, booking.CreatedByUserId);
         Assert.Contains("Requested layout", booking.CoordinationNotes);
+        Assert.Contains("Setup requirements", booking.CoordinationNotes);
         Assert.Single(booking.CateringOrders);
         Assert.Equal(CateringOrderStatus.Draft, booking.CateringOrders.Single().Status);
+        Assert.Contains("Coffee station and lunch buffet.", booking.CateringOrders.Single().Notes);
+    }
+
+    [Fact]
+    public async Task GetBrowseVenuesAsync_FiltersByCityAndMinimumCapacity()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        fixture.SecondaryVenue.City = "Riga";
+        await context.SaveChangesAsync();
+
+        var service = new PublicVenueDiscoveryService(context);
+
+        var result = await service.GetBrowseVenuesAsync(new BrowseVenuesFilterDto
+        {
+            City = "Tallinn",
+            MinimumCapacity = 150
+        });
+
+        var venue = Assert.Single(result.Venues);
+        Assert.Equal(fixture.PrimaryVenue.Id, venue.VenueId);
+        Assert.Equal("Tallinn", result.Filters.City);
+        Assert.Equal(150, result.Filters.MinimumCapacity);
+        Assert.Collection(
+            result.AvailableCities,
+            city => Assert.Equal("Riga", city),
+            city => Assert.Equal("Tallinn", city));
     }
 
     [Fact]

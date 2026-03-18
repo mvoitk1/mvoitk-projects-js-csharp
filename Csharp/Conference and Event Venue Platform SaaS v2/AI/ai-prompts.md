@@ -1,4 +1,14 @@
+---
 
+in the browse venues view add a filter to filter form cities and capacity
+
+---
+
+user still cant see that if and when they have booked a venue space. venue manager and employee should see that too in a calendar view which shows how long and when is a venue booked
+
+---
+
+user cant see if their request for a venue space has been approved, they should have a new button where they can see the details of the booking and when its due
 
 ---
 
@@ -522,3 +532,4 @@ roles companymanager and companyadmin are the same one role make a fix to the pl
 everything in the project is just a base to build off of the roles can be changed according to the implementation plan. the project will be in net10. make sure the next ai s know this too by writing this to agents.md and config.yaml. is there anything else a new ai should know of
 
 ---
+

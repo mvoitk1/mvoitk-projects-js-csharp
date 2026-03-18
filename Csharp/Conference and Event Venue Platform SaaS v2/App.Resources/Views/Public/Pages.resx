@@ -105,8 +105,35 @@
   <data name="BrowsePrimaryCta" xml:space="preserve">
     <value>Bring your venue onto the platform</value>
   </data>
+  <data name="BrowseFilterTitle" xml:space="preserve">
+    <value>Filter venues</value>
+  </data>
+  <data name="BrowseFilterDescription" xml:space="preserve">
+    <value>Narrow the public catalog by city or by the minimum guest capacity you need.</value>
+  </data>
+  <data name="BrowseFilterCityLabel" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="BrowseFilterAllCitiesOption" xml:space="preserve">
+    <value>All cities</value>
+  </data>
+  <data name="BrowseFilterCapacityLabel" xml:space="preserve">
+    <value>Capacity at least</value>
+  </data>
+  <data name="BrowseFilterCapacityPlaceholder" xml:space="preserve">
+    <value>Example: 120</value>
+  </data>
+  <data name="BrowseFilterSubmitCta" xml:space="preserve">
+    <value>Apply filters</value>
+  </data>
+  <data name="BrowseFilterClearCta" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
   <data name="BrowseEmpty" xml:space="preserve">
     <value>No active venues are available yet.</value>
+  </data>
+  <data name="BrowseFilteredEmpty" xml:space="preserve">
+    <value>No venues match the selected city and capacity filters.</value>
   </data>
   <data name="VenueFromRate" xml:space="preserve">
     <value>From {0}/{1}</value>
@@ -284,6 +311,84 @@
   </data>
   <data name="LayoutSelectionLabel" xml:space="preserve">
     <value>Preferred layout</value>
+  </data>
+  <data name="BookingRequestCateringOptionsHint" xml:space="preserve">
+    <value>Select any catering packages you want included with the request. Prices are approximate per person unless noted otherwise.</value>
+  </data>
+  <data name="BookingRequestSetupOptionsHint" xml:space="preserve">
+    <value>Select any setup add-ons you want the venue team to prepare. Prices are rough event-level estimates.</value>
+  </data>
+  <data name="BookingRequestSetupOptionsLabel" xml:space="preserve">
+    <value>Setup add-ons</value>
+  </data>
+  <data name="BookingRequestSelectedCateringPrefix" xml:space="preserve">
+    <value>Selected catering options</value>
+  </data>
+  <data name="BookingRequestSelectedSetupPrefix" xml:space="preserve">
+    <value>Selected setup options</value>
+  </data>
+  <data name="CateringCategoryBreakfast" xml:space="preserve">
+    <value>Breakfast</value>
+  </data>
+  <data name="CateringCategoryBrunch" xml:space="preserve">
+    <value>Brunch</value>
+  </data>
+  <data name="CateringCategoryLunch" xml:space="preserve">
+    <value>Lunch</value>
+  </data>
+  <data name="CateringCategoryDinner" xml:space="preserve">
+    <value>Dinner</value>
+  </data>
+  <data name="CateringOptionContinentalBreakfast" xml:space="preserve">
+    <value>Continental breakfast - 14 EUR/person</value>
+  </data>
+  <data name="CateringOptionCoffeeAndPastries" xml:space="preserve">
+    <value>Coffee and pastries - 8 EUR/person</value>
+  </data>
+  <data name="CateringOptionFreshFruitPlatter" xml:space="preserve">
+    <value>Fresh fruit platter - 6 EUR/person</value>
+  </data>
+  <data name="CateringOptionBrunchBuffet" xml:space="preserve">
+    <value>Brunch buffet - 19 EUR/person</value>
+  </data>
+  <data name="CateringOptionBagelsAndSpreads" xml:space="preserve">
+    <value>Bagels and spreads - 11 EUR/person</value>
+  </data>
+  <data name="CateringOptionSmoothieBar" xml:space="preserve">
+    <value>Smoothie bar - 9 EUR/person</value>
+  </data>
+  <data name="CateringOptionSandwichLunch" xml:space="preserve">
+    <value>Sandwich lunch platters - 16 EUR/person</value>
+  </data>
+  <data name="CateringOptionHotLunchBuffet" xml:space="preserve">
+    <value>Hot lunch buffet - 24 EUR/person</value>
+  </data>
+  <data name="CateringOptionSaladAndWrapSelection" xml:space="preserve">
+    <value>Salad and wrap selection - 15 EUR/person</value>
+  </data>
+  <data name="CateringOptionPlatedDinner" xml:space="preserve">
+    <value>Plated dinner service - 39 EUR/person</value>
+  </data>
+  <data name="CateringOptionEveningCanapes" xml:space="preserve">
+    <value>Evening canapes - 18 EUR/person</value>
+  </data>
+  <data name="CateringOptionDessertAndCoffee" xml:space="preserve">
+    <value>Dessert and coffee service - 10 EUR/person</value>
+  </data>
+  <data name="SetupOptionProjector" xml:space="preserve">
+    <value>Projector and screen - 120 EUR/event</value>
+  </data>
+  <data name="SetupOptionCameraPackage" xml:space="preserve">
+    <value>Camera package - 350 EUR/event</value>
+  </data>
+  <data name="SetupOptionDjBooth" xml:space="preserve">
+    <value>DJ booth - 280 EUR/event</value>
+  </data>
+  <data name="SetupOptionWirelessMicrophones" xml:space="preserve">
+    <value>Wireless microphones - 90 EUR/event</value>
+  </data>
+  <data name="SetupOptionStageLighting" xml:space="preserve">
+    <value>Stage lighting - 220 EUR/event</value>
   </data>
   <data name="CateringNotesLabel" xml:space="preserve">
     <value>Catering requirements</value>

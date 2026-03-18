@@ -15,10 +15,13 @@ public static class PublicVenueViewModelMapper
             FeaturedVenues = dto.FeaturedVenues.Select(ToViewModel).ToList()
         };
 
-    public static BrowseVenuesViewModel ToBrowseViewModel(this IReadOnlyList<PublicVenueSummaryDto> venues) =>
+    public static BrowseVenuesViewModel ToBrowseViewModel(this BrowseVenuesResultDto dto) =>
         new()
         {
-            Venues = venues.Select(ToViewModel).ToList()
+            City = dto.Filters.City,
+            MinimumCapacity = dto.Filters.MinimumCapacity,
+            AvailableCities = dto.AvailableCities,
+            Venues = dto.Venues.Select(ToViewModel).ToList()
         };
 
     public static PublicVenueCardViewModel ToViewModel(this PublicVenueSummaryDto dto)

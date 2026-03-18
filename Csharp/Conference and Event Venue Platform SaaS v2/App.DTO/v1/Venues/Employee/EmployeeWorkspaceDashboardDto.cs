@@ -9,4 +9,5 @@ public class EmployeeWorkspaceDashboardDto
     public int LockedCateringOrdersCount { get; init; }
     public int EquipmentAllocationsCount { get; init; }
     public IReadOnlyList<EmployeeBookingSummaryDto> UpcomingBookings { get; init; } = [];
+    public IReadOnlyList<EmployeeBookingSummaryDto> PendingApprovalBookings { get; init; } = [];
 }

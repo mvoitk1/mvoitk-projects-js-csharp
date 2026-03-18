@@ -2,6 +2,10 @@
 
 ---
 
+user should be able to book a venue space in browse venus, they should be able to select the space and configure the layout and catering and etc. they should be able to ask for the space with specifiycations and if it is available a employee or manager can approve theyr request
+
+---
+
 now when admin tries to approve the initial venue application they get the message: "Approved venue, company, and access level are required before assigning rights." i think we may need a different view for just approving a venue and assigning a employee to it
 
 ---
@@ -518,4 +522,3 @@ roles companymanager and companyadmin are the same one role make a fix to the pl
 everything in the project is just a base to build off of the roles can be changed according to the implementation plan. the project will be in net10. make sure the next ai s know this too by writing this to agents.md and config.yaml. is there anything else a new ai should know of
 
 ---
-

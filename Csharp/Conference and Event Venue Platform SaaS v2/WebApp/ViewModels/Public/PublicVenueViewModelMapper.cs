@@ -54,6 +54,7 @@ public static class PublicVenueViewModelMapper
         return new PublicVenueDetailsViewModel
         {
             VenueId = dto.VenueId,
+            Slug = dto.Slug,
             Name = dto.Name,
             City = dto.City,
             Country = dto.Country,
@@ -68,6 +69,7 @@ public static class PublicVenueViewModelMapper
             UpcomingBookingsCount = dto.UpcomingBookingsCount,
             Spaces = dto.Spaces.Select(space => new PublicSpaceCardViewModel
             {
+                SpaceId = space.SpaceId,
                 Name = space.Name,
                 Code = space.Code,
                 Description = space.Description,
@@ -78,7 +80,16 @@ public static class PublicVenueViewModelMapper
                     $"{space.HourlyRate.Amount.ToString("0.##", culture)} {space.HourlyRate.Currency}",
                     Pages.VenueHourlyUnit),
                 MaximumCapacity = space.Capacity.Maximum,
-                MinimumBookingDurationMinutes = space.MinimumBookingDurationMinutes
+                MinimumBookingDurationMinutes = space.MinimumBookingDurationMinutes,
+                Layouts = space.Layouts.Select(layout => new PublicSpaceLayoutCardViewModel
+                {
+                    LayoutId = layout.LayoutId,
+                    Name = layout.Name,
+                    LayoutType = layout.LayoutType,
+                    Capacity = layout.Capacity,
+                    IsDefault = layout.IsDefault,
+                    Notes = layout.Notes
+                }).ToList()
             }).ToList()
         };
     }

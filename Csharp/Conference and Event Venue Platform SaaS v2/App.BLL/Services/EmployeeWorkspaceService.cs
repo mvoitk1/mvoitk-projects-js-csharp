@@ -26,16 +26,25 @@ public class EmployeeWorkspaceService(AppDbContext context) : IEmployeeWorkspace
             .ToListAsync(cancellationToken);
 
         var cateringOrders = bookings.SelectMany(booking => booking.CateringOrders).ToList();
+        var calendarBookings = bookings
+            .Where(booking => booking.Status.AppearsOnCalendar())
+            .ToList();
 
         return new EmployeeWorkspaceDashboardDto
         {
             VenueName = venue.Name,
-            UpcomingBookingsCount = bookings.Count(booking => booking.Schedule.StartsAt >= DateTime.UtcNow),
+            UpcomingBookingsCount = calendarBookings.Count(booking => booking.Schedule.StartsAt >= DateTime.UtcNow),
             DraftOrPendingBookingsCount = bookings.Count(booking => booking.Status is BookingStatus.Draft or BookingStatus.PendingApproval),
             CateringOrdersCount = cateringOrders.Count,
             LockedCateringOrdersCount = cateringOrders.Count(order => order.LockedAt <= DateTime.UtcNow),
             EquipmentAllocationsCount = bookings.SelectMany(booking => booking.EquipmentAllocations).Count(),
-            UpcomingBookings = bookings.Take(5).Select(booking => booking.ToEmployeeBookingSummaryDto()).ToList()
+            UpcomingBookings = calendarBookings.Take(5).Select(booking => booking.ToEmployeeBookingSummaryDto()).ToList(),
+            PendingApprovalBookings = bookings
+                .Where(booking => booking.Status == BookingStatus.PendingApproval)
+                .OrderBy(booking => booking.Schedule.StartsAt)
+                .Take(5)
+                .Select(booking => booking.ToEmployeeBookingSummaryDto())
+                .ToList()
         };
     }
 
@@ -97,6 +106,58 @@ public class EmployeeWorkspaceService(AppDbContext context) : IEmployeeWorkspace
             .ToListAsync(cancellationToken);
 
         return orders.Select(order => order.ToCateringSummaryDto()).ToList();
+    }
+
+    public async Task<BookingApprovalResultDto> ApproveBookingRequestAsync(
+        Guid userId,
+        Guid venueId,
+        Guid bookingId,
+        CancellationToken cancellationToken = default)
+    {
+        await VenueAccessValidation.RequireOperationalMembershipAsync(context, userId, venueId, cancellationToken);
+
+        var booking = await context.Bookings
+            .AsTracking()
+            .Include(item => item.Space)
+            .SingleOrDefaultAsync(
+                item => item.Id == bookingId &&
+                        item.VenueId == venueId,
+                cancellationToken);
+
+        if (booking == null)
+        {
+            throw new KeyNotFoundException("Booking was not found.");
+        }
+
+        if (booking.Status != BookingStatus.PendingApproval)
+        {
+            throw new InvalidOperationException("Only pending booking requests can be approved.");
+        }
+
+        var hasConflict = await context.Bookings
+            .AsNoTracking()
+            .Where(item => item.Id != booking.Id &&
+                           item.SpaceId == booking.SpaceId &&
+                           item.Status == BookingStatus.Confirmed)
+            .AnyAsync(
+                item => item.Schedule.StartsAt < booking.Schedule.EndsAt &&
+                        booking.Schedule.StartsAt < item.Schedule.EndsAt,
+                cancellationToken);
+
+        if (hasConflict)
+        {
+            throw new InvalidOperationException("This space is no longer available for the requested time.");
+        }
+
+        booking.Status = BookingStatus.Confirmed;
+        await context.SaveChangesAsync(cancellationToken);
+
+        return new BookingApprovalResultDto
+        {
+            BookingId = booking.Id,
+            Status = booking.Status.ToString(),
+            ApprovedAt = DateTime.UtcNow
+        };
     }
 
     public async Task<CateringOrderSummaryDto> UpdateCateringOrderAsync(

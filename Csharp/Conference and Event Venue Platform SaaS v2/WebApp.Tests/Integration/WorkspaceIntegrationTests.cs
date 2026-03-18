@@ -7,6 +7,7 @@ using AngleSharp.Html.Dom;
 using App.DAL.EF;
 using App.Domain.Venues;
 using App.Domain.Identity;
+using App.Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -158,8 +159,151 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
     }
 
     [Fact]
+    public async Task AuthenticatedUserCanSubmitBookingRequestFromVenueDetails()
+    {
+        using var client = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(client, "requester@newvenue.test", SeedPassword);
+
+        var beforeCount = await CountBookingsAsync("northstar-conference-center");
+
+        var detailsPage = await client.GetAsync("/venues/northstar-conference-center");
+        detailsPage.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(detailsPage);
+        var form = Assert.Single(
+            document.QuerySelectorAll("form").OfType<IHtmlFormElement>(),
+            item => item.Action.EndsWith("/venues/northstar-conference-center/booking-request"));
+        var tokenElement = form.QuerySelector("input[name='__RequestVerificationToken']");
+        Assert.NotNull(tokenElement);
+        var token = Assert.IsAssignableFrom<IHtmlInputElement>(tokenElement);
+
+        var postResponse = await client.PostAsync(
+            form.Action,
+            new FormUrlEncodedContent(
+            [
+                new KeyValuePair<string, string>("__RequestVerificationToken", token!.Value),
+                new KeyValuePair<string, string>("BookingRequest.SpaceId", (await GetSpaceIdByCodeAsync("northstar-conference-center", "AUR")).ToString()),
+                new KeyValuePair<string, string>("BookingRequest.EventTitle", "Spring Strategy Day"),
+                new KeyValuePair<string, string>("BookingRequest.ClientName", "Requester Co"),
+                new KeyValuePair<string, string>("BookingRequest.StartsAt", DateTime.UtcNow.AddDays(15).ToString("yyyy-MM-ddTHH:mm")),
+                new KeyValuePair<string, string>("BookingRequest.EndsAt", DateTime.UtcNow.AddDays(15).AddHours(6).ToString("yyyy-MM-ddTHH:mm")),
+                new KeyValuePair<string, string>("BookingRequest.ExpectedAttendees", "60"),
+                new KeyValuePair<string, string>("BookingRequest.CateringNotes", "Coffee, pastries, buffet lunch."),
+                new KeyValuePair<string, string>("BookingRequest.SetupRequirements", "Classroom seating with stage screen."),
+                new KeyValuePair<string, string>("BookingRequest.AdditionalRequirements", "Need sign-in desk and wheelchair aisle.")
+            ]));
+
+        Assert.Equal(HttpStatusCode.Redirect, postResponse.StatusCode);
+        Assert.Equal("/venues/northstar-conference-center", postResponse.Headers.Location?.ToString());
+
+        var afterCount = await CountBookingsAsync("northstar-conference-center");
+        Assert.Equal(beforeCount + 1, afterCount);
+
+        var createdBooking = await GetBookingByTitleAsync("Spring Strategy Day");
+        Assert.Equal(BookingStatus.PendingApproval, createdBooking.Status);
+        Assert.Equal("Spring Strategy Day", createdBooking.Title);
+    }
+
+    [Fact]
+    public async Task ManagerCanApprovePendingBookingRequestFromCoordinationPage()
+    {
+        await SetManagerActiveVenueAsync("northstar-conference-center");
+        var bookingId = await CreatePendingBookingRequestAsync();
+
+        using var client = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(client, "manager@northstarvenues.test", SeedPassword);
+
+        var page = await client.GetAsync($"/Employee/Coordination?bookingId={bookingId}");
+        page.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(page);
+        var form = Assert.Single(
+            document.QuerySelectorAll("form").OfType<IHtmlFormElement>(),
+            item => item.Action.EndsWith("/Employee/Coordination/Approve"));
+
+        var postResponse = await client.SendAsync(
+            form,
+            new Dictionary<string, string>
+            {
+                ["bookingId"] = bookingId.ToString()
+            });
+
+        Assert.Equal(HttpStatusCode.Redirect, postResponse.StatusCode);
+        Assert.Equal($"/Employee/Coordination?bookingId={bookingId}", postResponse.Headers.Location?.ToString());
+
+        var booking = await GetBookingAsync(bookingId);
+        Assert.Equal(BookingStatus.Confirmed, booking.Status);
+    }
+
+    [Fact]
+    public async Task EmployeeDashboard_ShowsIncomingBookingRequests()
+    {
+        await SetManagerActiveVenueAsync("northstar-conference-center");
+        await CreatePendingBookingRequestAsync();
+
+        using var client = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(client, "employee@northstarvenues.test", SeedPassword);
+
+        var response = await client.GetAsync("/Employee/Dashboard");
+        response.EnsureSuccessStatusCode();
+
+        var markup = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Incoming booking requests", markup);
+        Assert.Contains("Pending Approval Event", markup);
+        Assert.Contains("Approve request", markup);
+    }
+
+    [Fact]
+    public async Task ManagerDashboard_ShowsIncomingBookingRequests()
+    {
+        await SetManagerActiveVenueAsync("northstar-conference-center");
+        await CreatePendingBookingRequestAsync();
+
+        using var client = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(client, "manager@northstarvenues.test", SeedPassword);
+
+        var response = await client.GetAsync("/Admin/Dashboard");
+        response.EnsureSuccessStatusCode();
+
+        var markup = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Incoming booking requests", markup);
+        Assert.Contains("Pending Approval Event", markup);
+        Assert.Contains("Approve request", markup);
+        Assert.Contains("Venue occupancy calendar", markup);
+        Assert.Contains("Duration", markup);
+    }
+
+    [Fact]
+    public async Task WorkspaceBookingRequestDetails_ShowsApprovedStatusAndDueDateForRequester()
+    {
+        await ResetRequesterOperatorAccessAsync();
+        var bookingId = await CreatePendingBookingRequestAsync("Requester Booking Detail");
+        await ApproveBookingAsync(bookingId);
+
+        using var client = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(client, "requester@newvenue.test", SeedPassword);
+
+        var workspacePage = await client.GetAsync("/workspace");
+        workspacePage.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(workspacePage);
+        var detailLink = document.QuerySelectorAll("a.action-link").OfType<IHtmlAnchorElement>()
+            .First(item => item.PathName.EndsWith($"/workspace/bookings/{bookingId}"));
+
+        var detailsResponse = await client.GetAsync(detailLink.Href);
+        detailsResponse.EnsureSuccessStatusCode();
+
+        var markup = await detailsResponse.Content.ReadAsStringAsync();
+        Assert.Contains("Requester Booking Detail", markup);
+        Assert.Contains("Confirmed", markup);
+        Assert.Contains("Due", markup);
+        Assert.Contains("Catering change deadline", markup);
+    }
+
+    [Fact]
     public async Task ManagerCanCreateSpaceWithinActiveVenue()
     {
+        await SetManagerActiveVenueAsync("northstar-conference-center");
         using var client = CreateClient();
         await IdentityHelper.LoginViaUiAsync(client, "manager@northstarvenues.test", SeedPassword);
 
@@ -202,6 +346,24 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         var createdSpace = await GetSpaceByCodeAsync("northstar-conference-center", "SKY");
         Assert.Equal("Skyline Studio", createdSpace.Name);
         Assert.Equal(SpaceStatus.Draft, createdSpace.Status);
+    }
+
+    [Fact]
+    public async Task EmployeeBookingsPage_ShowsVenueBookingCalendar()
+    {
+        await SetManagerActiveVenueAsync("northstar-conference-center");
+        await CreatePendingBookingRequestAsync();
+
+        using var client = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(client, "employee@northstarvenues.test", SeedPassword);
+
+        var response = await client.GetAsync("/Employee/Bookings");
+        response.EnsureSuccessStatusCode();
+
+        var markup = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Venue booking calendar", markup);
+        Assert.Contains("Duration", markup);
+        Assert.Contains("Pending Approval Event", markup);
     }
 
     [Fact]
@@ -428,6 +590,102 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         Assert.Contains("Harbor Hall", markup);
         Assert.Contains("Approved", markup);
         Assert.Contains("assign venue membership", markup);
+    }
+
+    [Fact]
+    public async Task Workspace_ShowsPendingBookingRequestsToRequester()
+    {
+        await ResetRequesterOperatorAccessAsync();
+        await CreatePendingBookingRequestAsync();
+
+        using var requesterClient = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(requesterClient, "requester@newvenue.test", SeedPassword);
+
+        var workspacePage = await requesterClient.GetAsync("/workspace");
+        workspacePage.EnsureSuccessStatusCode();
+
+        var markup = await workspacePage.Content.ReadAsStringAsync();
+        Assert.Contains("My bookings", markup);
+        Assert.Contains("Your booking requests", markup);
+        Assert.Contains("Your booking calendar", markup);
+        Assert.Contains("Pending Approval Event", markup);
+        Assert.Contains("Waiting for a venue employee or manager to approve this booking request.", markup);
+        Assert.Contains("Duration", markup);
+    }
+
+    [Fact]
+    public async Task WorkspaceBookingsPage_ShowsRegularUserBookingCalendar()
+    {
+        await ResetRequesterOperatorAccessAsync();
+        await CreatePendingBookingRequestAsync();
+
+        using var requesterClient = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(requesterClient, "requester@newvenue.test", SeedPassword);
+
+        var bookingsPage = await requesterClient.GetAsync("/workspace/bookings");
+        bookingsPage.EnsureSuccessStatusCode();
+
+        var markup = await bookingsPage.Content.ReadAsStringAsync();
+        Assert.Contains("Your bookings", markup);
+        Assert.Contains("See every venue booking you requested in one calendar view.", markup);
+        Assert.Contains("Your booking calendar", markup);
+        Assert.Contains("Pending Approval Event", markup);
+    }
+
+    [Fact]
+    public async Task AuthenticatedRegularUser_SeesMyBookingsButtonInPublicNavigation()
+    {
+        await ResetRequesterOperatorAccessAsync();
+        await CreatePendingBookingRequestAsync();
+
+        using var requesterClient = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(requesterClient, "requester@newvenue.test", SeedPassword);
+
+        var response = await requesterClient.GetAsync("/");
+        response.EnsureSuccessStatusCode();
+
+        var markup = await response.Content.ReadAsStringAsync();
+        Assert.Contains("href=\"/workspace/bookings\"", markup);
+    }
+
+    [Fact]
+    public async Task Workspace_ShowsApprovedBookingAsScheduledAfterManagerApproval()
+    {
+        await ResetRequesterOperatorAccessAsync();
+        await SetManagerActiveVenueAsync("northstar-conference-center");
+        var bookingId = await CreatePendingBookingRequestAsync();
+
+        using var managerClient = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(managerClient, "manager@northstarvenues.test", SeedPassword);
+
+        var approvalPage = await managerClient.GetAsync($"/Employee/Coordination?bookingId={bookingId}");
+        approvalPage.EnsureSuccessStatusCode();
+
+        var document = await HtmlHelpers.GetDocumentAsync(approvalPage);
+        var form = Assert.Single(
+            document.QuerySelectorAll("form").OfType<IHtmlFormElement>(),
+            item => item.Action.EndsWith("/Employee/Coordination/Approve"));
+
+        var approveResponse = await managerClient.SendAsync(
+            form,
+            new Dictionary<string, string>
+            {
+                ["bookingId"] = bookingId.ToString()
+            });
+
+        Assert.Equal(HttpStatusCode.Redirect, approveResponse.StatusCode);
+
+        using var requesterClient = CreateClient();
+        await IdentityHelper.LoginViaUiAsync(requesterClient, "requester@newvenue.test", SeedPassword);
+
+        var workspacePage = await requesterClient.GetAsync("/workspace");
+        workspacePage.EnsureSuccessStatusCode();
+
+        var markup = await workspacePage.Content.ReadAsStringAsync();
+        Assert.Contains("Pending Approval Event", markup);
+        Assert.Contains("Confirmed", markup);
+        Assert.Contains("Approved and scheduled. This booking is now part of the venue calendar.", markup);
+        Assert.Contains("Your booking calendar", markup);
     }
 
     [Fact]
@@ -667,6 +925,13 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         return await db.Spaces.CountAsync(item => item.Venue.Slug == venueSlug);
     }
 
+    private async Task<int> CountBookingsAsync(string venueSlug)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.Bookings.CountAsync(item => item.Venue.Slug == venueSlug);
+    }
+
     private async Task<Space> GetSpaceByCodeAsync(string venueSlug, string code)
     {
         using var scope = _factory.Services.CreateScope();
@@ -674,6 +939,27 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         return await db.Spaces
             .Include(item => item.Venue)
             .SingleAsync(item => item.Venue.Slug == venueSlug && item.Code == code);
+    }
+
+    private async Task<Guid> GetSpaceIdByCodeAsync(string venueSlug, string code)
+    {
+        var space = await GetSpaceByCodeAsync(venueSlug, code);
+        return space.Id;
+    }
+
+    private async Task<Booking> GetBookingByTitleAsync(string title)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.Bookings
+            .SingleAsync(item => item.Title == title);
+    }
+
+    private async Task<Booking> GetBookingAsync(Guid bookingId)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.Bookings.SingleAsync(item => item.Id == bookingId);
     }
 
     private async Task<Guid> GetFirstVenueRequestIdAsync()
@@ -745,6 +1031,46 @@ public class WorkspaceIntegrationTests : IClassFixture<CustomWebApplicationFacto
         await db.SaveChangesAsync();
 
         return request.Id;
+    }
+
+    private async Task<Guid> CreatePendingBookingRequestAsync(string title = "Pending Approval Event")
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var requester = await db.Users.SingleAsync(user => user.Email == "requester@newvenue.test");
+        var venue = await db.Venues.SingleAsync(item => item.Slug == "northstar-conference-center");
+        var space = await db.Spaces.SingleAsync(item => item.VenueId == venue.Id && item.Code == "AUR");
+        var bookingIndex = await db.Bookings.CountAsync(item => item.VenueId == venue.Id && item.SpaceId == space.Id);
+        var startsAt = DateTime.UtcNow.Date.AddDays(18 + bookingIndex).AddHours(9);
+
+        var booking = new Booking
+        {
+            VenueId = venue.Id,
+            SpaceId = space.Id,
+            CreatedByUserId = requester.Id,
+            Title = title,
+            ClientName = "Requester Co",
+            Status = BookingStatus.PendingApproval,
+            Schedule = new ScheduleWindow(startsAt, startsAt.AddHours(5)),
+            ExpectedAttendees = 50,
+            SpaceCharge = new App.Domain.ValueObjects.Money(1100m, "EUR"),
+            CoordinationNotes = "Requested layout: Theater 180 (Theater)"
+        };
+
+        db.Bookings.Add(booking);
+        await db.SaveChangesAsync();
+
+        return booking.Id;
+    }
+
+    private async Task ApproveBookingAsync(Guid bookingId)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var booking = await db.Bookings.SingleAsync(item => item.Id == bookingId);
+        booking.Status = BookingStatus.Confirmed;
+        await db.SaveChangesAsync();
     }
 
     private async Task<Guid> CreateRejectedVenueRequestAsync()

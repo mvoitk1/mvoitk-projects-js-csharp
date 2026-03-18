@@ -33,6 +33,25 @@ public static class WorkspacePresentation
     public static string FormatSchedule(DateTime startsAt, DateTime endsAt) =>
         $"{startsAt:g} - {endsAt:t}";
 
+    public static string FormatTimeRange(DateTime startsAt, DateTime endsAt) =>
+        $"{startsAt:t} - {endsAt:t}";
+
+    public static string FormatDuration(DateTime startsAt, DateTime endsAt)
+    {
+        var duration = endsAt - startsAt;
+        if (duration.TotalMinutes < 60)
+        {
+            return $"{Math.Round(duration.TotalMinutes):0}m";
+        }
+
+        if (duration.TotalMinutes % 60 == 0)
+        {
+            return $"{duration.TotalHours:0.#}h";
+        }
+
+        return $"{(int) duration.TotalHours}h {duration.Minutes}m";
+    }
+
     public static string FormatMoney(decimal amount, string currency) =>
         $"{amount:0.##} {currency}";
 }

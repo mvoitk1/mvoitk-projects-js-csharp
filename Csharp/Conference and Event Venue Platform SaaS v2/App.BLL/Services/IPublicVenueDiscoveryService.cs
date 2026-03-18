@@ -10,6 +10,18 @@ public interface IPublicVenueDiscoveryService
     Task<IReadOnlyList<UserVenueAccessRequestSummaryDto>> GetUserVenueAccessRequestsAsync(
         Guid requestorUserId,
         CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<UserBookingRequestSummaryDto>> GetUserBookingRequestsAsync(
+        Guid requestorUserId,
+        CancellationToken cancellationToken = default);
+    Task<UserBookingRequestDetailDto?> GetUserBookingRequestAsync(
+        Guid requestorUserId,
+        Guid bookingId,
+        CancellationToken cancellationToken = default);
+    Task<PublicBookingRequestSubmissionResultDto> SubmitBookingRequestAsync(
+        Guid requestorUserId,
+        string venueSlug,
+        SubmitPublicBookingRequestDto dto,
+        CancellationToken cancellationToken = default);
     Task<VenueAccessRequestSubmissionResultDto> SubmitVenueAccessRequestAsync(
         Guid requestorUserId,
         SubmitVenueAccessRequestDto dto,

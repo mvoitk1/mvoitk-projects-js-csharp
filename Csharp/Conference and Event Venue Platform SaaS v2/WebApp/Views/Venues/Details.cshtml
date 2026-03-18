@@ -11,8 +11,19 @@
         <h1>@Model.Name</h1>
         <p class="page-description">@(!string.IsNullOrWhiteSpace(Model.Description) ? Model.Description : Pages.VenueDetailsFallbackDescription)</p>
     </div>
-    <a class="public-button" asp-action="Index">@Pages.VenueDetailsBackToBrowse</a>
+    <div class="hero-actions">
+        <a class="public-button" asp-action="Index">@Pages.VenueDetailsBackToBrowse</a>
+        <a class="action-link" href="#booking-request">@Pages.VenueDetailsRequestBooking</a>
+    </div>
 </section>
+
+@if (TempData["BookingRequestSuccess"] is string successMessage)
+{
+    <div class="status-banner success">
+        <strong>@Pages.BookingRequestSuccessTitle</strong>
+        <span>@successMessage</span>
+    </div>
+}
 
 <section class="venue-grid venue-detail-grid">
     <article class="venue-card">
@@ -84,8 +95,111 @@
                             <dd>@space.Status</dd>
                         </div>
                     </dl>
+                    @if (space.Layouts.Count > 0)
+                    {
+                        <div class="field-helper">
+                            <strong>@Pages.LayoutSelectionLabel:</strong>
+                            @string.Join(", ", space.Layouts.Select(layout => $"{layout.Name} ({layout.Capacity})"))
+                        </div>
+                    }
                 </article>
             }
         </section>
     }
 </section>
+
+<section class="request-layout" id="booking-request">
+    <article class="form-card">
+        <h2>@Pages.BookingRequestTitle</h2>
+        <p>@Pages.BookingRequestDescription</p>
+
+        @if (!Model.CanRequestBooking)
+        {
+            <p>@Pages.BookingRequestSignInPrompt</p>
+            <a class="public-button" asp-area="Identity" asp-page="/Account/Login">@Pages.NavLogin</a>
+        }
+        else
+        {
+            <form asp-action="RequestBooking" asp-route-slug="@Model.Slug" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                <div class="field-grid">
+                    <div class="field">
+                        <label asp-for="BookingRequest.SpaceId"></label>
+                        <select asp-for="BookingRequest.SpaceId">
+                            @foreach (var space in Model.Spaces.Where(space => string.Equals(space.Status, "Active", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                <option value="@space.SpaceId">@space.Name (@space.MaximumCapacity)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="BookingRequest.SpaceId" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.LayoutId"></label>
+                        <select asp-for="BookingRequest.LayoutId">
+                            <option value="">@Pages.BookingRequestLayoutOptional</option>
+                            @foreach (var space in Model.Spaces.Where(space => string.Equals(space.Status, "Active", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                @foreach (var layout in space.Layouts)
+                                {
+                                    <option value="@layout.LayoutId">@space.Name - @layout.Name (@layout.Capacity)</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="BookingRequest.LayoutId" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.EventTitle"></label>
+                        <input asp-for="BookingRequest.EventTitle" />
+                        <span asp-validation-for="BookingRequest.EventTitle" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.ClientName"></label>
+                        <input asp-for="BookingRequest.ClientName" />
+                        <span asp-validation-for="BookingRequest.ClientName" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.StartsAt"></label>
+                        <input asp-for="BookingRequest.StartsAt" type="datetime-local" />
+                        <span asp-validation-for="BookingRequest.StartsAt" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.EndsAt"></label>
+                        <input asp-for="BookingRequest.EndsAt" type="datetime-local" />
+                        <span asp-validation-for="BookingRequest.EndsAt" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.ExpectedAttendees"></label>
+                        <input asp-for="BookingRequest.ExpectedAttendees" />
+                        <span asp-validation-for="BookingRequest.ExpectedAttendees" class="field-validation-error"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label asp-for="BookingRequest.CateringNotes"></label>
+                        <textarea asp-for="BookingRequest.CateringNotes" rows="4"></textarea>
+                        <span asp-validation-for="BookingRequest.CateringNotes" class="field-validation-error"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label asp-for="BookingRequest.SetupRequirements"></label>
+                        <textarea asp-for="BookingRequest.SetupRequirements" rows="3"></textarea>
+                        <span asp-validation-for="BookingRequest.SetupRequirements" class="field-validation-error"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label asp-for="BookingRequest.AdditionalRequirements"></label>
+                        <textarea asp-for="BookingRequest.AdditionalRequirements" rows="3"></textarea>
+                        <span asp-validation-for="BookingRequest.AdditionalRequirements" class="field-validation-error"></span>
+                        <span class="field-helper">@Pages.BookingRequestHelperText</span>
+                    </div>
+                </div>
+                <button class="public-button" type="submit">@Pages.SubmitBookingRequestCta</button>
+            </form>
+        }
+    </article>
+    <aside class="sidebar-card">
+        <h3>@Pages.BookingRequestSidebarTitle</h3>
+        <p>@Pages.BookingRequestSidebarBody</p>
+    </aside>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

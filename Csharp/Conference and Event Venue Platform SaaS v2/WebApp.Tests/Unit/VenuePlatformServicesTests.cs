@@ -41,6 +41,44 @@ public class VenuePlatformServicesTests
     }
 
     [Fact]
+    public async Task SubmitBookingRequestAsync_CreatesPendingApprovalBookingAndDraftCatering()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var service = new PublicVenueDiscoveryService(context);
+
+        var startsAt = DateTime.UtcNow.AddDays(10).Date.AddHours(9);
+        var endsAt = startsAt.AddHours(6);
+
+        var result = await service.SubmitBookingRequestAsync(
+            fixture.Requester.Id,
+            fixture.PrimaryVenue.Slug,
+            new SubmitPublicBookingRequestDto
+            {
+                SpaceId = fixture.Space.Id,
+                LayoutId = fixture.Layout.Id,
+                EventTitle = "Product Launch",
+                ClientName = "Fjord Labs",
+                StartsAt = startsAt,
+                EndsAt = endsAt,
+                ExpectedAttendees = 80,
+                CateringNotes = "Coffee station and lunch buffet.",
+                SetupRequirements = "Stage, handheld microphones, front registration desk.",
+                AdditionalRequirements = "Wheelchair-friendly front row seating."
+            });
+
+        var booking = await context.Bookings
+            .Include(item => item.CateringOrders)
+            .SingleAsync(item => item.Id == result.BookingId);
+
+        Assert.Equal(BookingStatus.PendingApproval, booking.Status);
+        Assert.Equal(fixture.Requester.Id, booking.CreatedByUserId);
+        Assert.Contains("Requested layout", booking.CoordinationNotes);
+        Assert.Single(booking.CateringOrders);
+        Assert.Equal(CateringOrderStatus.Draft, booking.CateringOrders.Single().Status);
+    }
+
+    [Fact]
     public async Task GetDashboardAsync_ScopesBookingsToVenue()
     {
         await using var context = CreateContext();
@@ -52,6 +90,35 @@ public class VenuePlatformServicesTests
         Assert.Equal(fixture.PrimaryVenue.Name, dashboard.VenueName);
         Assert.Single(dashboard.UpcomingBookings);
         Assert.All(dashboard.UpcomingBookings, booking => Assert.Equal("Northstar Summit", booking.Title));
+    }
+
+    [Fact]
+    public async Task GetDashboardAsync_ExcludesPendingApprovalBookingsFromUpcomingCalendar()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var service = new EmployeeWorkspaceService(context);
+
+        context.Bookings.Add(new Booking
+        {
+            VenueId = fixture.PrimaryVenue.Id,
+            SpaceId = fixture.Space.Id,
+            CreatedByUserId = fixture.Requester.Id,
+            Title = "Pending Approval Event",
+            ClientName = "Requester Co",
+            Status = BookingStatus.PendingApproval,
+            Schedule = new ScheduleWindow(DateTime.UtcNow.AddDays(4), DateTime.UtcNow.AddDays(4).AddHours(3)),
+            ExpectedAttendees = 45,
+            SpaceCharge = new Money(660m, "EUR")
+        });
+
+        await context.SaveChangesAsync();
+
+        var dashboard = await service.GetDashboardAsync(fixture.Employee.Id, fixture.PrimaryVenue.Id);
+
+        Assert.Single(dashboard.UpcomingBookings);
+        Assert.DoesNotContain(dashboard.UpcomingBookings, booking => booking.Title == "Pending Approval Event");
+        Assert.Contains(dashboard.PendingApprovalBookings, booking => booking.Title == "Pending Approval Event");
     }
 
     [Fact]
@@ -80,6 +147,162 @@ public class VenuePlatformServicesTests
                         }
                     ]
                 }));
+    }
+
+    [Fact]
+    public async Task ApproveBookingRequestAsync_ConfirmsPendingBooking()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var discoveryService = new PublicVenueDiscoveryService(context);
+        var employeeService = new EmployeeWorkspaceService(context);
+
+        var startsAt = DateTime.UtcNow.AddDays(12).Date.AddHours(10);
+        var endsAt = startsAt.AddHours(4);
+
+        var request = await discoveryService.SubmitBookingRequestAsync(
+            fixture.Requester.Id,
+            fixture.PrimaryVenue.Slug,
+            new SubmitPublicBookingRequestDto
+            {
+                SpaceId = fixture.Space.Id,
+                LayoutId = fixture.Layout.Id,
+                EventTitle = "Approval Check",
+                ClientName = "Signal Works",
+                StartsAt = startsAt,
+                EndsAt = endsAt,
+                ExpectedAttendees = 60
+            });
+
+        var result = await employeeService.ApproveBookingRequestAsync(
+            fixture.Manager.Id,
+            fixture.PrimaryVenue.Id,
+            request.BookingId);
+
+        var booking = await context.Bookings.SingleAsync(item => item.Id == request.BookingId);
+        Assert.Equal(BookingStatus.Confirmed, booking.Status);
+        Assert.Equal(BookingStatus.Confirmed.ToString(), result.Status);
+    }
+
+    [Fact]
+    public async Task ApproveBookingRequestAsync_ConfirmsPendingBooking_WhenDefaultTrackingIsNoTracking()
+    {
+        await using var context = CreateContext(useNoTrackingQueryBehavior: true);
+        var fixture = await SeedVenueFixtureAsync(context);
+        var discoveryService = new PublicVenueDiscoveryService(context);
+        var employeeService = new EmployeeWorkspaceService(context);
+
+        var startsAt = DateTime.UtcNow.AddDays(12).Date.AddHours(10);
+        var endsAt = startsAt.AddHours(4);
+
+        var request = await discoveryService.SubmitBookingRequestAsync(
+            fixture.Requester.Id,
+            fixture.PrimaryVenue.Slug,
+            new SubmitPublicBookingRequestDto
+            {
+                SpaceId = fixture.Space.Id,
+                LayoutId = fixture.Layout.Id,
+                EventTitle = "Approval Check With No Tracking",
+                ClientName = "Signal Works",
+                StartsAt = startsAt,
+                EndsAt = endsAt,
+                ExpectedAttendees = 60
+            });
+
+        var result = await employeeService.ApproveBookingRequestAsync(
+            fixture.Manager.Id,
+            fixture.PrimaryVenue.Id,
+            request.BookingId);
+
+        var booking = await context.Bookings.SingleAsync(item => item.Id == request.BookingId);
+        Assert.Equal(BookingStatus.Confirmed, booking.Status);
+        Assert.Equal(BookingStatus.Confirmed.ToString(), result.Status);
+    }
+
+    [Fact]
+    public async Task GetUserBookingRequestsAsync_ReturnsPendingAndApprovedBookingsForRequester()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var discoveryService = new PublicVenueDiscoveryService(context);
+        var employeeService = new EmployeeWorkspaceService(context);
+
+        var startsAt = DateTime.UtcNow.AddDays(7).Date.AddHours(10);
+        var pendingRequest = await discoveryService.SubmitBookingRequestAsync(
+            fixture.Requester.Id,
+            fixture.PrimaryVenue.Slug,
+            new SubmitPublicBookingRequestDto
+            {
+                SpaceId = fixture.Space.Id,
+                LayoutId = fixture.Layout.Id,
+                EventTitle = "Pending Request",
+                ClientName = "Requester Co",
+                StartsAt = startsAt,
+                EndsAt = startsAt.AddHours(2),
+                ExpectedAttendees = 25
+            });
+
+        var approvedRequest = await discoveryService.SubmitBookingRequestAsync(
+            fixture.Requester.Id,
+            fixture.PrimaryVenue.Slug,
+            new SubmitPublicBookingRequestDto
+            {
+                SpaceId = fixture.Space.Id,
+                LayoutId = fixture.Layout.Id,
+                EventTitle = "Approved Request",
+                ClientName = "Requester Co",
+                StartsAt = startsAt.AddDays(1),
+                EndsAt = startsAt.AddDays(1).AddHours(3),
+                ExpectedAttendees = 35
+            });
+
+        await employeeService.ApproveBookingRequestAsync(fixture.Manager.Id, fixture.PrimaryVenue.Id, approvedRequest.BookingId);
+
+        var bookings = await discoveryService.GetUserBookingRequestsAsync(fixture.Requester.Id);
+
+        var pending = Assert.Single(bookings, item => item.BookingId == pendingRequest.BookingId);
+        var approved = Assert.Single(bookings, item => item.BookingId == approvedRequest.BookingId);
+
+        Assert.Equal(BookingStatus.PendingApproval.ToString(), pending.Status);
+        Assert.False(pending.AppearsOnCalendar);
+        Assert.Equal(BookingStatus.Confirmed.ToString(), approved.Status);
+        Assert.True(approved.AppearsOnCalendar);
+    }
+
+    [Fact]
+    public async Task GetUserBookingRequestAsync_ReturnsBookingDetailsWithApprovalAndDueData()
+    {
+        await using var context = CreateContext();
+        var fixture = await SeedVenueFixtureAsync(context);
+        var discoveryService = new PublicVenueDiscoveryService(context);
+        var employeeService = new EmployeeWorkspaceService(context);
+
+        var startsAt = DateTime.UtcNow.AddDays(9).Date.AddHours(8);
+        var request = await discoveryService.SubmitBookingRequestAsync(
+            fixture.Requester.Id,
+            fixture.PrimaryVenue.Slug,
+            new SubmitPublicBookingRequestDto
+            {
+                SpaceId = fixture.Space.Id,
+                LayoutId = fixture.Layout.Id,
+                EventTitle = "Detail View Request",
+                ClientName = "Requester Co",
+                StartsAt = startsAt,
+                EndsAt = startsAt.AddHours(5),
+                ExpectedAttendees = 40,
+                CateringNotes = "Tea, coffee, and pastries."
+            });
+
+        await employeeService.ApproveBookingRequestAsync(fixture.Manager.Id, fixture.PrimaryVenue.Id, request.BookingId);
+
+        var booking = await discoveryService.GetUserBookingRequestAsync(fixture.Requester.Id, request.BookingId);
+
+        Assert.NotNull(booking);
+        Assert.Equal(BookingStatus.Confirmed.ToString(), booking!.Status);
+        Assert.True(booking.AppearsOnCalendar);
+        Assert.Equal(startsAt, booking.Schedule.StartsAt);
+        Assert.Equal(startsAt.AddHours(-72), booking.CateringLockedAt);
+        Assert.Equal("Aurora Hall", booking.SpaceName);
     }
 
     [Fact]

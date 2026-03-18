@@ -1,10 +1,45 @@
 using App.DTO.v1.Venues.Admin;
 using App.DTO.v1.Venues.Employee;
+using App.DTO.v1.Venues.Public;
+using App.Resources.Views.Workspace;
 
 namespace WebApp.ViewModels.Workspace;
 
 public static class WorkspaceViewModelMapper
 {
+    public static BookingCalendarItemViewModel ToVenueCalendarItemViewModel(this EmployeeBookingSummaryDto dto) =>
+        new()
+        {
+            BookingId = dto.BookingId,
+            Title = dto.Title,
+            PrimaryLabel = dto.SpaceName,
+            SecondaryLabel = dto.ClientName,
+            Status = dto.Status,
+            StartsAt = dto.Schedule.StartsAt,
+            EndsAt = dto.Schedule.EndsAt,
+            ExpectedAttendees = dto.ExpectedAttendees,
+            LinkArea = "Employee",
+            LinkController = "Coordination",
+            LinkAction = "Index",
+            LinkText = Pages.NavEmployeeCoordination
+        };
+
+    public static BookingCalendarItemViewModel ToUserCalendarItemViewModel(this UserBookingRequestSummaryDto dto) =>
+        new()
+        {
+            BookingId = dto.BookingId,
+            Title = dto.Title,
+            PrimaryLabel = dto.VenueName,
+            SecondaryLabel = dto.SpaceName,
+            Status = dto.Status,
+            StartsAt = dto.Schedule.StartsAt,
+            EndsAt = dto.Schedule.EndsAt,
+            ExpectedAttendees = dto.ExpectedAttendees,
+            LinkController = "Workspace",
+            LinkAction = "Booking",
+            LinkText = Pages.WorkspaceBookingRequestViewDetails
+        };
+
     public static CateringOrderEditViewModel ToEditViewModel(this CateringOrderSummaryDto dto) =>
         new()
         {

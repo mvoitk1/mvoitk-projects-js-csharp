@@ -8,6 +8,11 @@ public interface IEmployeeWorkspaceService
     Task<IReadOnlyList<EmployeeBookingSummaryDto>> GetBookingsAsync(Guid userId, Guid venueId, CancellationToken cancellationToken = default);
     Task<EmployeeBookingCoordinationDto> GetCoordinationAsync(Guid userId, Guid venueId, Guid bookingId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CateringOrderSummaryDto>> GetCateringOrdersAsync(Guid userId, Guid venueId, CancellationToken cancellationToken = default);
+    Task<BookingApprovalResultDto> ApproveBookingRequestAsync(
+        Guid userId,
+        Guid venueId,
+        Guid bookingId,
+        CancellationToken cancellationToken = default);
     Task<CateringOrderSummaryDto> UpdateCateringOrderAsync(
         Guid userId,
         Guid venueId,

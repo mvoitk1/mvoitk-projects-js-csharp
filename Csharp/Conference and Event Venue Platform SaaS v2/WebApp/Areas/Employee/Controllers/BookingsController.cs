@@ -30,7 +30,46 @@ public class BookingsController(
                 ActiveNavigation = "bookings",
                 PageTitle = Pages.EmployeeBookingsTitle
             },
-            Bookings = bookings
+            Bookings = bookings,
+            BookingCalendar = new BookingCalendarSectionViewModel
+            {
+                Title = Pages.EmployeeBookingsCalendarTitle,
+                Description = Pages.EmployeeBookingsCalendarDescription,
+                EmptyMessage = Pages.EmployeeBookingsEmpty,
+                Bookings = bookings
+                    .OrderBy(item => item.Schedule.StartsAt)
+                    .Select(item => item.ToVenueCalendarItemViewModel())
+                    .ToList()
+            }
         });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Approve(Guid bookingId, CancellationToken cancellationToken)
+    {
+        var context = await BuildWorkspaceContextAsync(cancellationToken);
+        if (context.ActiveVenue == null)
+        {
+            TempData["WorkspaceError"] = Pages.VenueRequiredMessage;
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            await employeeWorkspaceService.ApproveBookingRequestAsync(
+                User.UserId(),
+                context.ActiveVenue.VenueId,
+                bookingId,
+                cancellationToken);
+
+            TempData["WorkspaceSuccess"] = Pages.BookingApproveSuccess;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
+        {
+            TempData["WorkspaceError"] = ex is InvalidOperationException ? ex.Message : Pages.BookingApproveFailed;
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 }

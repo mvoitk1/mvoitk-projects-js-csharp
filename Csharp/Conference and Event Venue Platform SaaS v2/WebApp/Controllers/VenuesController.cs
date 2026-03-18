@@ -28,7 +28,70 @@ public class VenuesController(IPublicVenueDiscoveryService publicVenueDiscoveryS
             return NotFound();
         }
 
-        return View(venue.ToDetailsViewModel());
+        return View(BuildVenueDetailsViewModel(venue.ToDetailsViewModel(), null));
+    }
+
+    [HttpPost("/venues/{slug}/booking-request")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestBooking(
+        string slug,
+        [Bind(Prefix = "BookingRequest")] PublicBookingRequestViewModel form,
+        CancellationToken cancellationToken)
+    {
+        var venue = await publicVenueDiscoveryService.GetVenueAsync(slug, cancellationToken);
+        if (venue == null)
+        {
+            return NotFound();
+        }
+
+        if (form.StartsAt >= form.EndsAt)
+        {
+            ModelState.AddModelError(nameof(form.EndsAt), Pages.ScheduleEndAfterStart);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View("Details", BuildVenueDetailsViewModel(venue.ToDetailsViewModel(), form));
+        }
+
+        try
+        {
+            var result = await publicVenueDiscoveryService.SubmitBookingRequestAsync(
+                User.UserId(),
+                slug,
+                new SubmitPublicBookingRequestDto
+                {
+                    SpaceId = form.SpaceId!.Value,
+                    LayoutId = form.LayoutId,
+                    EventTitle = form.EventTitle,
+                    ClientName = form.ClientName,
+                    StartsAt = form.StartsAt,
+                    EndsAt = form.EndsAt,
+                    ExpectedAttendees = form.ExpectedAttendees,
+                    CateringNotes = form.CateringNotes,
+                    SetupRequirements = form.SetupRequirements,
+                    AdditionalRequirements = form.AdditionalRequirements
+                },
+                cancellationToken);
+
+            TempData["BookingRequestSuccess"] = string.Format(Pages.BookingRequestSuccessBody, result.BookingId);
+            return RedirectToAction(nameof(Details), new { slug });
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+        }
+        catch (ArgumentException)
+        {
+            ModelState.AddModelError(string.Empty, Pages.RequiredField);
+        }
+        catch (KeyNotFoundException)
+        {
+            ModelState.AddModelError(string.Empty, Pages.BookingRequestUnavailable);
+        }
+
+        return View("Details", BuildVenueDetailsViewModel(venue.ToDetailsViewModel(), form));
     }
 
     [HttpGet("/venues/request")]
@@ -84,5 +147,35 @@ public class VenuesController(IPublicVenueDiscoveryService publicVenueDiscoveryS
         }
 
         return View(model);
+    }
+
+    private PublicVenueDetailsViewModel BuildVenueDetailsViewModel(
+        PublicVenueDetailsViewModel viewModel,
+        PublicBookingRequestViewModel? form)
+    {
+        return new PublicVenueDetailsViewModel
+        {
+            VenueId = viewModel.VenueId,
+            Slug = viewModel.Slug,
+            Name = viewModel.Name,
+            City = viewModel.City,
+            Country = viewModel.Country,
+            AddressLine1 = viewModel.AddressLine1,
+            Description = viewModel.Description,
+            HourlyRate = viewModel.HourlyRate,
+            Capacity = viewModel.Capacity,
+            UpcomingBookingsCount = viewModel.UpcomingBookingsCount,
+            Spaces = viewModel.Spaces,
+            CanRequestBooking = User.Identity?.IsAuthenticated == true,
+            BookingRequest = form ?? new PublicBookingRequestViewModel
+            {
+                SpaceId = viewModel.Spaces.FirstOrDefault()?.SpaceId,
+                LayoutId = viewModel.Spaces
+                    .SelectMany(space => space.Layouts.Where(layout => layout.IsDefault))
+                    .Select(layout => (Guid?) layout.LayoutId)
+                    .FirstOrDefault(),
+                ClientName = User.Identity?.Name ?? string.Empty
+            }
+        };
     }
 }

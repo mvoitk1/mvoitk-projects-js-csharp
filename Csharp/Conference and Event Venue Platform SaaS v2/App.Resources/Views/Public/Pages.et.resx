@@ -20,6 +20,7 @@
   <data name="NavLogin" xml:space="preserve"><value>Logi sisse</value></data>
   <data name="NavRegister" xml:space="preserve"><value>Loo konto</value></data>
   <data name="NavWorkspace" xml:space="preserve"><value>Töölaud</value></data>
+  <data name="NavMyBookings" xml:space="preserve"><value>Minu broneeringud</value></data>
   <data name="LandingEyebrow" xml:space="preserve"><value>Venue-tiimidele, kes korraldavad päris sündmusi</value></data>
   <data name="LandingHeadline" xml:space="preserve"><value>Hoia broneeringud, catering, ruumipaigutus ja venue ligipääs ühes töövoos.</value></data>
   <data name="LandingDescription" xml:space="preserve"><value>VenueFlow koondab avaliku discovery, töötajate koordineerimise ja venue halduse ühte tööruumi ilma hajutatud tabeliteta.</value></data>

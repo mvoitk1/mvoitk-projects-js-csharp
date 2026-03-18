@@ -12,16 +12,12 @@
     </div>
 </section>
 
-@if (Model.Bookings.Count == 0)
-{
-    <section class="workspace-empty">
-        <h2>@Pages.EmployeeBookingsEmpty</h2>
-    </section>
-}
-else
+@await Html.PartialAsync("~/Views/Shared/Workspace/_BookingCalendar.cshtml", Model.BookingCalendar)
+
+@if (Model.Bookings.Count > 0)
 {
     <section class="card-stack">
-        @foreach (var booking in Model.Bookings)
+        @foreach (var booking in Model.Bookings.Where(item => item.Status == "PendingApproval"))
         {
             <article class="workspace-card">
                 <div class="card-top">
@@ -40,6 +36,11 @@ else
                 <div class="action-row">
                     <a class="action-link" asp-area="Employee" asp-controller="Coordination" asp-action="Index" asp-route-bookingId="@booking.BookingId">@Pages.NavEmployeeCoordination</a>
                     <a class="action-link" asp-area="Employee" asp-controller="Catering" asp-action="Index">@Pages.NavEmployeeCatering</a>
+                    <form asp-area="Employee" asp-controller="Bookings" asp-action="Approve" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bookingId" value="@booking.BookingId" />
+                        <button class="action-link" type="submit">@Pages.BookingApproveButton</button>
+                    </form>
                 </div>
             </article>
         }

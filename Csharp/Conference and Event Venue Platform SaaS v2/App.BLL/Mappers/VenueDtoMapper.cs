@@ -42,7 +42,9 @@ internal static class VenueDtoMapper
         DefaultHourlyRate = venue.DefaultHourlyRate.ToDto(),
         Capacity = venue.CapacityProfile.ToDto(),
         SpaceCount = venue.Spaces.Count,
-        UpcomingBookingsCount = venue.Bookings.Count(booking => booking.Schedule.StartsAt >= DateTime.UtcNow)
+        UpcomingBookingsCount = venue.Bookings.Count(booking =>
+            booking.Status.AppearsOnCalendar() &&
+            booking.Schedule.StartsAt >= DateTime.UtcNow)
     };
 
     public static PublicVenueDetailDto ToPublicDetailDto(this Venue venue) => new()
@@ -56,7 +58,9 @@ internal static class VenueDtoMapper
         Description = venue.Description,
         DefaultHourlyRate = venue.DefaultHourlyRate.ToDto(),
         Capacity = venue.CapacityProfile.ToDto(),
-        UpcomingBookingsCount = venue.Bookings.Count(booking => booking.Schedule.StartsAt >= DateTime.UtcNow),
+        UpcomingBookingsCount = venue.Bookings.Count(booking =>
+            booking.Status.AppearsOnCalendar() &&
+            booking.Schedule.StartsAt >= DateTime.UtcNow),
         Spaces = venue.Spaces
             .OrderBy(space => space.Name)
             .Select(space => space.ToPublicSpaceSummaryDto())
@@ -72,7 +76,20 @@ internal static class VenueDtoMapper
         Status = space.Status.ToString(),
         MinimumBookingDurationMinutes = space.MinimumBookingDurationMinutes,
         HourlyRate = space.HourlyRate.ToDto(),
-        Capacity = space.CapacityProfile.ToDto()
+        Capacity = space.CapacityProfile.ToDto(),
+        Layouts = space.Layouts
+            .OrderByDescending(layout => layout.IsDefault)
+            .ThenBy(layout => layout.Name)
+            .Select(layout => new PublicSpaceLayoutOptionDto
+            {
+                LayoutId = layout.Id,
+                Name = layout.Name,
+                LayoutType = layout.LayoutType.ToString(),
+                Capacity = layout.Capacity,
+                IsDefault = layout.IsDefault,
+                Notes = layout.Notes
+            })
+            .ToList()
     };
 
     public static EmployeeBookingSummaryDto ToEmployeeBookingSummaryDto(this Booking booking) => new()
@@ -88,6 +105,44 @@ internal static class VenueDtoMapper
         CateringOrderCount = booking.CateringOrders.Count,
         EquipmentAllocationCount = booking.EquipmentAllocations.Count,
         HasCoordinationNotes = !string.IsNullOrWhiteSpace(booking.CoordinationNotes)
+    };
+
+    public static UserBookingRequestSummaryDto ToUserBookingRequestSummaryDto(this Booking booking) => new()
+    {
+        BookingId = booking.Id,
+        VenueId = booking.VenueId,
+        VenueName = booking.Venue.Name,
+        VenueSlug = booking.Venue.Slug,
+        SpaceName = booking.Space.Name,
+        Title = booking.Title,
+        ClientName = booking.ClientName,
+        Status = booking.Status.ToString(),
+        Schedule = booking.Schedule.ToDto(),
+        ExpectedAttendees = booking.ExpectedAttendees,
+        AppearsOnCalendar = booking.Status.AppearsOnCalendar()
+    };
+
+    public static UserBookingRequestDetailDto ToUserBookingRequestDetailDto(this Booking booking) => new()
+    {
+        BookingId = booking.Id,
+        VenueId = booking.VenueId,
+        VenueName = booking.Venue.Name,
+        VenueSlug = booking.Venue.Slug,
+        SpaceName = booking.Space.Name,
+        Title = booking.Title,
+        ClientName = booking.ClientName,
+        Status = booking.Status.ToString(),
+        Schedule = booking.Schedule.ToDto(),
+        ExpectedAttendees = booking.ExpectedAttendees,
+        AppearsOnCalendar = booking.Status.AppearsOnCalendar(),
+        SpaceCharge = booking.SpaceCharge.ToDto(),
+        CateringOrderCount = booking.CateringOrders.Count,
+        EquipmentAllocationCount = booking.EquipmentAllocations.Count,
+        CateringLockedAt = booking.CateringOrders
+            .OrderBy(order => order.LockedAt)
+            .Select(order => (DateTime?) order.LockedAt)
+            .FirstOrDefault(),
+        CoordinationNotes = booking.CoordinationNotes
     };
 
     public static CateringOrderSummaryDto ToCateringSummaryDto(this CateringOrder order) => new()

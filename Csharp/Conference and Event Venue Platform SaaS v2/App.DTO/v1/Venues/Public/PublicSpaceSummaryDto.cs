@@ -12,4 +12,5 @@ public class PublicSpaceSummaryDto
     public int MinimumBookingDurationMinutes { get; init; }
     public MoneyDto HourlyRate { get; init; } = default!;
     public CapacityProfileDto Capacity { get; init; } = default!;
+    public IReadOnlyList<PublicSpaceLayoutOptionDto> Layouts { get; init; } = [];
 }

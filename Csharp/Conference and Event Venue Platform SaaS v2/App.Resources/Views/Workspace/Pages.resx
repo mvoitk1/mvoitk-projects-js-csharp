@@ -12,9 +12,35 @@
   <data name="NoVenueMembershipBody" xml:space="preserve"><value>Your account does not have an active venue membership. Submit a venue request or ask an admin to assign access.</value></data>
   <data name="WorkspaceAccessReadyTitle" xml:space="preserve"><value>Your venue access is ready</value></data>
   <data name="WorkspaceAccessReadyBody" xml:space="preserve"><value>Your account now has venue access in the database. If you are still seeing this page, sign out and back in to refresh your workspace role.</value></data>
+  <data name="WorkspaceOpenBookingsButton" xml:space="preserve"><value>My bookings</value></data>
   <data name="WorkspaceRequestsTitle" xml:space="preserve"><value>Your venue requests</value></data>
   <data name="WorkspaceRequestsDescription" xml:space="preserve"><value>Track submitted venue onboarding requests and their latest review status here.</value></data>
   <data name="WorkspaceRequestsEmpty" xml:space="preserve"><value>You have not submitted any venue requests yet.</value></data>
+  <data name="WorkspaceBookingRequestsTitle" xml:space="preserve"><value>Your booking requests</value></data>
+  <data name="WorkspaceBookingRequestsDescription" xml:space="preserve"><value>See requests you have made, and when one is approved it becomes part of the venue calendar.</value></data>
+  <data name="WorkspaceBookingRequestsEmpty" xml:space="preserve"><value>You have not requested any bookings yet.</value></data>
+  <data name="WorkspaceBookingCalendarTitle" xml:space="preserve"><value>Your booking calendar</value></data>
+  <data name="WorkspaceBookingCalendarDescription" xml:space="preserve"><value>See when each requested or approved venue booking starts, ends, and how long the space is reserved.</value></data>
+  <data name="WorkspaceBookingCalendarEmpty" xml:space="preserve"><value>Your booking calendar is empty right now.</value></data>
+  <data name="WorkspaceBookingRequestPendingApproval" xml:space="preserve"><value>Waiting for a venue employee or manager to approve this booking request.</value></data>
+  <data name="WorkspaceBookingRequestConfirmed" xml:space="preserve"><value>Approved and scheduled. This booking is now part of the venue calendar.</value></data>
+  <data name="WorkspaceBookingRequestOpenVenue" xml:space="preserve"><value>Open venue page</value></data>
+  <data name="WorkspaceBookingRequestViewDetails" xml:space="preserve"><value>View booking details</value></data>
+  <data name="WorkspaceBookingDetailsTitle" xml:space="preserve"><value>VenueFlow | Booking details</value></data>
+  <data name="WorkspaceBookingDetailsEyebrow" xml:space="preserve"><value>Booking request</value></data>
+  <data name="WorkspaceBookingDetailsDescription" xml:space="preserve"><value>Review the latest approval status, booking schedule, and service deadlines for this request.</value></data>
+  <data name="WorkspaceUserBookingsTitle" xml:space="preserve"><value>VenueFlow | My bookings</value></data>
+  <data name="WorkspaceUserBookingsEyebrow" xml:space="preserve"><value>Your bookings</value></data>
+  <data name="WorkspaceUserBookingsHeadline" xml:space="preserve"><value>See every venue booking you requested in one calendar view.</value></data>
+  <data name="WorkspaceUserBookingsDescription" xml:space="preserve"><value>Open this page any time to check when your venue space is booked, when it starts, and how long the booking lasts.</value></data>
+  <data name="WorkspaceBookingBackToRequests" xml:space="preserve"><value>Back to workspace</value></data>
+  <data name="WorkspaceBookingDueLabel" xml:space="preserve"><value>Due</value></data>
+  <data name="WorkspaceBookingPriceLabel" xml:space="preserve"><value>Space charge</value></data>
+  <data name="WorkspaceBookingServicesLabel" xml:space="preserve"><value>Linked services</value></data>
+  <data name="WorkspaceBookingServicesValue" xml:space="preserve"><value>{0} catering, {1} equipment</value></data>
+  <data name="WorkspaceBookingCateringDeadlineLabel" xml:space="preserve"><value>Catering change deadline</value></data>
+  <data name="WorkspaceBookingNoCateringDeadline" xml:space="preserve"><value>No catering deadline is linked to this request.</value></data>
+  <data name="WorkspaceBookingNotesLabel" xml:space="preserve"><value>Booking notes</value></data>
   <data name="WorkspaceRequestApprovedPendingAccess" xml:space="preserve"><value>Approved. A platform admin still needs to assign venue membership before the full workspace becomes available.</value></data>
   <data name="WorkspaceRequestApprovedWithMembership" xml:space="preserve"><value>Approved and access assigned. Refresh your session to open the venue workspace.</value></data>
   <data name="WorkspaceRequestRejected" xml:space="preserve"><value>Rejected. The venue was not approved for onboarding.</value></data>
@@ -35,10 +61,14 @@
   <data name="EmployeeMetricEquipment" xml:space="preserve"><value>equipment allocations</value></data>
   <data name="EmployeeUpcomingSection" xml:space="preserve"><value>Next bookings in rotation</value></data>
   <data name="EmployeeUpcomingEmpty" xml:space="preserve"><value>No upcoming bookings are scheduled for this venue yet.</value></data>
+  <data name="EmployeePendingApprovalSection" xml:space="preserve"><value>Incoming booking requests</value></data>
+  <data name="EmployeePendingApprovalEmpty" xml:space="preserve"><value>No booking requests are waiting for approval right now.</value></data>
   <data name="EmployeeBookingsTitle" xml:space="preserve"><value>VenueFlow | My bookings</value></data>
   <data name="EmployeeBookingsEyebrow" xml:space="preserve"><value>Booking workspace</value></data>
   <data name="EmployeeBookingsHeadline" xml:space="preserve"><value>Review venue bookings with schedule, space, attendee, and service summaries in one list.</value></data>
   <data name="EmployeeBookingsDescription" xml:space="preserve"><value>Each booking card is sourced from the employee workspace service rather than direct data access in the MVC layer.</value></data>
+  <data name="EmployeeBookingsCalendarTitle" xml:space="preserve"><value>Venue booking calendar</value></data>
+  <data name="EmployeeBookingsCalendarDescription" xml:space="preserve"><value>Track when each space is booked, how long the reservation runs, and which items still need approval.</value></data>
   <data name="EmployeeBookingsEmpty" xml:space="preserve"><value>No bookings match the current venue selection.</value></data>
   <data name="EmployeeCoordinationTitle" xml:space="preserve"><value>VenueFlow | Coordination</value></data>
   <data name="EmployeeCoordinationEyebrow" xml:space="preserve"><value>Day-of coordination</value></data>
@@ -73,6 +103,10 @@
   <data name="ManagerMetricMembers" xml:space="preserve"><value>active memberships</value></data>
   <data name="ManagerActionItemsTitle" xml:space="preserve"><value>Operational action items</value></data>
   <data name="ManagerActionItemsEmpty" xml:space="preserve"><value>No urgent action items are open for this venue.</value></data>
+  <data name="ManagerPendingApprovalSection" xml:space="preserve"><value>Incoming booking requests</value></data>
+  <data name="ManagerPendingApprovalEmpty" xml:space="preserve"><value>No booking requests are waiting for manager review right now.</value></data>
+  <data name="ManagerBookingsCalendarTitle" xml:space="preserve"><value>Venue occupancy calendar</value></data>
+  <data name="ManagerBookingsCalendarDescription" xml:space="preserve"><value>Review the active venue timeline to see when rooms are booked and how long each reservation occupies the space.</value></data>
   <data name="NavManagerDashboard" xml:space="preserve"><value>Venue dashboard</value></data>
   <data name="NavManagerSpaces" xml:space="preserve"><value>Spaces &amp; layouts</value></data>
   <data name="NavAdminRequests" xml:space="preserve"><value>Venue requests</value></data>
@@ -148,10 +182,14 @@
   <data name="ReturnToPublicSite" xml:space="preserve"><value>Back to public site</value></data>
   <data name="BookingClientLabel" xml:space="preserve"><value>Client</value></data>
   <data name="BookingScheduleLabel" xml:space="preserve"><value>Schedule</value></data>
+  <data name="BookingDurationLabel" xml:space="preserve"><value>Duration</value></data>
   <data name="BookingAttendeesLabel" xml:space="preserve"><value>Attendees</value></data>
   <data name="BookingSpaceLabel" xml:space="preserve"><value>Space</value></data>
   <data name="BookingStatusLabel" xml:space="preserve"><value>Status</value></data>
   <data name="BookingServicesLabel" xml:space="preserve"><value>Services</value></data>
+  <data name="BookingApproveButton" xml:space="preserve"><value>Approve request</value></data>
+  <data name="BookingApproveSuccess" xml:space="preserve"><value>Booking request approved.</value></data>
+  <data name="BookingApproveFailed" xml:space="preserve"><value>The booking request could not be approved.</value></data>
   <data name="BookingNoNotes" xml:space="preserve"><value>No coordination notes are attached to this booking yet.</value></data>
   <data name="EquipmentEmpty" xml:space="preserve"><value>No equipment allocations are linked to this booking.</value></data>
   <data name="CateringLinkedEmpty" xml:space="preserve"><value>No catering orders are linked to this booking.</value></data>

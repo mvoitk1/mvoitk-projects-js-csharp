@@ -63,6 +63,16 @@ public class VenueAdminService(AppDbContext context, IVenueMembershipService mem
             actionItems.Add("No active spaces are configured for this venue.");
         }
 
+        var pendingApprovalBookings = await context.Bookings
+            .AsNoTracking()
+            .Where(booking => booking.VenueId == venueId && booking.Status == BookingStatus.PendingApproval)
+            .Include(booking => booking.Space)
+            .Include(booking => booking.CateringOrders)
+            .Include(booking => booking.EquipmentAllocations)
+            .OrderBy(booking => booking.Schedule.StartsAt)
+            .Take(5)
+            .ToListAsync(cancellationToken);
+
         return new VenueAdminDashboardDto
         {
             VenueName = venue.Name,
@@ -71,7 +81,10 @@ public class VenueAdminService(AppDbContext context, IVenueMembershipService mem
             PendingApprovalBookingsCount = pendingApprovalCount,
             PendingRequestCount = pendingRequestCount,
             ActiveMembershipCount = activeMembershipCount,
-            ActionItems = actionItems
+            ActionItems = actionItems,
+            PendingApprovalBookings = pendingApprovalBookings
+                .Select(booking => booking.ToEmployeeBookingSummaryDto())
+                .ToList()
         };
     }
 

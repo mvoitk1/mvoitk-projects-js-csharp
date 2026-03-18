@@ -52,6 +52,24 @@ file sealed class FakePublicVenueDiscoveryService : IPublicVenueDiscoveryService
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<UserVenueAccessRequestSummaryDto>>([]);
 
+    public Task<IReadOnlyList<UserBookingRequestSummaryDto>> GetUserBookingRequestsAsync(
+        Guid requestorUserId,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<UserBookingRequestSummaryDto>>([]);
+
+    public Task<UserBookingRequestDetailDto?> GetUserBookingRequestAsync(
+        Guid requestorUserId,
+        Guid bookingId,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<UserBookingRequestDetailDto?>(null);
+
+    public Task<PublicBookingRequestSubmissionResultDto> SubmitBookingRequestAsync(
+        Guid requestorUserId,
+        string venueSlug,
+        SubmitPublicBookingRequestDto dto,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException();
+
     public Task<VenueAccessRequestSubmissionResultDto> SubmitVenueAccessRequestAsync(
         Guid requestorUserId,
         SubmitVenueAccessRequestDto dto,

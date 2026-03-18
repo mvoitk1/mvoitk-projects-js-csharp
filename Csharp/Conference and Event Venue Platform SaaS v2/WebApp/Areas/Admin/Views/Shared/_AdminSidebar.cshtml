@@ -25,6 +25,7 @@
         @if (User.IsInRole(App.Domain.Identity.AppRoles.CompanyManager))
         {
             <a class="@(Model.ActiveNavigation == "dashboard" ? "active" : null)" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">@Pages.NavManagerDashboard</a>
+            <a class="@(Model.ActiveNavigation == "bookings" ? "active" : null)" asp-area="Employee" asp-controller="Bookings" asp-action="Index">@Pages.NavEmployeeBookings</a>
             <a class="@(Model.ActiveNavigation == "spaces" ? "active" : null)" asp-area="Admin" asp-controller="Spaces" asp-action="Index">@Pages.NavManagerSpaces</a>
         }
         @if (User.IsInRole(App.Domain.Identity.AppRoles.Admin))

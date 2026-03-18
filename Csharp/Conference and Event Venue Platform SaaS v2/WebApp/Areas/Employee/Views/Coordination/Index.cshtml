@@ -42,6 +42,14 @@ else
             <div><dt>@Pages.BookingSpaceLabel</dt><dd>@Model.Coordination.Booking.SpaceName</dd></div>
             <div><dt>@Pages.BookingAttendeesLabel</dt><dd>@Model.Coordination.Booking.ExpectedAttendees</dd></div>
         </dl>
+        @if (Model.Coordination.Booking.Status == "PendingApproval")
+        {
+            <form asp-area="Employee" asp-controller="Coordination" asp-action="Approve" method="post" class="action-row">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="bookingId" value="@Model.Coordination.Booking.BookingId" />
+                <button class="primary-button" type="submit">@Pages.BookingApproveButton</button>
+            </form>
+        }
     </section>
 
     <section class="workspace-panel">

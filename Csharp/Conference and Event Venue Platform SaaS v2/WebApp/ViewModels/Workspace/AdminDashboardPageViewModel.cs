@@ -6,4 +6,5 @@ public class AdminDashboardPageViewModel
 {
     public WorkspaceLayoutViewModel Layout { get; init; } = new();
     public VenueAdminDashboardDto Dashboard { get; init; } = new();
+    public BookingCalendarSectionViewModel BookingCalendar { get; init; } = new();
 }

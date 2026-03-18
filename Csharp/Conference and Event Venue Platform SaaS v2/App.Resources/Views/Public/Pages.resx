@@ -36,6 +36,9 @@
   <data name="NavWorkspace" xml:space="preserve">
     <value>Workspace</value>
   </data>
+  <data name="NavMyBookings" xml:space="preserve">
+    <value>My bookings</value>
+  </data>
   <data name="LandingEyebrow" xml:space="preserve">
     <value>Venue operations for teams that run live events</value>
   </data>
@@ -150,6 +153,9 @@
   <data name="VenueDetailsSpacesEmpty" xml:space="preserve">
     <value>No spaces are published for this venue yet.</value>
   </data>
+  <data name="VenueDetailsRequestBooking" xml:space="preserve">
+    <value>Request this venue</value>
+  </data>
   <data name="VenueSpaceMinimumDurationLabel" xml:space="preserve">
     <value>Minimum booking</value>
   </data>
@@ -227,6 +233,75 @@
   </data>
   <data name="RequestSidebarBody" xml:space="preserve">
     <value>Admins review the venue, confirm the operating profile, and can assign company-manager rights once the request is approved.</value>
+  </data>
+  <data name="BookingRequestTitle" xml:space="preserve">
+    <value>Request a space booking</value>
+  </data>
+  <data name="BookingRequestDescription" xml:space="preserve">
+    <value>Select a space, choose your preferred layout, and send the venue team the schedule and service requirements they need to review availability.</value>
+  </data>
+  <data name="BookingRequestSignInPrompt" xml:space="preserve">
+    <value>Sign in to request a booking for this venue.</value>
+  </data>
+  <data name="BookingRequestSuccessTitle" xml:space="preserve">
+    <value>Booking request submitted</value>
+  </data>
+  <data name="BookingRequestSuccessBody" xml:space="preserve">
+    <value>Your booking request is pending venue approval. Reference booking ID {0} if you need follow-up.</value>
+  </data>
+  <data name="BookingRequestHelperText" xml:space="preserve">
+    <value>Use the notes fields for catering, room setup, hybrid-event, accessibility, or equipment needs.</value>
+  </data>
+  <data name="BookingRequestSidebarTitle" xml:space="preserve">
+    <value>Approval flow</value>
+  </data>
+  <data name="BookingRequestSidebarBody" xml:space="preserve">
+    <value>The request is stored as pending approval. Venue employees or managers can review the details and confirm it once the space is available.</value>
+  </data>
+  <data name="BookingRequestLayoutOptional" xml:space="preserve">
+    <value>No specific layout</value>
+  </data>
+  <data name="BookingRequestUnavailable" xml:space="preserve">
+    <value>The selected venue space is not available for this request.</value>
+  </data>
+  <data name="EventTitleLabel" xml:space="preserve">
+    <value>Event title</value>
+  </data>
+  <data name="ClientNameLabel" xml:space="preserve">
+    <value>Client or company</value>
+  </data>
+  <data name="StartsAtLabel" xml:space="preserve">
+    <value>Start time</value>
+  </data>
+  <data name="EndsAtLabel" xml:space="preserve">
+    <value>End time</value>
+  </data>
+  <data name="ExpectedAttendeesLabel" xml:space="preserve">
+    <value>Expected attendees</value>
+  </data>
+  <data name="SpaceSelectionLabel" xml:space="preserve">
+    <value>Space</value>
+  </data>
+  <data name="LayoutSelectionLabel" xml:space="preserve">
+    <value>Preferred layout</value>
+  </data>
+  <data name="CateringNotesLabel" xml:space="preserve">
+    <value>Catering requirements</value>
+  </data>
+  <data name="SetupRequirementsLabel" xml:space="preserve">
+    <value>Setup requirements</value>
+  </data>
+  <data name="AdditionalRequirementsLabel" xml:space="preserve">
+    <value>Additional requirements</value>
+  </data>
+  <data name="SubmitBookingRequestCta" xml:space="preserve">
+    <value>Submit booking request</value>
+  </data>
+  <data name="PositiveAttendeesRange" xml:space="preserve">
+    <value>Expected attendees must be between 1 and 5000.</value>
+  </data>
+  <data name="ScheduleEndAfterStart" xml:space="preserve">
+    <value>End time must be after the start time.</value>
   </data>
   <data name="AuthLoginTitle" xml:space="preserve">
     <value>VenueFlow | Log in</value>

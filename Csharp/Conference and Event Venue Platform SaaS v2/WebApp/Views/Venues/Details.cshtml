@@ -187,11 +187,21 @@
                                         var option = group.Options[optionIndex];
                                         var isSelected = Model.BookingRequest.SelectedCateringOptions.Contains(option);
                                         <label class="checkbox-option">
-                                            <input
-                                                type="checkbox"
-                                                name="BookingRequest.SelectedCateringOptions"
-                                                value="@option"
-                                                checked="@isSelected" />
+                                            @if (isSelected)
+                                            {
+                                                <input
+                                                    type="checkbox"
+                                                    name="BookingRequest.SelectedCateringOptions"
+                                                    value="@option"
+                                                    checked />
+                                            }
+                                            else
+                                            {
+                                                <input
+                                                    type="checkbox"
+                                                    name="BookingRequest.SelectedCateringOptions"
+                                                    value="@option" />
+                                            }
                                             <span>@option</span>
                                         </label>
                                     }
@@ -212,11 +222,21 @@
                                     var option = WebApp.ViewModels.Public.PublicBookingRequestViewModel.SetupOptions[setupIndex];
                                     var isSelected = Model.BookingRequest.SelectedSetupOptions.Contains(option);
                                     <label class="checkbox-option">
-                                        <input
-                                            type="checkbox"
-                                            name="BookingRequest.SelectedSetupOptions"
-                                            value="@option"
-                                            checked="@isSelected" />
+                                        @if (isSelected)
+                                        {
+                                            <input
+                                                type="checkbox"
+                                                name="BookingRequest.SelectedSetupOptions"
+                                                value="@option"
+                                                checked />
+                                        }
+                                        else
+                                        {
+                                            <input
+                                                type="checkbox"
+                                                name="BookingRequest.SelectedSetupOptions"
+                                                value="@option" />
+                                        }
                                         <span>@option</span>
                                     </label>
                                 }

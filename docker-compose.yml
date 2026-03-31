@@ -1,7 +1,14 @@
 services:
-  web:
-    build: .
-    restart: unless-stopped
-    container_name: nginx-demo
+  assignment1:
+    build:
+      context: ./JS/assignment1
+      dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "3001:80"
+
+  assignment2:
+    build:
+      context: ./JS/assignment2
+      dockerfile: Dockerfile
+    ports:
+      - "3002:80"

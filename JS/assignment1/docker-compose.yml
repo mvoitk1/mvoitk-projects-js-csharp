@@ -4,4 +4,4 @@ services:
       context: ./JS/assignment1
       dockerfile: Dockerfile
     ports:
-      - "80:79"
+      - "79:79"

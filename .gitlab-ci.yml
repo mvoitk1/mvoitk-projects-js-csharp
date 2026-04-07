@@ -1,11 +1,12 @@
 stages:
   - deploy
 
-deploy:
+deploy_javascript_a1:
   stage: deploy
   only:
     - main
   tags:
     - shared
   script:
+    - cd jsassignment1
     - docker compose -p jsassignment1 up --build --remove-orphans --detach

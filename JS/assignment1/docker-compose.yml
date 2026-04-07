@@ -4,4 +4,4 @@ services:
     restart: unless-stopped
     container_name: js1
     ports:
-      - "80:80" 
+      - "79:80" 

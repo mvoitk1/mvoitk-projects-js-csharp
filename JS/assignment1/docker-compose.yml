@@ -1,0 +1,7 @@
+services:
+  assignment1:
+    build:
+      context: ./JS/assignment1
+      dockerfile: Dockerfile
+    ports:
+      - "80:79"

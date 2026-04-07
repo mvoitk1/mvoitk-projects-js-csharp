@@ -10,3 +10,13 @@ deploy_javascript_a1:
   script:
     - cd JS/assignment1
     - docker compose -p jsassignment1 up --build --remove-orphans --detach
+
+deploy_javascript_a2:
+  stage: deploy
+  only:
+    - main
+  tags:
+    - shared
+  script:
+    - cd JS/assignment2
+    - docker compose -p jsassignment2 up --build --remove-orphans --detach

@@ -1,4 +1,14 @@
-FROM nginx:latest
-COPY index.html /usr/share/nginx/html/index.html
-COPY css /usr/share/nginx/html/css
-COPY js /usr/share/nginx/html/js
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY index.html ./
+COPY js ./js
+COPY scripts ./scripts
+
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist/ /usr/share/nginx/html/

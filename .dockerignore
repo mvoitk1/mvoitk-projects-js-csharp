@@ -1,6 +1,0 @@
-.git
-README.md
-.gitlab-ci.yml
-docker-compose.yml
-.dockerignore
-node_modules

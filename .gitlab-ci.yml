@@ -8,5 +8,5 @@ deploy_javascript_a1:
   tags:
     - shared
   script:
-    - cd jsassignment1
+    - cd assignment1
     - docker compose -p jsassignment1 up --build --remove-orphans --detach

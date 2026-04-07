@@ -1,3 +1,5 @@
+https://mvoitk-js1.proxy.itcollege.ee/
+
 # Task Manager
 
 A modern, feature-rich task management application built with vanilla JavaScript. Manage your tasks efficiently with a beautiful dark-themed interface, multiple views, and a powerful command palette.

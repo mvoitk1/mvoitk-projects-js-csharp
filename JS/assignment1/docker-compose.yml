@@ -2,6 +2,6 @@ services:
   web:
     build: .
     restart: unless-stopped
-    container_name: js1
+    container_name: assignment1
     ports:
       - "79:80" 

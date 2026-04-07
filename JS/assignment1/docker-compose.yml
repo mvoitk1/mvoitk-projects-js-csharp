@@ -1,7 +1,7 @@
 services:
-  assignment1:
-    build:
-      context: ./JS/assignment1
-      dockerfile: Dockerfile
+  web:
+    build: .
+    restart: unless-stopped
+    container_name: js1
     ports:
-      - "79:79"
+      - "80:80" 

@@ -1,0 +1,32 @@
+stages:
+  - deploy
+
+deploy_javascript_a1:
+  stage: deploy
+  only:
+    - main
+  tags:
+    - shared
+  script:
+    - cd JS/assignment1
+    - docker compose -p jsassignment1 up --build --remove-orphans --detach
+
+deploy_javascript_a2:
+  stage: deploy
+  only:
+    - main
+  tags:
+    - shared
+  script:
+    - cd JS/assignment2
+    - docker compose -p jsassignment2 up --build --remove-orphans --detach
+
+deploy_csharp_a1:
+  stage: deploy
+  only:
+    - main
+  tags:
+    - shared
+  script:
+    - cd Csharp/Conference and Event Venue Platform SaaS v2
+    - docker compose -p csharp_a1 up --build --remove-orphans --detach

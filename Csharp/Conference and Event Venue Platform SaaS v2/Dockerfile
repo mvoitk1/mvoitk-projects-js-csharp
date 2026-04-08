@@ -17,6 +17,10 @@ RUN dotnet restore "VenuePlatform.sln"
 
 COPY . .
 
+# Remove Windows-style generated artifact directories that were committed with
+# literal backslashes in their names. These break Linux container builds.
+RUN find . -type d \( -name 'bin\\*' -o -name 'obj\\*' \) -prune -exec rm -rf '{}' +
+
 RUN dotnet publish "WebApp/WebApp.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final

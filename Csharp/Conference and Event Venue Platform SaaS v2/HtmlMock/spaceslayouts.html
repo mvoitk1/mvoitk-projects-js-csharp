@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VenueFlow | Spaces & Layouts</title>
+    <style>
+        :root {
+            --sand: #f5efe5;
+            --sand-deep: #e7dac6;
+            --forest: #1f2a2a;
+            --forest-soft: #30423e;
+            --cream: rgba(255, 250, 244, 0.9);
+            --cream-strong: rgba(255, 248, 241, 0.96);
+            --text: #1d201d;
+            --muted: #5d615a;
+            --accent: #b45d3c;
+            --accent-dark: #8d4226;
+            --success: #3c6b57;
+            --warning: #a26534;
+            --line: rgba(76, 57, 43, 0.12);
+            --shadow: 0 24px 60px rgba(23, 23, 23, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(232, 192, 165, 0.78), transparent 26%),
+                radial-gradient(circle at bottom right, rgba(45, 84, 74, 0.18), transparent 34%),
+                linear-gradient(135deg, #efe5d4 0%, #f8f3ec 46%, #ece2d6 100%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font: inherit;
+        }
+
+        .page-shell {
+            width: min(1440px, calc(100% - 28px));
+            margin: 18px auto;
+            border-radius: 34px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 250, 244, 0.36);
+            box-shadow: var(--shadow);
+            background: rgba(255, 248, 241, 0.55);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            min-height: calc(100vh - 36px);
+        }
+
+        .sidebar {
+            padding: 28px 22px;
+            color: #f7f0e8;
+            background:
+                linear-gradient(rgba(22, 31, 31, 0.36), rgba(22, 31, 31, 0.44)),
+                linear-gradient(165deg, #6d7c71 0%, #324441 42%, #1d2423 100%);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            font-size: 1rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 240, 224, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .eyebrow,
+        .nav a,
+        .sidebar-note,
+        .muted,
+        .pill,
+        .chip,
+        .hero-copy p,
+        .panel-subtitle,
+        .venue-picker p,
+        .space-card p,
+        .layout-card p,
+        .summary-list,
+        .timeline-card p {
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            color: #f0d5bd;
+            background: rgba(255, 245, 232, 0.1);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-note {
+            margin: 0;
+            color: rgba(249, 239, 229, 0.78);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .nav {
+            margin: 28px 0;
+            display: grid;
+            gap: 8px;
+        }
+
+        .nav a {
+            padding: 12px 14px;
+            border-radius: 16px;
+            color: rgba(247, 240, 232, 0.84);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav a.active,
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff8f0;
+            transform: translateX(2px);
+        }
+
+        .sidebar-card,
+        .panel,
+        .venue-picker,
+        .layout-card,
+        .space-card,
+        .timeline-card {
+            border: 1px solid rgba(255, 244, 232, 0.12);
+            backdrop-filter: blur(8px);
+        }
+
+        .sidebar-card {
+            padding: 18px;
+            border-radius: 24px;
+            background: rgba(255, 250, 245, 0.08);
+        }
+
+        .sidebar-card h3,
+        .hero-copy h1,
+        .panel-title,
+        .venue-picker strong,
+        .layout-card strong,
+        .space-card strong,
+        .timeline-card strong {
+            margin: 0;
+            letter-spacing: -0.04em;
+        }
+
+        .sidebar-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-card p {
+            margin: 0 0 14px;
+            color: rgba(247, 240, 232, 0.8);
+            line-height: 1.6;
+            font-size: 0.92rem;
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .main {
+            padding: 28px;
+        }
+
+        .topbar,
+        .hero,
+        .hero-stats,
+        .content-grid,
+        .panel-head,
+        .venue-list,
+        .venue-picker-top,
+        .venue-tags,
+        .layout-grid,
+        .space-grid,
+        .layout-meta,
+        .summary-list,
+        .timeline-stack {
+            display: flex;
+        }
+
+        .topbar,
+        .panel-head,
+        .venue-picker-top {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar {
+            margin-bottom: 24px;
+            gap: 18px;
+        }
+
+        .button,
+        .button-secondary {
+            padding: 12px 18px;
+            border-radius: 999px;
+            font-weight: 700;
+            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .button-secondary {
+            border: 1px solid var(--line);
+            background: rgba(255, 251, 247, 0.74);
+            color: var(--forest-soft);
+        }
+
+        .button,
+        .button-secondary,
+        .venue-picker,
+        .layout-card {
+            cursor: pointer;
+        }
+
+        .button {
+            border: 0;
+            color: #fff7f0;
+            background: var(--accent);
+            box-shadow: 0 14px 28px rgba(180, 93, 60, 0.22);
+        }
+
+        .button:hover,
+        .button-secondary:hover,
+        .venue-picker:hover,
+        .layout-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .button:hover {
+            background: var(--accent-dark);
+        }
+
+        .hero {
+            align-items: end;
+            justify-content: space-between;
+            gap: 22px;
+            padding: 30px;
+            margin-bottom: 22px;
+            border-radius: 30px;
+            background:
+                linear-gradient(rgba(255, 251, 247, 0.46), rgba(255, 251, 247, 0.75)),
+                linear-gradient(120deg, rgba(255, 213, 184, 0.56), rgba(255, 248, 241, 0.32));
+            border: 1px solid rgba(255, 255, 255, 0.42);
+        }
+
+        .hero-copy h1 {
+            font-size: clamp(2.4rem, 4.7vw, 4rem);
+            line-height: 0.97;
+            max-width: 760px;
+        }
+
+        .hero-copy p {
+            margin: 16px 0 0;
+            max-width: 780px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            flex-wrap: wrap;
+            gap: 14px;
+            min-width: min(100%, 360px);
+            justify-content: flex-end;
+        }
+
+        .hero-stat {
+            min-width: 150px;
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(255, 250, 245, 0.72);
+            border: 1px solid rgba(76, 57, 43, 0.1);
+        }
+
+        .hero-stat strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.55rem;
+        }
+
+        .hero-stat span {
+            color: var(--muted);
+            font-family: "Trebuchet MS", sans-serif;
+            font-size: 0.88rem;
+        }
+
+        .content-grid {
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        .primary-column {
+            flex: 1.55;
+            display: grid;
+            gap: 18px;
+        }
+
+        .secondary-column {
+            flex: 0.9;
+            display: grid;
+            gap: 18px;
+        }
+
+        .panel {
+            padding: 22px;
+            border-radius: 28px;
+            background: var(--cream);
+            border: 1px solid var(--line);
+        }
+
+        .panel-title {
+            font-size: 1.6rem;
+        }
+
+        .panel-subtitle {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .venue-list,
+        .layout-grid,
+        .space-grid,
+        .timeline-stack {
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .venue-picker,
+        .layout-card,
+        .space-card,
+        .timeline-card {
+            padding: 18px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.62);
+            border: 1px solid rgba(76, 57, 43, 0.08);
+        }
+
+        .venue-picker {
+            flex: 1 1 260px;
+            text-align: left;
+        }
+
+        .venue-picker.active,
+        .layout-card.active {
+            border-color: rgba(180, 93, 60, 0.34);
+            background: rgba(255, 246, 241, 0.96);
+            box-shadow: 0 18px 36px rgba(180, 93, 60, 0.12);
+        }
+
+        .venue-picker p,
+        .space-card p,
+        .layout-card p,
+        .timeline-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .venue-picker p {
+            margin-top: 10px;
+        }
+
+        .venue-tags,
+        .layout-meta {
+            margin-top: 14px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip,
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+        }
+
+        .chip {
+            background: rgba(48, 66, 62, 0.08);
+            color: var(--forest-soft);
+        }
+
+        .pill {
+            background: rgba(180, 93, 60, 0.1);
+            color: var(--accent-dark);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 11px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-family: "Trebuchet MS", sans-serif;
+            font-weight: 700;
+        }
+
+        .status.success {
+            color: var(--success);
+            background: rgba(60, 107, 87, 0.12);
+        }
+
+        .status.warning {
+            color: var(--warning);
+            background: rgba(162, 101, 52, 0.12);
+        }
+
+        .layout-card {
+            flex: 1 1 210px;
+        }
+
+        .layout-card strong,
+        .space-card strong,
+        .timeline-card strong {
+            display: block;
+            font-size: 1.15rem;
+        }
+
+        .layout-card p,
+        .space-card p {
+            margin-top: 8px;
+        }
+
+        .layout-card .capacity {
+            display: block;
+            margin-top: 14px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--forest);
+        }
+
+        .space-card {
+            flex: 1 1 280px;
+            min-height: 190px;
+        }
+
+        .space-card ul,
+        .summary-list {
+            margin: 14px 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .space-card li,
+        .summary-list li {
+            position: relative;
+            margin-bottom: 10px;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.55;
+            font-size: 0.9rem;
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .space-card li::before,
+        .summary-list li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.62rem;
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(180, 93, 60, 0.72);
+        }
+
+        .summary-highlight {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(48, 66, 62, 0.08), rgba(180, 93, 60, 0.08));
+            border: 1px solid rgba(76, 57, 43, 0.08);
+        }
+
+        .summary-highlight strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.1rem;
+        }
+
+        .summary-highlight p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-family: "Trebuchet MS", sans-serif;
+            font-size: 0.92rem;
+        }
+
+        .timeline-card {
+            width: 100%;
+        }
+
+        .timeline-card strong {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 1180px) {
+            .page-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .content-grid,
+            .hero {
+                flex-direction: column;
+            }
+
+            .hero-stats {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .main {
+                padding: 18px;
+            }
+
+            .page-shell {
+                width: min(100%, calc(100% - 12px));
+                margin: 6px auto;
+                border-radius: 22px;
+            }
+
+            .hero,
+            .panel {
+                padding: 18px;
+                border-radius: 22px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="page-grid">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">VF</div>
+                <div>VenueFlow</div>
+            </div>
+
+            <section class="sidebar-card">
+                <span class="eyebrow">Event Build</span>
+                <h3>Choose spaces, then lock the layout</h3>
+                <p>Move from venue shortlist into a room-level setup. This mock lets the planner select one venue and immediately explore compatible layouts.</p>
+                <p class="sidebar-note">Designed for conference planning, hybrid sessions, training days, and dinner conversions.</p>
+            </section>
+
+            <nav class="nav">
+                <a href="dashboardpage.html">Dashboard</a>
+                <a href="browsevenues.html">Browse Venues</a>
+                <a class="active" href="spaceslayouts.html">Spaces &amp; Layouts</a>
+                <a href="mybookingsview.html">Bookings</a>
+            </nav>
+
+            <section class="sidebar-card">
+                <span class="eyebrow">Flow</span>
+                <h3>Recommended sequence</h3>
+                <p>1. Pick a shortlisted venue.<br>2. Compare room layouts.<br>3. Confirm the preferred setup for the event brief.</p>
+            </section>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div>
+                    <span class="eyebrow" style="background:rgba(180,93,60,0.1);color:var(--accent-dark);">Mock HTML</span>
+                    <div style="font-size:1.8rem;letter-spacing:-0.04em;">Spaces and layout selection</div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="primary-column">
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 class="panel-title">Selected venues</h2>
+                                <p class="panel-subtitle">These are the shortlisted venues carried forward from browsing. Choose the one you want to configure now.</p>
+                            </div>
+                            <span id="activeVenueBadge" class="status success">Atlas Convention Loft active</span>
+                        </div>
+                        <div class="venue-list" id="venueList"></div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 class="panel-title">Available layouts</h2>
+                                <p class="panel-subtitle" id="layoutSubtitle">Compare supported room setups for the selected venue, then click the preferred arrangement.</p>
+                            </div>
+                            <span id="activeLayoutBadge" class="status warning">Theater selected</span>
+                        </div>
+                        <div class="layout-grid" id="layoutGrid"></div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 class="panel-title">Spaces included</h2>
+                                <p class="panel-subtitle" id="spacesSubtitle">Room-level recommendations update with the active venue and layout.</p>
+                            </div>
+                        </div>
+                        <div class="space-grid" id="spaceGrid"></div>
+                    </section>
+                </div>
+
+                <div class="secondary-column">
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 class="panel-title">Selection summary</h2>
+                                <p class="panel-subtitle">The summary card reflects the exact combination currently picked in the mock.</p>
+                            </div>
+                        </div>
+                        <ul class="summary-list" id="summaryList"></ul>
+                        <div class="summary-highlight">
+                            <strong id="summaryHeadline">Atlas Convention Loft with Theater layout</strong>
+                            <p id="summaryCopy">Main loft hall arranged for keynote seating, hybrid production, and smooth guest flow into breakout rooms.</p>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2 class="panel-title">Setup timeline</h2>
+                                <p class="panel-subtitle">Mock operational checkpoints for the active venue and layout choice.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-stack" id="timelineStack"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    const venueData = [
+        {
+            id: "atlas",
+            name: "Atlas Convention Loft",
+            description: "Modern event venue with flexible conference rooms and strong hybrid meeting support in Singapore Marina District.",
+            status: "Best fit",
+            statusClass: "success",
+            tags: ["Up to 220 guests", "5 combinable rooms", "Hybrid AV ready"],
+            summary: [
+                "Best for keynote sessions that need a premium entry experience.",
+                "Breakout rooms sit next to the main loft for smoother session transitions.",
+                "Dinner conversion is supported without moving the full attendee flow outside."
+            ],
+            timeline: [
+                ["08:00", "Production and staging team loads into the loft hall."],
+                ["09:15", "Breakout suites open with signage aligned to the keynote zone."],
+                ["17:30", "Room flips into dinner-ready format with light furniture reset."]
+            ],
+            layouts: [
+                {
+                    id: "theater",
+                    name: "Theater",
+                    capacity: 220,
+                    blurb: "High-density keynote seating with direct sightlines to the main stage and broadcast wall.",
+                    fit: "Best for opening session",
+                    summaryHeadline: "Atlas Convention Loft with Theater layout",
+                    summaryCopy: "Main loft hall arranged for keynote seating, hybrid production, and smooth guest flow into breakout rooms.",
+                    spaces: [
+                        {
+                            name: "Loft Hall A",
+                            note: "Primary keynote room with raised stage, confidence monitors, and front-of-house AV control.",
+                            bullets: ["220 seated guests", "Two side screens and center LED wall", "Rear camera riser reserved"]
+                        },
+                        {
+                            name: "Breakout Studio 2",
+                            note: "Overflow discussion room for speaker prep and executive debriefs.",
+                            bullets: ["18 lounge seats", "Portable screen wall", "Coffee drop nearby"]
+                        }
+                    ]
+                },
+                {
+                    id: "cabaret",
+                    name: "Cabaret",
+                    capacity: 160,
+                    blurb: "Round-table format for networking-heavy conference programs and sponsor conversations.",
+                    fit: "Balanced networking",
+                    summaryHeadline: "Atlas Convention Loft with Cabaret layout",
+                    summaryCopy: "Keynote room reshaped into table clusters while preserving the hybrid production zone and sponsor paths.",
+                    spaces: [
+                        {
+                            name: "Loft Hall A",
+                            note: "Cabaret clusters with central presentation aisle and sponsor activation edge.",
+                            bullets: ["20 round tables", "Low stage depth", "Integrated service lanes"]
+                        },
+                        {
+                            name: "Gallery Foyer",
+                            note: "Adjacent reception and sponsor check-in zone.",
+                            bullets: ["Registration desk", "Branding wall", "Canape circulation path"]
+                        }
+                    ]
+                },
+                {
+                    id: "classroom",
+                    name: "Classroom",
+                    capacity: 110,
+                    blurb: "Training-friendly arrangement with desks, power access, and writing surfaces.",
+                    fit: "Workshop mode",
+                    summaryHeadline: "Atlas Convention Loft with Classroom layout",
+                    summaryCopy: "Configured for training and note-taking with spaced rows, desk access, and breakout support nearby.",
+                    spaces: [
+                        {
+                            name: "Loft Hall B",
+                            note: "Long-table classroom setup with strong projector visibility.",
+                            bullets: ["110 classroom seats", "Power strips on every row", "Trainer table at stage front"]
+                        },
+                        {
+                            name: "Studio North",
+                            note: "Support room for small-group coaching and content review.",
+                            bullets: ["16 seats", "Movable whiteboards", "Quiet acoustics"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "harbor",
+            name: "Harbor Summit Centre",
+            description: "Premium auditorium venue in Singapore Bayfront with strong room-combination options and established service history.",
+            status: "Current venue",
+            statusClass: "warning",
+            tags: ["Up to 200 guests", "6 combinable layouts", "Full-day catering"],
+            summary: [
+                "Strong default for corporate events that need a formal auditorium setup.",
+                "Backstage circulation is better suited for speaker-heavy agendas.",
+                "The venue handles all-day catering at higher attendee volumes."
+            ],
+            timeline: [
+                ["07:30", "Auditorium access opens for staging, lecterns, and translation desks."],
+                ["10:00", "Secondary suite changes to panel lounge and VIP holding space."],
+                ["18:00", "Foyer service expands for closing reception and sponsor follow-up."]
+            ],
+            layouts: [
+                {
+                    id: "auditorium",
+                    name: "Auditorium",
+                    capacity: 200,
+                    blurb: "Tiered seating and strong acoustics for keynote talks, ceremonies, and panel broadcasts.",
+                    fit: "Formal presentation",
+                    summaryHeadline: "Harbor Summit Centre with Auditorium layout",
+                    summaryCopy: "Tiered auditorium delivery with a dedicated speaker path, translation support, and full-day service flow.",
+                    spaces: [
+                        {
+                            name: "Summit Auditorium",
+                            note: "Tiered main room with integrated stage lighting and simultaneous translation booth.",
+                            bullets: ["200 fixed seats", "Dual confidence screens", "Backstage green room access"]
+                        },
+                        {
+                            name: "Panel Lounge",
+                            note: "Speaker holding room connected to the backstage corridor.",
+                            bullets: ["Soft seating", "Private refreshment service", "Mic prep station"]
+                        }
+                    ]
+                },
+                {
+                    id: "banquet",
+                    name: "Banquet",
+                    capacity: 140,
+                    blurb: "Formal dining arrangement with presentation visibility retained across the room.",
+                    fit: "Dinner conversion",
+                    summaryHeadline: "Harbor Summit Centre with Banquet layout",
+                    summaryCopy: "Main space set for plated dining while preserving stage visibility and sponsor hosting around the foyer edge.",
+                    spaces: [
+                        {
+                            name: "Summit Hall",
+                            note: "Round-table dinner setup with clear service lanes and stage sightlines.",
+                            bullets: ["14 banquet tables", "Head table on stage", "Service aisle around perimeter"]
+                        },
+                        {
+                            name: "Harbor Foyer",
+                            note: "Pre-dinner drinks and sponsor showcase area.",
+                            bullets: ["Coat drop", "Branding columns", "Dessert display line"]
+                        }
+                    ]
+                },
+                {
+                    id: "boardroom",
+                    name: "Boardroom Cluster",
+                    capacity: 64,
+                    blurb: "Smaller strategy format using connected executive rooms for workshops and planning sessions.",
+                    fit: "Leadership workshop",
+                    summaryHeadline: "Harbor Summit Centre with Boardroom Cluster layout",
+                    summaryCopy: "Executive rooms grouped for strategy sessions, steering committee work, and protected stakeholder discussion.",
+                    spaces: [
+                        {
+                            name: "Executive Room East",
+                            note: "Main strategy table with presentation screen and built-in conferencing.",
+                            bullets: ["20 seats", "Video conferencing", "Writable wall panels"]
+                        },
+                        {
+                            name: "Executive Room West",
+                            note: "Parallel workshop room for breakouts and committee reviews.",
+                            bullets: ["16 seats", "Mobile display", "Coffee credenza"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "meridian",
+            name: "Meridian Board Suite",
+            description: "Executive-focused venue in Singapore Civic Core, ideal for board meetings, training, and recurring sessions.",
+            status: "Template fit",
+            statusClass: "success",
+            tags: ["Up to 60 guests", "Board suites", "Recurring friendly"],
+            summary: [
+                "Best for smaller leadership groups that want a polished, quiet setting.",
+                "Recurring bookings are easier to replicate because the rooms stay highly standardized.",
+                "Good fit for training, committee reviews, and private client sessions."
+            ],
+            timeline: [
+                ["08:30", "Board suite opens with breakfast service and room documents staged."],
+                ["11:00", "Workshop breakout room resets for coaching and review sessions."],
+                ["15:45", "Coffee lounge refresh supports final wrap-up conversations."]
+            ],
+            layouts: [
+                {
+                    id: "boardroom",
+                    name: "Boardroom",
+                    capacity: 24,
+                    blurb: "Premium leadership-table setup with conferencing, private service, and note-taking support.",
+                    fit: "Executive meeting",
+                    summaryHeadline: "Meridian Board Suite with Boardroom layout",
+                    summaryCopy: "A focused executive setup with premium table service, conferencing, and a quieter client-facing atmosphere.",
+                    spaces: [
+                        {
+                            name: "Exchange Board Suite",
+                            note: "Main leadership room with oak board table and integrated conferencing hardware.",
+                            bullets: ["24 seats", "Ceiling microphones", "Private host station"]
+                        },
+                        {
+                            name: "Library Lounge",
+                            note: "Pre-meeting welcome and side discussion area.",
+                            bullets: ["Coffee service", "Soft seating", "Private coat storage"]
+                        }
+                    ]
+                },
+                {
+                    id: "u-shape",
+                    name: "U-Shape",
+                    capacity: 34,
+                    blurb: "Interactive workshop arrangement for coaching sessions, reviews, and facilitated training.",
+                    fit: "Discussion-heavy",
+                    summaryHeadline: "Meridian Board Suite with U-Shape layout",
+                    summaryCopy: "A facilitator-led room setup with direct line of sight, presentation space, and stronger discussion flow.",
+                    spaces: [
+                        {
+                            name: "Forum Room",
+                            note: "Open workshop room with perimeter desk layout and central facilitator zone.",
+                            bullets: ["34 seats", "Dual mobile displays", "Writable sidewall"]
+                        },
+                        {
+                            name: "Coach Room",
+                            note: "Side breakout space for one-to-one review sessions.",
+                            bullets: ["6 seats", "Quiet lighting", "Document camera"]
+                        }
+                    ]
+                },
+                {
+                    id: "classroom",
+                    name: "Classroom",
+                    capacity: 48,
+                    blurb: "Compact training setup with power access and clear teaching lines for recurring sessions.",
+                    fit: "Training day",
+                    summaryHeadline: "Meridian Board Suite with Classroom layout",
+                    summaryCopy: "Optimized for repeated training events with compact seating, equipment access, and nearby refreshment space.",
+                    spaces: [
+                        {
+                            name: "Academy Room",
+                            note: "Teaching room arranged in rows with front-stage instruction zone.",
+                            bullets: ["48 seats", "Desk power", "Wall projector"]
+                        },
+                        {
+                            name: "Refresh Corner",
+                            note: "Continuous coffee point beside the training room.",
+                            bullets: ["Self-service station", "Snack shelf", "Waste sorting unit"]
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const requestedVenueId = searchParams.get("venue");
+    const initialVenueId = venueData.some((venue) => venue.id === requestedVenueId) ? requestedVenueId : "atlas";
+
+    let activeVenueId = initialVenueId;
+    let activeLayoutId = "theater";
+
+    const venueList = document.getElementById("venueList");
+    const layoutGrid = document.getElementById("layoutGrid");
+    const spaceGrid = document.getElementById("spaceGrid");
+    const timelineStack = document.getElementById("timelineStack");
+    const summaryList = document.getElementById("summaryList");
+    const activeVenueBadge = document.getElementById("activeVenueBadge");
+    const activeLayoutBadge = document.getElementById("activeLayoutBadge");
+    const layoutSubtitle = document.getElementById("layoutSubtitle");
+    const spacesSubtitle = document.getElementById("spacesSubtitle");
+    const summaryHeadline = document.getElementById("summaryHeadline");
+    const summaryCopy = document.getElementById("summaryCopy");
+
+    function getActiveVenue() {
+        return venueData.find((venue) => venue.id === activeVenueId) ?? venueData[0];
+    }
+
+    function getActiveLayout() {
+        return getActiveVenue().layouts.find((layout) => layout.id === activeLayoutId);
+    }
+
+    function renderVenues() {
+        venueList.innerHTML = "";
+
+        venueData.forEach((venue) => {
+            const isActive = venue.id === activeVenueId;
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `venue-picker${isActive ? " active" : ""}`;
+            button.innerHTML = `
+                <div class="venue-picker-top">
+                    <strong>${venue.name}</strong>
+                    <span class="status ${venue.statusClass}">${isActive ? "Selected" : venue.status}</span>
+                </div>
+                <p>${venue.description}</p>
+                <div class="venue-tags">
+                    ${venue.tags.map((tag) => `<span class="chip">${tag}</span>`).join("")}
+                </div>
+            `;
+            button.addEventListener("click", () => {
+                activeVenueId = venue.id;
+                activeLayoutId = venue.layouts[0].id;
+                render();
+            });
+            venueList.appendChild(button);
+        });
+    }
+
+    function renderLayouts() {
+        const venue = getActiveVenue();
+        layoutGrid.innerHTML = "";
+        activeVenueBadge.textContent = `${venue.name} active`;
+        layoutSubtitle.textContent = `Layout options currently supported by ${venue.name}.`;
+
+        venue.layouts.forEach((layout) => {
+            const isActive = layout.id === activeLayoutId;
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = `layout-card${isActive ? " active" : ""}`;
+            card.innerHTML = `
+                <strong>${layout.name}</strong>
+                <p>${layout.blurb}</p>
+                <div class="layout-meta">
+                    <span class="pill">${layout.fit}</span>
+                    <span class="chip">${layout.capacity} guests</span>
+                </div>
+                <span class="capacity">${layout.capacity}</span>
+            `;
+            card.addEventListener("click", () => {
+                activeLayoutId = layout.id;
+                render();
+            });
+            layoutGrid.appendChild(card);
+        });
+    }
+
+    function renderSpaces() {
+        const venue = getActiveVenue();
+        const layout = getActiveLayout();
+        spaceGrid.innerHTML = "";
+        activeLayoutBadge.textContent = `${layout.name} selected`;
+        spacesSubtitle.textContent = `${layout.name} layout spaces for ${venue.name}.`;
+
+        layout.spaces.forEach((space) => {
+            const article = document.createElement("article");
+            article.className = "space-card";
+            article.innerHTML = `
+                <strong>${space.name}</strong>
+                <p>${space.note}</p>
+                <ul>
+                    ${space.bullets.map((bullet) => `<li>${bullet}</li>`).join("")}
+                </ul>
+            `;
+            spaceGrid.appendChild(article);
+        });
+    }
+
+    function renderSummary() {
+        const venue = getActiveVenue();
+        const layout = getActiveLayout();
+        summaryList.innerHTML = [
+            `<li>Venue: ${venue.name}</li>`,
+            `<li>Layout: ${layout.name}</li>`,
+            `<li>Capacity: ${layout.capacity} guests</li>`,
+            ...venue.summary.map((item) => `<li>${item}</li>`)
+        ].join("");
+        summaryHeadline.textContent = layout.summaryHeadline;
+        summaryCopy.textContent = layout.summaryCopy;
+    }
+
+    function renderTimeline() {
+        const venue = getActiveVenue();
+        timelineStack.innerHTML = "";
+
+        venue.timeline.forEach(([time, note]) => {
+            const article = document.createElement("article");
+            article.className = "timeline-card";
+            article.innerHTML = `
+                <strong>${time}</strong>
+                <p>${note}</p>
+            `;
+            timelineStack.appendChild(article);
+        });
+    }
+
+    function render() {
+        const venue = getActiveVenue();
+        if (!venue.layouts.some((layout) => layout.id === activeLayoutId)) {
+            activeLayoutId = venue.layouts[0].id;
+        }
+
+        renderVenues();
+        renderLayouts();
+        renderSpaces();
+        renderSummary();
+        renderTimeline();
+    }
+
+    render();
+</script>
+</body>
+</html>

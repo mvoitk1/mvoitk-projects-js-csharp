@@ -1,0 +1,34 @@
+@using App.Resources.Views.Workspace
+@model WorkspaceLayoutViewModel
+
+<aside class="workspace-sidebar">
+    <a class="workspace-brand" asp-area="" asp-controller="Workspace" asp-action="Index">
+        <span class="workspace-brand-mark">VF</span>
+        <span>VenueFlow Ops</span>
+    </a>
+
+    <section class="sidebar-panel">
+        <p class="eyebrow">@Pages.VenueSelectorLabel</p>
+        @if (Model.Context.ActiveVenue != null)
+        {
+            <strong>@Model.Context.ActiveVenue.VenueName</strong>
+            <p>@Model.Context.ActiveVenue.CompanyName</p>
+        }
+        else
+        {
+            <strong>@Pages.NoVenueMembershipTitle</strong>
+            <p>@Pages.NoVenueMembershipBody</p>
+        }
+    </section>
+
+    <nav class="workspace-nav">
+        <a class="@(Model.ActiveNavigation == "dashboard" ? "active" : null)" asp-area="Employee" asp-controller="Dashboard" asp-action="Index">@Pages.NavEmployeeDashboard</a>
+        <a class="@(Model.ActiveNavigation == "bookings" ? "active" : null)" asp-area="Employee" asp-controller="Bookings" asp-action="Index">@Pages.NavEmployeeBookings</a>
+        <a class="@(Model.ActiveNavigation == "coordination" ? "active" : null)" asp-area="Employee" asp-controller="Coordination" asp-action="Index">@Pages.NavEmployeeCoordination</a>
+        <a class="@(Model.ActiveNavigation == "catering" ? "active" : null)" asp-area="Employee" asp-controller="Catering" asp-action="Index">@Pages.NavEmployeeCatering</a>
+    </nav>
+
+    @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceVenueSwitcher.cshtml", Model.Context)
+
+    <a class="workspace-secondary-link" asp-area="" asp-controller="Home" asp-action="Index">@Pages.ReturnToPublicSite</a>
+</aside>

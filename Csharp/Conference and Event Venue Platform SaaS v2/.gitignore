@@ -1,0 +1,45 @@
+# macOS
+.DS_Store
+
+# Build outputs
+bin/
+obj/
+out/
+
+# Test and coverage artifacts
+TestResults/
+coverage/
+coverage.*
+*.coverage
+*.coveragexml
+
+# Logs
+*.log
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / ReSharper
+.idea/
+*.DotSettings.user
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Visual Studio
+.vs/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# ASP.NET / local secrets
+appsettings.*.local.json
+secrets.json
+
+# Publish output
+publish/

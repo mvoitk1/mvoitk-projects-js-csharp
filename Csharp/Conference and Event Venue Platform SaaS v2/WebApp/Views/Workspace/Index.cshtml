@@ -1,0 +1,101 @@
+@using App.Resources.Views.Workspace
+@using WebApp.Helpers
+@model WebApp.ViewModels.Workspace.WorkspaceHomePageViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.WorkspaceTitle;
+}
+
+<section class="workspace-redirect-card">
+    <p class="eyebrow">@Pages.WorkspaceTitle</p>
+    <h1>@(Model.Layout.Context.HasVenueAccess ? Pages.WorkspaceAccessReadyTitle : Pages.NoVenueMembershipTitle)</h1>
+    <p>@(Model.Layout.Context.HasVenueAccess ? Pages.WorkspaceAccessReadyBody : Pages.NoVenueMembershipBody)</p>
+    <div class="landing-actions">
+        <a class="public-button" asp-controller="Workspace" asp-action="Bookings">@Pages.WorkspaceOpenBookingsButton</a>
+        <a class="public-link-button" asp-controller="Venues" asp-action="RequestVenue">@Pages.ReturnToPublicSite</a>
+    </div>
+</section>
+
+@await Html.PartialAsync("~/Views/Shared/Workspace/_BookingCalendar.cshtml", Model.BookingCalendar)
+
+<section class="workspace-panel">
+    <div class="section-heading">
+        <h2>@Pages.WorkspaceRequestsTitle</h2>
+        <p>@Pages.WorkspaceRequestsDescription</p>
+    </div>
+
+    @if (!Model.HasRequests)
+    {
+        <p>@Pages.WorkspaceRequestsEmpty</p>
+    }
+    else
+    {
+        <div class="card-stack compact">
+            @foreach (var request in Model.Requests)
+            {
+                <article class="workspace-card compact">
+                    <div class="card-top">
+                        <strong>@request.VenueName</strong>
+                        <span class="status-pill @WorkspacePresentation.ToBadgeClass(request.Status)">@WorkspacePresentation.ToStatusLabel(request.Status)</span>
+                    </div>
+                    <p>@request.CompanyName</p>
+                    <p>@Pages.RequestSubmittedLabel: @request.SubmittedAt:g</p>
+                    <p>@Pages.RequestReviewedLabel: @(request.ReviewedAt?.ToString("g") ?? "-")</p>
+                    @if (request.Status == "Approved" && request.HasAssignedMembership)
+                    {
+                        <p>@Pages.WorkspaceRequestApprovedWithMembership</p>
+                    }
+                    else if (request.Status == "Approved")
+                    {
+                        <p>@Pages.WorkspaceRequestApprovedPendingAccess</p>
+                    }
+                    else if (request.Status == "Rejected")
+                    {
+                        <p>@Pages.WorkspaceRequestRejected</p>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>
+
+<section class="workspace-panel">
+    <div class="section-heading">
+        <h2>@Pages.WorkspaceBookingRequestsTitle</h2>
+        <p>@Pages.WorkspaceBookingRequestsDescription</p>
+    </div>
+
+    @if (!Model.HasBookingRequests)
+    {
+        <p>@Pages.WorkspaceBookingRequestsEmpty</p>
+    }
+    else
+    {
+        <div class="card-stack compact">
+            @foreach (var booking in Model.BookingRequests)
+            {
+                <article class="workspace-card compact">
+                    <div class="card-top">
+                        <div>
+                            <strong>@booking.Title</strong>
+                            <p>@booking.VenueName · @booking.SpaceName</p>
+                        </div>
+                        <span class="status-pill @WorkspacePresentation.ToBadgeClass(booking.Status)">@WorkspacePresentation.ToStatusLabel(booking.Status)</span>
+                    </div>
+                    <p>@Pages.BookingScheduleLabel: @WorkspacePresentation.FormatSchedule(booking.Schedule.StartsAt, booking.Schedule.EndsAt)</p>
+                    <p>@Pages.WorkspaceBookingDueLabel: @booking.Schedule.StartsAt:g</p>
+                    <p>@Pages.BookingAttendeesLabel: @booking.ExpectedAttendees</p>
+                    @if (booking.AppearsOnCalendar)
+                    {
+                        <p>@Pages.WorkspaceBookingRequestConfirmed</p>
+                    }
+                    else if (booking.Status == "PendingApproval")
+                    {
+                        <p>@Pages.WorkspaceBookingRequestPendingApproval</p>
+                    }
+                    <a class="action-link" asp-controller="Workspace" asp-action="Booking" asp-route-bookingId="@booking.BookingId">@Pages.WorkspaceBookingRequestViewDetails</a>
+                </article>
+            }
+        </div>
+    }
+</section>

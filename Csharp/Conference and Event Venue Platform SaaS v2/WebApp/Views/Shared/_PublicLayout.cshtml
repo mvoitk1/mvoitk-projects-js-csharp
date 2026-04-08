@@ -1,0 +1,20 @@
+@using App.Resources.Views.Public
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/public-theme.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body class="public-body">
+<div class="public-shell">
+    <partial name="Public/_PublicNavigation" />
+    <main>
+        @RenderBody()
+    </main>
+</div>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

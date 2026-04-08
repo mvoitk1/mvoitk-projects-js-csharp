@@ -1,0 +1,92 @@
+@model AdminDashboardPageViewModel
+@{
+    ViewData["Title"] = Pages.ManagerDashboardTitle;
+    ViewData["WorkspaceLayout"] = Model.Layout;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.ManagerDashboardEyebrow</p>
+        <h1>@Pages.ManagerDashboardHeadline</h1>
+        <p>@Pages.ManagerDashboardDescription</p>
+    </div>
+</section>
+
+@if (!Model.Layout.Context.HasVenueAccess)
+{
+    <section class="workspace-empty">
+        <h2>@Pages.NoVenueMembershipTitle</h2>
+        <p>@Pages.NoVenueMembershipBody</p>
+    </section>
+}
+else
+{
+    <section class="metric-grid">
+        <article class="metric-card"><strong>@Model.Dashboard.ActiveSpacesCount</strong><span>@Pages.ManagerMetricSpaces</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.UpcomingBookingsCount</strong><span>@Pages.ManagerMetricBookings</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.PendingApprovalBookingsCount</strong><span>@Pages.ManagerMetricPendingApprovals</span></article>
+        <article class="metric-card"><strong>@Model.Dashboard.ActiveMembershipCount</strong><span>@Pages.ManagerMetricMembers</span></article>
+    </section>
+
+    @await Html.PartialAsync("~/Views/Shared/Workspace/_BookingCalendar.cshtml", Model.BookingCalendar)
+
+    <section class="workspace-panel">
+        <div class="section-heading">
+            <h2>@Pages.ManagerActionItemsTitle</h2>
+        </div>
+        @if (Model.Dashboard.ActionItems.Count == 0)
+        {
+            <p>@Pages.ManagerActionItemsEmpty</p>
+        }
+        else
+        {
+            <ul class="signal-list">
+                @foreach (var item in Model.Dashboard.ActionItems)
+                {
+                    <li>@item</li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="workspace-panel">
+        <div class="section-heading">
+            <h2>@Pages.ManagerPendingApprovalSection</h2>
+        </div>
+        @if (Model.Dashboard.PendingApprovalBookings.Count == 0)
+        {
+            <p>@Pages.ManagerPendingApprovalEmpty</p>
+        }
+        else
+        {
+            <div class="card-stack">
+                @foreach (var booking in Model.Dashboard.PendingApprovalBookings)
+                {
+                    <article class="workspace-card">
+                        <div class="card-top">
+                            <div>
+                                <h3>@booking.Title</h3>
+                                <p>@booking.ClientName</p>
+                            </div>
+                            <span class="status-pill @WorkspacePresentation.ToBadgeClass(booking.Status)">@WorkspacePresentation.ToStatusLabel(booking.Status)</span>
+                        </div>
+                        <dl class="detail-grid">
+                            <div><dt>@Pages.BookingScheduleLabel</dt><dd>@WorkspacePresentation.FormatSchedule(booking.Schedule.StartsAt, booking.Schedule.EndsAt)</dd></div>
+                            <div><dt>@Pages.BookingSpaceLabel</dt><dd>@booking.SpaceName</dd></div>
+                            <div><dt>@Pages.BookingAttendeesLabel</dt><dd>@booking.ExpectedAttendees</dd></div>
+                            <div><dt>@Pages.BookingServicesLabel</dt><dd>@booking.CateringOrderCount catering, @booking.EquipmentAllocationCount equipment</dd></div>
+                        </dl>
+                        <div class="action-row">
+                            <a class="action-link" asp-area="Employee" asp-controller="Coordination" asp-action="Index" asp-route-bookingId="@booking.BookingId">@Pages.NavEmployeeCoordination</a>
+                            <form asp-area="Admin" asp-controller="Dashboard" asp-action="Approve" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="bookingId" value="@booking.BookingId" />
+                                <button class="action-link" type="submit">@Pages.BookingApproveButton</button>
+                            </form>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+}

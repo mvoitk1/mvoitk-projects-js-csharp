@@ -1,0 +1,63 @@
+@using App.Resources.Views.Workspace
+@using WebApp.Helpers
+@model WebApp.ViewModels.Workspace.BookingCalendarSectionViewModel
+
+<section class="workspace-panel">
+    <div class="section-heading">
+        <h2>@Model.Title</h2>
+        <p>@Model.Description</p>
+    </div>
+
+    @if (Model.Bookings.Count == 0)
+    {
+        <p>@Model.EmptyMessage</p>
+    }
+    else
+    {
+        <div class="booking-calendar">
+            @foreach (var day in Model.Bookings.GroupBy(item => item.StartsAt.Date).OrderBy(group => group.Key))
+            {
+                <section class="booking-calendar-day">
+                    <header class="booking-calendar-day-header">
+                        <h3>@day.Key.ToString("dddd")</h3>
+                        <p>@day.Key.ToString("MMMM d, yyyy")</p>
+                    </header>
+
+                    <div class="booking-calendar-list">
+                        @foreach (var booking in day.OrderBy(item => item.StartsAt))
+                        {
+                            <article class="booking-calendar-item">
+                                <div class="booking-calendar-time">
+                                    <strong>@booking.StartsAt.ToString("HH:mm")</strong>
+                                    <span>@WorkspacePresentation.FormatDuration(booking.StartsAt, booking.EndsAt)</span>
+                                </div>
+                                <div class="booking-calendar-card">
+                                    <div class="card-top">
+                                        <div>
+                                            <h3>@booking.Title</h3>
+                                            <p>@booking.PrimaryLabel</p>
+                                        </div>
+                                        <span class="status-pill @WorkspacePresentation.ToBadgeClass(booking.Status)">@WorkspacePresentation.ToStatusLabel(booking.Status)</span>
+                                    </div>
+                                    <dl class="detail-grid">
+                                        <div><dt>@Pages.BookingScheduleLabel</dt><dd>@WorkspacePresentation.FormatTimeRange(booking.StartsAt, booking.EndsAt)</dd></div>
+                                        <div><dt>@Pages.BookingDurationLabel</dt><dd>@WorkspacePresentation.FormatDuration(booking.StartsAt, booking.EndsAt)</dd></div>
+                                        <div><dt>@Pages.BookingSpaceLabel</dt><dd>@booking.SecondaryLabel</dd></div>
+                                        <div><dt>@Pages.BookingAttendeesLabel</dt><dd>@booking.ExpectedAttendees</dd></div>
+                                    </dl>
+                                    <div class="action-row">
+                                        <a class="action-link"
+                                           asp-area="@booking.LinkArea"
+                                           asp-controller="@booking.LinkController"
+                                           asp-action="@booking.LinkAction"
+                                           asp-route-bookingId="@booking.BookingId">@booking.LinkText</a>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    }
+</section>

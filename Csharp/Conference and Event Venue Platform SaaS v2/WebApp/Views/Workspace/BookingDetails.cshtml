@@ -1,0 +1,51 @@
+@using App.Resources.Views.Workspace
+@using WebApp.Helpers
+@model WebApp.ViewModels.Workspace.WorkspaceBookingRequestDetailsPageViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.WorkspaceBookingDetailsTitle;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.WorkspaceBookingDetailsEyebrow</p>
+        <h1>@Model.Booking.Title</h1>
+        <p>@Pages.WorkspaceBookingDetailsDescription</p>
+    </div>
+    <div class="hero-actions">
+        <a class="action-link" asp-controller="Workspace" asp-action="Index">@Pages.WorkspaceBookingBackToRequests</a>
+        <a class="action-link" asp-controller="Venues" asp-action="Details" asp-route-slug="@Model.Booking.VenueSlug">@Pages.WorkspaceBookingRequestOpenVenue</a>
+    </div>
+</section>
+
+<section class="workspace-panel">
+    <div class="card-top">
+        <div>
+            <h2>@Model.Booking.VenueName</h2>
+            <p>@Model.Booking.SpaceName</p>
+        </div>
+        <span class="status-pill @WorkspacePresentation.ToBadgeClass(Model.Booking.Status)">@WorkspacePresentation.ToStatusLabel(Model.Booking.Status)</span>
+    </div>
+    <dl class="detail-grid">
+        <div><dt>@Pages.BookingClientLabel</dt><dd>@Model.Booking.ClientName</dd></div>
+        <div><dt>@Pages.BookingScheduleLabel</dt><dd>@WorkspacePresentation.FormatSchedule(Model.Booking.Schedule.StartsAt, Model.Booking.Schedule.EndsAt)</dd></div>
+        <div><dt>@Pages.WorkspaceBookingDueLabel</dt><dd>@Model.Booking.Schedule.StartsAt:g</dd></div>
+        <div><dt>@Pages.BookingAttendeesLabel</dt><dd>@Model.Booking.ExpectedAttendees</dd></div>
+        <div><dt>@Pages.WorkspaceBookingPriceLabel</dt><dd>@WorkspacePresentation.FormatMoney(Model.Booking.SpaceCharge.Amount, Model.Booking.SpaceCharge.Currency)</dd></div>
+        <div><dt>@Pages.WorkspaceBookingServicesLabel</dt><dd>@string.Format(Pages.WorkspaceBookingServicesValue, Model.Booking.CateringOrderCount, Model.Booking.EquipmentAllocationCount)</dd></div>
+        <div><dt>@Pages.WorkspaceBookingCateringDeadlineLabel</dt><dd>@(Model.Booking.CateringLockedAt?.ToString("g") ?? Pages.WorkspaceBookingNoCateringDeadline)</dd></div>
+    </dl>
+    @if (Model.Booking.AppearsOnCalendar)
+    {
+        <p>@Pages.WorkspaceBookingRequestConfirmed</p>
+    }
+    else if (Model.Booking.Status == "PendingApproval")
+    {
+        <p>@Pages.WorkspaceBookingRequestPendingApproval</p>
+    }
+</section>
+
+<section class="workspace-panel">
+    <h2>@Pages.WorkspaceBookingNotesLabel</h2>
+    <p>@(string.IsNullOrWhiteSpace(Model.Booking.CoordinationNotes) ? Pages.BookingNoNotes : Model.Booking.CoordinationNotes)</p>
+</section>

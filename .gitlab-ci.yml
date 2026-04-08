@@ -28,5 +28,6 @@ deploy_csharp_a1:
   tags:
     - shared
   script:
-    - cd Csharp/Conference and Event Venue Platform SaaS v2
+    - cd "Csharp/Conference and Event Venue Platform SaaS v2"
+    - printf "APP_PORT=%s\nASPNETCORE_ENVIRONMENT=%s\nPOSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\n" "${CSHARP_A1_APP_PORT:-81}" "${CSHARP_A1_ASPNETCORE_ENVIRONMENT:-Production}" "${CSHARP_A1_POSTGRES_DB:-csharp_madis}" "${CSHARP_A1_POSTGRES_USER:-madis}" "${CSHARP_A1_POSTGRES_PASSWORD}" > .env
     - docker compose -p csharp_a1 up --build --remove-orphans --detach

@@ -1,28 +1,33 @@
-# Build stage
-FROM node:20-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
 
-WORKDIR /app
+COPY ["VenuePlatform.sln", "./"]
+COPY ["Directory.Build.props", "./"]
+COPY ["WebApp/WebApp.csproj", "WebApp/"]
+COPY ["App.BLL/App.BLL.csproj", "App.BLL/"]
+COPY ["App.DAL.EF/App.DAL.EF.csproj", "App.DAL.EF/"]
+COPY ["App.Domain/App.Domain.csproj", "App.Domain/"]
+COPY ["App.DTO/App.DTO.csproj", "App.DTO/"]
+COPY ["App.Helpers/App.Helpers.csproj", "App.Helpers/"]
+COPY ["App.Resources/App.Resources.csproj", "App.Resources/"]
+COPY ["Base.Resources/Base.Resources.csproj", "Base.Resources/"]
+COPY ["WebApp.Tests/WebApp.Tests.csproj", "WebApp.Tests/"]
 
-COPY package*.json ./
-RUN npm ci
+RUN dotnet restore "VenuePlatform.sln"
 
 COPY . .
-RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+RUN dotnet publish "WebApp/WebApp.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-COPY --from=build /app/dist /usr/share/nginx/html
-RUN printf '%s\n' \
-  'server {' \
-  '  listen 80;' \
-  '  server_name _;' \
-  '  root /usr/share/nginx/html;' \
-  '  index index.html;' \
-  '' \
-  '  location / {' \
-  '    try_files $uri $uri/ /index.html;' \
-  '  }' \
-  '}' > /etc/nginx/conf.d/default.conf
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
 
-EXPOSE 80
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_HTTP_PORTS=8080
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+
+EXPOSE 8080
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "WebApp.dll"]

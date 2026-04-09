@@ -7,7 +7,7 @@
       <form @submit.prevent="handleSave">
         <div class="field">
           <label>Name</label>
-          <input v-model="task.todoTaskName" type="text" required />
+          <input v-model="task.taskName" type="text" required />
         </div>
         <div class="field">
           <label>Due Date</label>
@@ -27,17 +27,17 @@
         </div>
         <div class="field">
           <label>Priority</label>
-          <input v-model.number="task.todoTaskPriority" type="number" />
+          <input v-model="task.todoPriorityId" type="text" placeholder="Priority UUID" />
         </div>
         <div class="field">
           <label>Sort Order</label>
-          <input v-model.number="task.todoTaskSort" type="number" />
+          <input v-model.number="task.taskSort" type="number" />
         </div>
         <div class="field">
           <label>Category</label>
           <select v-model="task.todoCategoryId">
             <option value="">None</option>
-            <option v-for="cat in categoryStore.items" :key="cat.id" :value="cat.id">{{ cat.todoCategoryName }}</option>
+            <option v-for="cat in categoryStore.items" :key="cat.id" :value="cat.id">{{ cat.categoryName }}</option>
           </select>
         </div>
         <p v-if="error" class="error">{{ error }}</p>

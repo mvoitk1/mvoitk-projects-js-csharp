@@ -11,7 +11,7 @@
     <ul class="todo-list">
       <li v-for="task in store.items" :key="task.id" :class="{ completed: task.isCompleted }">
         <input type="checkbox" :checked="task.isCompleted" @change="toggleComplete(task)" />
-        <RouterLink :to="`/todos/${task.id}`">{{ task.todoTaskName }}</RouterLink>
+        <RouterLink :to="`/todos/${task.id}`">{{ task.taskName }}</RouterLink>
         <button class="delete-btn" @click="handleDelete(task.id)">✕</button>
       </li>
     </ul>
@@ -33,11 +33,10 @@ onMounted(() => store.fetchAll())
 async function handleCreate() {
   if (!newTaskName.value.trim()) return
   await store.create({
-    todoTaskName: newTaskName.value.trim(),
+    taskName: newTaskName.value.trim(),
     isCompleted: false,
     isArchived: false,
-    todoTaskPriority: 0,
-    todoTaskSort: 0,
+    taskSort: 0,
   })
   newTaskName.value = ''
 }

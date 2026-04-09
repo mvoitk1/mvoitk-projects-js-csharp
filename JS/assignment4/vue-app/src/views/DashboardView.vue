@@ -24,6 +24,7 @@
       </article>
     </div>
 
+    <p v-if="route.query.error === 'forbidden'" class="error">You don't have permission to access that resource.</p>
     <p v-if="taskStore.error" class="error">{{ taskStore.error }}</p>
 
     <div v-if="tasks.length" class="task-grid">
@@ -73,11 +74,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTodoCategoryStore } from '../stores/todoCategory'
 import { useTodoPriorityStore } from '../stores/todoPriority'
 import { useTodoTasksStore } from '../stores/todoTasks'
 import type { TodoTask } from '../types'
 
+const route = useRoute()
 const taskStore = useTodoTasksStore()
 const categoryStore = useTodoCategoryStore()
 const priorityStore = useTodoPriorityStore()

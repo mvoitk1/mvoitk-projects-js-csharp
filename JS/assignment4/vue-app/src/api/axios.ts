@@ -1,14 +1,41 @@
 import axios from 'axios'
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios'
+import router from '../router'
+
+function isTokenExpiredSoon(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return Date.now() / 1000 > payload.exp - 30
+  } catch {
+    return true
+  }
+}
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://taltech.akaver.com',
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Request interceptor — attach JWT
-apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('jwt')
+// Request interceptor — proactively refresh near-expiry token, then attach
+apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  let token = localStorage.getItem('jwt')
+  const refresh = localStorage.getItem('refreshToken')
+
+  if (token && refresh && isTokenExpiredSoon(token)) {
+    try {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL || 'https://taltech.akaver.com'}/api/v1.0/Account/RefreshToken`,
+        { jwt: token, refreshToken: refresh },
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+      token = data.token
+      localStorage.setItem('jwt', data.token)
+      localStorage.setItem('refreshToken', data.refreshToken)
+    } catch {
+      // refresh failed — let the request go through; 401 handler will clean up
+    }
+  }
+
   if (token && config.headers) {
     config.headers['Authorization'] = `Bearer ${token}`
   }
@@ -32,6 +59,11 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+
+    if (error.response?.status === 403) {
+      router.push({ path: '/dashboard', query: { error: 'forbidden' } })
+      return Promise.reject(error)
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       const refreshToken = localStorage.getItem('refreshToken')

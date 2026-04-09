@@ -234,6 +234,116 @@ add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
 ---
 
+## Phase 9 — Security Hardening Implementation
+
+This phase implements all seven gaps identified in the Security Audit section above. Each fix is documented individually.
+
+---
+
+### Fix 1 — Proactive JWT expiry check in Axios request interceptor
+
+**File**: `vue-app/src/api/axios.ts`
+
+**What**: Added a `isTokenExpiredSoon(token)` helper and made the request interceptor `async`. Before attaching the JWT to any outgoing request, the interceptor decodes the token's base64 payload, reads the `exp` claim, and checks whether the token expires within the next 30 seconds. If it does — and a refresh token is present — a refresh call is made inline before the original request continues.
+
+**Why**: The previous flow was reactive: make request → receive 401 → attempt refresh → retry. This meant every request made after a token expired cost two HTTP round-trips and could cause brief error flashes in the UI. By checking `exp` proactively, the original request goes out with a valid token the first time. The 30-second buffer accounts for network latency and clock skew between the client and server — a token that appears valid locally can arrive expired at the server if there is even a small delay.
+
+**How**: `isTokenExpiredSoon` splits the JWT on `.`, takes the second segment (the payload), decodes it with `atob()`, parses the JSON, and compares `Date.now() / 1000` against `payload.exp - 30`. The function returns `true` on any error (malformed token, missing claim) so that a broken token always triggers a refresh attempt rather than being attached blindly. The interceptor was converted from synchronous to `async` so the refresh `await` is legal. If the inline refresh fails, the catch block is silent and the original (near-expired) token is still attached — the existing 401 fallback then handles the failure.
+
+---
+
+### Fix 2 — Background refresh timer
+
+**File**: `vue-app/src/stores/auth.ts`
+
+**What**: Added a module-level `_refreshTimer` variable and a `scheduleRefresh(token)` helper. After every successful token acquisition — login, register, or silent refresh — `scheduleRefresh` is called from `_persist()`. It decodes the new JWT's `exp` claim and sets a `setTimeout` to fire `refreshTokens()` approximately 60 seconds before the token would expire. The timer is cancelled in `logout()`.
+
+**Why**: Without this, a user who is idle (no API calls) long enough for the JWT to expire will have their next action fail and get redirected to `/login`, losing any unsaved UI state. Fix 1 catches the case where a request is made near expiry, but it cannot help if the user simply sits on a page without making requests. The background timer ensures tokens are always kept fresh as long as the user has the tab open.
+
+**Why 60 seconds**: This gives enough time for the refresh HTTP request to complete and for Fix 1's 30-second buffer to kick in if somehow the timer fires late. The two values are complementary: the timer keeps the token fresh during idle periods; the request-interceptor check is a last-resort safety net for edge cases.
+
+**How**: `scheduleRefresh` clears any existing timer first (preventing duplicate timers when tokens are refreshed multiple times in a session), parses `exp` from the JWT payload using the same `atob` approach as Fix 1, computes `msUntilRefresh = (payload.exp - 60) * 1000 - Date.now()`, and calls `setTimeout` if the result is positive. A negative value means the token is already expired or within 60 seconds of expiry — in that case no timer is set and Fix 1 handles the next request. `logout()` calls `clearTimeout(_refreshTimer)` and nulls the reference so the timer cannot fire after the user is logged out.
+
+---
+
+### Fix 3 — Async route guard with silent refresh on hard reload
+
+**File**: `vue-app/src/router/index.ts`
+
+**What**: Changed `beforeEach` from a synchronous arrow function to an `async` function. If the guard would have redirected to `/login` (protected route, `isAuthenticated` is false), it now first checks whether a refresh token exists in `localStorage`. If one does, it awaits `auth.refreshTokens()`. If the refresh succeeds, the navigation is allowed to proceed. Only if the refresh fails (or there is no refresh token) does the guard redirect to `/login`.
+
+**Why**: On a hard page reload, the Pinia store is freshly initialised with whatever is in `localStorage`. If the JWT has expired — even by one second — `isAuthenticated` is `false` and the old synchronous guard immediately redirected the user to `/login`, forcing a new login even though the refresh token was perfectly valid. This was the most disruptive UX failure: a user returning to the app after a few hours would be logged out despite never explicitly logging out.
+
+**How**: `auth.refreshTokens()` in the auth store already returns `true` on success and `false` on failure (calling `logout()` internally on failure). The guard awaits this boolean and uses it to branch: `if (ok) return` allows the original navigation to complete; otherwise `return '/login'` redirects. The function is idempotent — if `main.ts` also calls `refreshTokens()` on startup, the two calls may race on the first navigation but the second call will simply use the tokens the first already stored.
+
+---
+
+### Fix 4 — Reset data stores on logout
+
+**File**: `vue-app/src/stores/auth.ts`
+
+**What**: `logout()` now manually resets the state of `useTodoTasksStore`, `useTodoCategoryStore`, and `useTodoPriorityStore` by setting `items = []`, `loading = false`, and `error = null` on each.
+
+**Why**: After logout, all three data stores still held the previous user's tasks, categories, and priorities in memory. If a different user logged in on the same browser session, they would see the previous user's data flash briefly before their own `fetchAll()` completed. This is a data isolation failure — one user's data must never be visible to another.
+
+**Why not `$reset()`**: Pinia only auto-generates `$reset()` for stores defined with the Options API style (`defineStore('id', { state: () => ({}) })`). All three data stores use the Composition API style (`defineStore('id', () => {})`), so `$reset()` does not exist on them. The manual reset of each ref is equivalent in effect.
+
+**How**: The three store composables are imported at the top of `auth.ts`. Inside `logout()`, after clearing auth state and localStorage, each store is instantiated via its composable and each state ref is set to its initial value. Pinia reactivity ensures that any component currently subscribed to those stores immediately sees the cleared state.
+
+---
+
+### Fix 5 — Handle 403 Forbidden separately from 401 Unauthorized
+
+**File**: `vue-app/src/api/axios.ts`  
+**File**: `vue-app/src/views/DashboardView.vue`
+
+**What**: Added an explicit `403` branch in the Axios response interceptor that pushes to `/dashboard?error=forbidden` via Vue Router, then rejects the promise without attempting a token refresh. Added a conditional error message in `DashboardView.vue` that reads `route.query.error` and displays a human-readable explanation when the value is `'forbidden'`.
+
+**Why**: HTTP 401 (Unauthorized) means the request lacks valid credentials — the token is missing, expired, or invalid. HTTP 403 (Forbidden) means the token is valid but the authenticated user does not have permission to access that specific resource. These are fundamentally different situations. Treating 403 like 401 — attempting a token refresh — is incorrect: a refresh will produce another valid token for the same user, who still lacks the permission. Worse, if the refresh fails, the user gets logged out, which is actively misleading ("you need to log in again" when the real issue is "you are not allowed here").
+
+**How**: The 403 check is placed before the 401 check in the interceptor so it is evaluated first. `router.push({ path: '/dashboard', query: { error: 'forbidden' } })` sends the user to a page they can always reach and passes the error reason as a URL query param (state-free, survives page refresh, avoids flash-of-empty). In `DashboardView.vue`, `useRoute()` is imported and instantiated, and a `<p v-if="route.query.error === 'forbidden'">` element is shown above the task error, styled with the existing `.error` class.
+
+---
+
+### Fix 6 — Security headers in nginx.conf
+
+**File**: `vue-app/nginx.conf`
+
+**What**: Added four HTTP response headers to the nginx `server` block:
+- `X-Frame-Options: DENY`
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://taltech.akaver.com; img-src 'self' data:; frame-ancestors 'none';`
+
+**Why**: The app had no HTTP security headers at all. These headers are enforced by the browser on every page load — they cost nothing at runtime and provide significant protection against common attack classes:
+
+- `X-Frame-Options: DENY` — prevents the page from being embedded in an `<iframe>` on a malicious site, blocking clickjacking attacks where a hidden iframe tricks users into clicking UI elements they cannot see.
+- `X-Content-Type-Options: nosniff` — prevents the browser from guessing (`sniffing`) the MIME type of a response and executing it as a different type. Without this, a maliciously uploaded file served with a permissive MIME type could be executed as JavaScript.
+- `Referrer-Policy: strict-origin-when-cross-origin` — sends the full URL as `Referer` on same-origin navigations (useful for analytics) but sends only the origin (e.g. `https://mvoitk-vue.proxy.itcollege.ee`) on cross-origin requests. This prevents API URLs, query parameters, or path fragments from leaking to third-party servers.
+- `Content-Security-Policy` — the primary XSS mitigation at the HTTP layer. `script-src 'self'` blocks all inline `<script>` tags and any script loaded from an external origin, which closes the most common XSS escalation path. `connect-src 'self' https://taltech.akaver.com` ensures the only external host the app can call is the known backend. `frame-ancestors 'none'` duplicates `X-Frame-Options: DENY` for CSP-aware browsers.
+
+**Why `style-src 'unsafe-inline'`**: Vue 3 single-file components compile `<style>` blocks into inline styles injected at runtime by the framework. There is no way to use a CSP nonce with Vite's CSS injection without a custom server-side nonce setup. `'unsafe-inline'` for styles is a known, accepted trade-off for Vue SPAs — it weakens style-based injection protection but does not affect script execution.
+
+**How**: All four `add_header` directives are placed inside the `server` block, before the `location` blocks, so they apply to all responses including the `index.html` entry point and all static assets. The `always` flag ensures headers are sent even on error responses (4xx, 5xx), which matters for 403/404 pages that could otherwise be framed or sniffed.
+
+---
+
+### Fix 7 — Reduce localStorage exposure (defence-in-depth)
+
+**File**: `vue-app/src/stores/auth.ts` (comment), all `.vue` files (audit)
+
+**What**: Added a code comment in `auth.ts` above `_persist()` documenting the constraint that forces token storage in `localStorage` and referencing the compensating controls. Audited all `.vue` files for `v-html` usage — none found.
+
+**Why**: `localStorage` is readable by any JavaScript running on the same origin. Unlike `httpOnly` cookies — which the browser withholds from JavaScript entirely — a successful XSS attack can call `localStorage.getItem('jwt')` and exfiltrate both tokens. The ideal fix (server-set `httpOnly` cookies) requires backend changes that are out of scope here because this app does not own the API at `taltech.akaver.com`.
+
+The comment serves two purposes: it explains to future maintainers why the security-conscious choice (httpOnly cookie) was not made, so they do not assume it was an oversight; and it points to the compensating controls (CSP headers from Fix 6, absence of `v-html`) that reduce the XSS surface area.
+
+**`v-html` audit result**: Zero uses of `v-html` found across all `.vue` files. Every dynamic binding in the app uses `{{ }}` text interpolation or `v-text`, both of which Vue HTML-escapes automatically. This is the correct posture — it eliminates the most common DOM-based XSS vector in Vue applications.
+
+**What would be needed for httpOnly cookie storage**: If backend access became available, the correct architecture would be: (1) server sets `Set-Cookie: refreshToken=<value>; httpOnly; Secure; SameSite=Strict` — the browser handles the cookie entirely, JavaScript never sees it; (2) the JWT is kept only in a Pinia `ref` (memory, not localStorage) since it is short-lived; (3) on page reload, the app calls the refresh endpoint — the browser automatically sends the httpOnly cookie, returning a new JWT without any localStorage read. This eliminates the `localStorage` attack surface entirely.
+
+---
+
 ## Phase 8 — Docker & Deployment
 
 **What**: `vue-app/Dockerfile` (multi-stage build), `vue-app/nginx.conf` (SPA routing), `vue-app` service added to `docker-compose.production.yml`.

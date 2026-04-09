@@ -43,9 +43,15 @@ async function handleRegister() {
   error.value = null
   try {
     await auth.register({ firstName: firstName.value, lastName: lastName.value, email: email.value, password: password.value })
-    router.push('/todos')
+    router.push('/dashboard')
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Registration failed'
+    const axiosErr = e as { response?: { data?: unknown } }
+    if (axiosErr?.response?.data) {
+      const data = axiosErr.response.data
+      error.value = typeof data === 'string' ? data : JSON.stringify(data)
+    } else {
+      error.value = e instanceof Error ? e.message : 'Registration failed'
+    }
   }
 }
 </script>

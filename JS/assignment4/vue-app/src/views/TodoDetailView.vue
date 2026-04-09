@@ -27,7 +27,11 @@
         </div>
         <div class="field">
           <label>Priority</label>
-          <input v-model="task.todoPriorityId" type="text" placeholder="Priority UUID" />
+          <select v-model="task.todoPriorityId">
+            <option v-for="priority in priorityStore.items" :key="priority.id" :value="priority.id">
+              {{ priority.priorityName }}
+            </option>
+          </select>
         </div>
         <div class="field">
           <label>Sort Order</label>
@@ -54,12 +58,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { todoTasksApi } from '../api/todoTasks'
 import { useTodoTasksStore } from '../stores/todoTasks'
 import { useTodoCategoryStore } from '../stores/todoCategory'
+import { useTodoPriorityStore } from '../stores/todoPriority'
 import type { TodoTask } from '../types'
 
 const route = useRoute()
 const router = useRouter()
 const store = useTodoTasksStore()
 const categoryStore = useTodoCategoryStore()
+const priorityStore = useTodoPriorityStore()
 
 const task = ref<TodoTask | null>(null)
 const error = ref<string | null>(null)
@@ -72,7 +78,7 @@ onMounted(async () => {
   } catch {
     error.value = 'Task not found'
   }
-  categoryStore.fetchAll()
+  await Promise.all([categoryStore.fetchAll(), priorityStore.fetchAll()])
 })
 
 async function handleSave() {

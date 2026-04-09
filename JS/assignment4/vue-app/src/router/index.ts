@@ -16,11 +16,17 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
+
   if (!to.meta.public && !auth.isAuthenticated) {
+    if (localStorage.getItem('refreshToken')) {
+      const ok = await auth.refreshTokens()
+      if (ok) return
+    }
     return '/login'
   }
+
   if (to.meta.public && auth.isAuthenticated) {
     return '/dashboard'
   }

@@ -1,0 +1,61 @@
+@model App.Domain.Todo.TodoTask
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>TodoTask</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="TaskName" class="control-label"></label>
+                <input asp-for="TaskName" class="form-control" />
+                <span asp-validation-for="TaskName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TaskSort" class="control-label"></label>
+                <input asp-for="TaskSort" class="form-control" />
+                <span asp-validation-for="TaskSort" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DueDt" class="control-label"></label>
+                <input asp-for="DueDt" class="form-control" />
+                <span asp-validation-for="DueDt" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsCompleted" /> @Html.DisplayNameFor(model => model.IsCompleted)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsArchived" /> @Html.DisplayNameFor(model => model.IsArchived)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoCategoryId" class="control-label"></label>
+                <select asp-for="TodoCategoryId" class ="form-control" asp-items="ViewBag.TodoCategoryId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="TodoPriorityId" class="control-label"></label>
+                <select asp-for="TodoPriorityId" class ="form-control" asp-items="ViewBag.TodoPriorityId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

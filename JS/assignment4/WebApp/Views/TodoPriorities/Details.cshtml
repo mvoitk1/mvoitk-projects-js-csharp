@@ -1,0 +1,36 @@
+@model App.Domain.Todo.TodoPriority
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>TodoPriority</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PriorityName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PriorityName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PrioritySort)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PrioritySort)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.SyncDt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.SyncDt)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model!.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

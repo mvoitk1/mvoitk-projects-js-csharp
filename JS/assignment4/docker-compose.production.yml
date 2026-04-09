@@ -1,0 +1,15 @@
+services:
+  webapp-taltech:
+    build: .
+    container_name: webapp-taltech
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Database=com-akaver-taltech;Username=postgres;Password=postgres"
+    networks:
+      - infra
+
+networks:
+  infra:
+    name: infra
+    external: true

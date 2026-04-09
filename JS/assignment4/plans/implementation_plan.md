@@ -1,8 +1,10 @@
 # Vue 3 ToDo App — Implementation Plan
 
-**API base**: https://taltech.akaver.com/  
+**API base**: https://taltech.akaver.com/ (this is the backend deployed from this same repo — the ASP.NET Core WebApp project)  
 **Swagger**: https://taltech.akaver.com/swagger/index.html  
 **Stack**: Vue 3, Vite, Pinia, Vue Router, Axios, TypeScript
+
+> **Note**: The Vue app lives in `vue-app/` at the repo root. It targets the backend in this same repo deployed at taltech.akaver.com. The correct API versioning prefix is `/api/v1.0/` (not `/api/v1/`). ToDo entities are called **TodoTasks** (`/api/v1.0/TodoTasks`), not TodoItems.
 
 ---
 
@@ -31,11 +33,11 @@
   - Request interceptor to attach JWT `Bearer` token from store
   - Response interceptor to handle 401 → trigger silent token refresh, then retry
 - [ ] Create `src/api/auth.ts` — typed wrappers for:
-  - `POST /api/v1/identity/account/register`
-  - `POST /api/v1/identity/account/login`
-  - `POST /api/v1/identity/account/refreshtoken`
-- [ ] Create `src/api/todo.ts` — typed wrappers for ToDo CRUD endpoints
-- [ ] Create `src/api/todoCategory.ts` — typed wrappers for TodoCategory endpoints
+  - `POST /api/v1.0/Account/Register`
+  - `POST /api/v1.0/Account/Login`
+  - `POST /api/v1.0/Account/RefreshToken`
+- [ ] Create `src/api/todoTasks.ts` — typed wrappers for TodoTasks CRUD endpoints (`/api/v1.0/TodoTasks`)
+- [ ] Create `src/api/todoCategory.ts` — typed wrappers for TodoCategory endpoints (`/api/v1.0/TodoCategories`)
 - [ ] Define `src/types/` interfaces from Swagger schema (JWTResponse, TodoItem, TodoCategory, etc.)
 
 ---
@@ -67,8 +69,8 @@
 
 ## Phase 5 — Todo Store (Pinia)
 
-- [ ] `src/stores/todo.ts`:
-  - State: `items: TodoItem[]`, `loading`, `error`
+- [ ] `src/stores/todoTasks.ts`:
+  - State: `items: TodoTask[]`, `loading`, `error`
   - Actions: `fetchAll()`, `create()`, `update()`, `remove()`
 - [ ] `src/stores/todoCategory.ts`:
   - Same pattern for categories
@@ -112,7 +114,7 @@ Silent refresh strategy:
 
 ---
 
-## Phase 9 — Polish
+## Phase 9 — Polish ⚠️ DEFERRED — do not implement unless explicitly requested
 
 - [ ] Loading spinners on async operations
 - [ ] Error messages shown to user on API failures
@@ -125,15 +127,15 @@ Silent refresh strategy:
 
 | Action | Method | Path |
 |---|---|---|
-| Register | POST | `/api/v1/identity/account/register` |
-| Login | POST | `/api/v1/identity/account/login` |
-| Refresh token | POST | `/api/v1/identity/account/refreshtoken` |
-| Get todos | GET | `/api/v1/TodoItems` |
-| Create todo | POST | `/api/v1/TodoItems` |
-| Update todo | PUT | `/api/v1/TodoItems/{id}` |
-| Delete todo | DELETE | `/api/v1/TodoItems/{id}` |
-| Get categories | GET | `/api/v1/TodoCategories` |
-| Create category | POST | `/api/v1/TodoCategories` |
+| Register | POST | `/api/v1.0/Account/Register` |
+| Login | POST | `/api/v1.0/Account/Login` |
+| Refresh token | POST | `/api/v1.0/Account/RefreshToken` |
+| Get todo tasks | GET | `/api/v1.0/TodoTasks` |
+| Create todo task | POST | `/api/v1.0/TodoTasks` |
+| Update todo task | PUT | `/api/v1.0/TodoTasks/{id}` |
+| Delete todo task | DELETE | `/api/v1.0/TodoTasks/{id}` |
+| Get categories | GET | `/api/v1.0/TodoCategories` |
+| Create category | POST | `/api/v1.0/TodoCategories` |
 
 ---
 

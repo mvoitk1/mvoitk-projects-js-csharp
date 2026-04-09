@@ -17,6 +17,15 @@ API Swagger: https://taltech.akaver.com/swagger/index.html
 - **Backend**: ASP.NET Core Web API at https://taltech.akaver.com/ (external, not owned)
 - **Frontend**: Vue 3 SPA — JWT auth, Pinia state, Vue Router, Axios
 
+## Documentation Rule
+
+Every time something is implemented, it **must** be documented in `documentation.md` with:
+- **What**: what was built
+- **Why**: why this approach was chosen
+- **How**: how it works
+
+This applies to every phase, file, or non-trivial decision made during implementation.
+
 ## Goals
 
 - Implement JWT + refresh token auth flow (login, register, silent refresh)

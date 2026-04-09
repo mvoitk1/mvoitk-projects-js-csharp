@@ -74,6 +74,166 @@ Every implemented feature or module must be documented here. Each entry must ans
 
 ---
 
+## Security Audit
+
+This section documents the current security posture of the application — what is correctly implemented, what is missing or weak, and exactly how each gap should be remedied.
+
+---
+
+### What is currently implemented
+
+#### JWT attachment on every request
+`src/api/axios.ts` has a request interceptor that reads `jwt` from `localStorage` and sets `Authorization: Bearer <token>` on every outgoing Axios request. This means no protected API call can accidentally go out without credentials.
+
+#### Silent refresh on 401 with request queuing
+The response interceptor in `src/api/axios.ts` catches HTTP 401 responses and attempts a token refresh before giving up. It uses an `isRefreshing` flag and a `failedQueue` array to ensure that if multiple requests fail simultaneously, only one refresh call is made and all waiting requests are retried with the new token once it arrives. This correctly handles the race condition where two concurrent requests both receive a 401.
+
+#### Route guards
+`src/router/index.ts` has a `beforeEach` guard. Routes without `meta: { public: true }` redirect unauthenticated users to `/login`. Authenticated users visiting `/login` or `/register` are redirected to `/dashboard`, preventing redundant auth pages.
+
+#### Pinia auth store with localStorage persistence
+`src/stores/auth.ts` initialises reactive state from `localStorage` on store creation, so auth survives a page refresh without a server round-trip. The `_persist()` helper writes to both reactive refs and storage atomically, keeping them in sync.
+
+#### Logout clears tokens
+`logout()` removes `jwt`, `refreshToken`, `firstName`, and `lastName` from both reactive state and `localStorage`.
+
+---
+
+### What is missing or weak
+
+#### 1. Tokens stored in localStorage — XSS-vulnerable
+
+**Problem**: Any injected script (via a dependency, a DOM-based XSS, or a browser extension) can call `localStorage.getItem('jwt')` and steal the token, then make authenticated API calls from anywhere.
+
+**Why this matters**: `localStorage` has no `httpOnly` flag — unlike cookies, the browser does not restrict JavaScript's access to it. The industry-standard fix is `httpOnly` cookies set by the server, because the browser never exposes those to JavaScript at all.
+
+**Fix**: Since this application does not own the backend and the API sets tokens in a JSON response body (not a `Set-Cookie` header), switching to `httpOnly` cookies is not possible without backend changes. The pragmatic mitigations for this constraint are:
+- Use a `sessionStorage` fallback option so tokens do not persist beyond the browser tab (reduces the window of exposure).
+- Implement a strict Content Security Policy (CSP) header in `nginx.conf` to block inline scripts and restrict script sources, which makes XSS injection significantly harder.
+- Keep the JWT lifetime short (the backend already does this — do not increase it client-side or cache it beyond expiry).
+- Avoid calling `eval()`, `innerHTML`, `v-html`, or any raw DOM interpolation anywhere in the Vue app.
+
+#### 2. No proactive token expiry check — always waits for a 401
+
+**Problem**: The current flow is: make request → get 401 → attempt refresh → retry. This means every request made with an expired JWT costs two round-trips instead of one, and brief error states can flash in the UI.
+
+**Fix**: Decode the JWT payload (it is base64-encoded, not encrypted) and check the `exp` claim before every request. If the token expires within 30 seconds, refresh it first, then make the original request. Add this to the request interceptor in `src/api/axios.ts`:
+
+```ts
+function isTokenExpiredSoon(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    // true if token expires in less than 30 seconds
+    return Date.now() / 1000 > payload.exp - 30
+  } catch {
+    return true
+  }
+}
+```
+
+Then in the request interceptor, before attaching the token, check `isTokenExpiredSoon(token)` and call the refresh endpoint directly if needed.
+
+#### 3. No proactive background refresh timer
+
+**Problem**: If the user is idle (no API calls) for long enough that the JWT expires and the refresh token is also about to expire, the next action they take will fail and redirect them to `/login`, losing unsaved state.
+
+**Fix**: After every successful token acquisition (login, register, or refresh), schedule a `setTimeout` that fires ~60 seconds before the JWT's `exp` claim and silently calls `refreshTokens()`. Add this inside `_persist()` in `src/stores/auth.ts`:
+
+```ts
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleRefresh(token: string) {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const msUntilRefresh = (payload.exp - 60) * 1000 - Date.now()
+    if (msUntilRefresh > 0) {
+      refreshTimer = setTimeout(() => refreshTokens(), msUntilRefresh)
+    }
+  } catch { /* malformed token — do nothing */ }
+}
+```
+
+Call `scheduleRefresh(token)` inside `_persist()` and `clearTimeout(refreshTimer)` inside `logout()`.
+
+#### 4. Route guard redirects to /login without attempting a silent refresh
+
+**Problem**: On a hard page reload, the router guard runs synchronously and checks `auth.isAuthenticated`. If the JWT has expired (but the refresh token is still valid), `isAuthenticated` is `false` and the user is immediately redirected to `/login`, even though a silent refresh would have kept them logged in.
+
+**Fix**: Make the `beforeEach` guard async. If the user is navigating to a protected route and is not currently authenticated, but a refresh token exists in `localStorage`, attempt a silent refresh before deciding to redirect. Only redirect to `/login` if the refresh fails:
+
+```ts
+router.beforeEach(async (to) => {
+  const auth = useAuthStore()
+  if (!to.meta.public && !auth.isAuthenticated) {
+    if (localStorage.getItem('refreshToken')) {
+      const ok = await auth.refreshTokens()
+      if (ok) return // allow navigation — now authenticated
+    }
+    return '/login'
+  }
+  if (to.meta.public && auth.isAuthenticated) {
+    return '/dashboard'
+  }
+})
+```
+
+#### 5. Logout does not reset other Pinia stores
+
+**Problem**: After logout, `useTodoTasksStore`, `useTodoCategoryStore`, and `useTodoPriorityStore` still hold the previous user's data in memory. If a different user logs in during the same browser session, they briefly see stale data from the previous user's session before their own fetch completes.
+
+**Fix**: Call `$reset()` on each store inside `logout()` in `src/stores/auth.ts`. For stores defined with the Composition API style (which do not get `$reset()` automatically), manually reset each reactive ref to its initial value, or switch those stores to the Options API style so Pinia generates `$reset()` automatically.
+
+#### 6. No 403 handling — Forbidden and Unauthorised are treated the same
+
+**Problem**: The Axios interceptor treats all non-401 errors the same. A 403 Forbidden (authenticated but not allowed to access a resource) currently bubbles up as an unhandled rejection, leaving the UI in an indeterminate state.
+
+**Fix**: Add an explicit 403 branch in the response interceptor that does not attempt a refresh (the token is valid — the user simply lacks permission) and instead navigates to a `/forbidden` route or displays an inline error notification. The user must not be logged out on a 403.
+
+```ts
+if (error.response?.status === 403) {
+  router.push({ path: '/dashboard', query: { error: 'forbidden' } })
+  return Promise.reject(error)
+}
+```
+
+#### 7. No Content Security Policy
+
+**Problem**: `nginx.conf` does not set a `Content-Security-Policy` header. Without a CSP, the browser will execute any script found on the page, making XSS attacks more effective.
+
+**Fix**: Add a restrictive CSP header to `nginx.conf`:
+
+```nginx
+add_header Content-Security-Policy
+  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://taltech.akaver.com; img-src 'self' data:; frame-ancestors 'none';"
+  always;
+```
+
+Also add:
+```nginx
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options "DENY" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+```
+
+`frame-ancestors 'none'` and `X-Frame-Options: DENY` prevent clickjacking. `X-Content-Type-Options: nosniff` prevents MIME-type sniffing attacks. These headers are free to add and have no downside for an SPA.
+
+---
+
+### Summary table
+
+| Issue | Severity | Fix location |
+|---|---|---|
+| Tokens in `localStorage` (XSS risk) | High | `nginx.conf` (CSP) + avoid `v-html` |
+| No proactive expiry check before requests | Medium | `src/api/axios.ts` request interceptor |
+| No background refresh timer | Medium | `src/stores/auth.ts` `_persist()` |
+| Route guard does not attempt refresh on reload | Medium | `src/router/index.ts` `beforeEach` |
+| Logout does not reset data stores | Low | `src/stores/auth.ts` `logout()` |
+| No 403 handling | Low | `src/api/axios.ts` response interceptor |
+| No security headers (CSP, X-Frame-Options) | Medium | `vue-app/nginx.conf` |
+
+---
+
 ## Phase 8 — Docker & Deployment
 
 **What**: `vue-app/Dockerfile` (multi-stage build), `vue-app/nginx.conf` (SPA routing), `vue-app` service added to `docker-compose.production.yml`.

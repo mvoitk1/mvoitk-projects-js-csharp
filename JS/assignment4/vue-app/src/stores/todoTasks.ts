@@ -28,7 +28,13 @@ export const useTodoTasksStore = defineStore('todoTasks', () => {
       const { data } = await todoTasksApi.create(task)
       items.value.push(data)
     } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Failed to create task'
+      const axiosErr = e as { response?: { data?: unknown } }
+      if (axiosErr?.response?.data) {
+        const d = axiosErr.response.data
+        error.value = typeof d === 'string' ? d : JSON.stringify(d)
+      } else {
+        error.value = e instanceof Error ? e.message : 'Failed to create task'
+      }
       throw e
     } finally {
       loading.value = false

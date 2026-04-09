@@ -9,6 +9,18 @@ services:
     networks:
       - infra
 
+  vue-app:
+    build:
+      context: ./vue-app
+      args:
+        VITE_API_BASE_URL: https://taltech.akaver.com
+    container_name: vue-app-taltech
+    restart: unless-stopped
+    ports:
+      - "77:80"
+    networks:
+      - infra
+
 networks:
   infra:
     name: infra

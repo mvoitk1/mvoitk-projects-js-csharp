@@ -10,7 +10,7 @@
 
     <ul class="todo-list">
       <li v-for="cat in store.items" :key="cat.id">
-        <span>{{ cat.todoCategoryName }}</span>
+        <span>{{ cat.categoryName }}</span>
         <button class="delete-btn" @click="store.remove(cat.id)">✕</button>
       </li>
     </ul>
@@ -30,7 +30,7 @@ onMounted(() => store.fetchAll())
 
 async function handleCreate() {
   if (!newName.value.trim()) return
-  await store.create({ todoCategoryName: newName.value.trim(), todoCategorySort: 0 })
+  await store.create({ categoryName: newName.value.trim(), categorySort: 0 })
   newName.value = ''
 }
 </script>

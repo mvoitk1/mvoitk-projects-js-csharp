@@ -24,33 +24,35 @@ export interface RefreshTokenRequest {
 
 export interface TodoTask {
   id: string
-  todoTaskName: string
+  taskName: string
   dueDt?: string
   isCompleted: boolean
   isArchived: boolean
-  todoTaskPriority: number
-  todoTaskSort: number
+  todoPriorityId?: string
+  taskSort: number
   todoCategoryId?: string
   todoCategory?: TodoCategory
 }
 
 export interface TodoTaskCreate {
-  todoTaskName: string
+  taskName: string
   dueDt?: string
   isCompleted: boolean
   isArchived: boolean
-  todoTaskPriority: number
-  todoTaskSort: number
+  taskSort: number
   todoCategoryId?: string
+  todoPriorityId?: string
 }
 
 export interface TodoCategory {
   id: string
-  todoCategoryName: string
-  todoCategorySort: number
+  categoryName: string
+  categorySort: number
+  tag?: string
 }
 
 export interface TodoCategoryCreate {
-  todoCategoryName: string
-  todoCategorySort: number
+  categoryName: string
+  categorySort: number
+  tag?: string
 }

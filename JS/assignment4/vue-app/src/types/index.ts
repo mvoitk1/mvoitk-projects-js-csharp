@@ -25,6 +25,7 @@ export interface RefreshTokenRequest {
 export interface TodoTask {
   id: string
   taskName: string
+  createdDt?: string
   dueDt?: string
   isCompleted: boolean
   isArchived: boolean
@@ -55,4 +56,16 @@ export interface TodoCategoryCreate {
   categoryName: string
   categorySort: number
   tag?: string
+}
+
+export interface TodoPriority {
+  id: string
+  priorityName: string
+  prioritySort: number
+  syncDt?: string
+}
+
+export interface TodoPriorityCreate {
+  priorityName: string
+  prioritySort: number
 }

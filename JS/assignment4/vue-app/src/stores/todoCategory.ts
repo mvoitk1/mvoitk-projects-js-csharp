@@ -27,6 +27,7 @@ export const useTodoCategoryStore = defineStore('todoCategory', () => {
     try {
       const { data } = await todoCategoryApi.create(category)
       items.value.push(data)
+      return data
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Failed to create category'
       throw e

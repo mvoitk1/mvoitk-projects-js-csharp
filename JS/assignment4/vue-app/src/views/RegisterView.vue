@@ -43,7 +43,7 @@ async function handleRegister() {
   error.value = null
   try {
     await auth.register({ firstName: firstName.value, lastName: lastName.value, email: email.value, password: password.value })
-    router.push('/todos')
+    router.push('/dashboard')
   } catch (e: unknown) {
     const axiosErr = e as { response?: { data?: unknown } }
     if (axiosErr?.response?.data) {

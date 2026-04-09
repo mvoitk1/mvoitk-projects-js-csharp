@@ -33,7 +33,7 @@ async function handleLogin() {
   error.value = null
   try {
     await auth.login({ email: email.value, password: password.value })
-    router.push('/todos')
+    router.push('/dashboard')
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : 'Login failed'
   }

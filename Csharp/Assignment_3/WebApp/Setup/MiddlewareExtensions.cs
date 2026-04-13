@@ -29,7 +29,6 @@ public static class MiddlewareExtensions
             app.UseHsts();
         }
 
-        app.UseHttpsRedirection();
         app.UseRouting();
 
         app.UseAuthorization();

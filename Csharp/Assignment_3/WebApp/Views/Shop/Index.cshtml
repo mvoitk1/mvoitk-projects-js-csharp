@@ -6,19 +6,17 @@
 <div class="row">
     <!-- Sidebar -->
     <div class="col-md-3">
-        <h5>Filter</h5>
-
-        <div class="mb-3">
+        <div class="filter-sidebar">
             <h6>Category</h6>
             <a asp-controller="Shop" asp-action="Index"
-               class="d-block text-decoration-none @(Model.SelectedCategoryId == null ? "fw-bold" : "")">All</a>
+               class="@(Model.SelectedCategoryId == null ? "active-filter" : "")">All</a>
             @foreach (var cat in Model.Categories)
             {
                 <a asp-controller="Shop" asp-action="Index"
                    asp-route-categoryId="@cat.Id"
                    asp-route-collectionId="@Model.SelectedCollectionId"
                    asp-route-gender="@Model.SelectedGender"
-                   class="d-block text-decoration-none @(Model.SelectedCategoryId == cat.Id ? "fw-bold" : "")">
+                   class="@(Model.SelectedCategoryId == cat.Id ? "active-filter" : "")">
                     @cat.Name
                 </a>
                 @foreach (var sub in cat.SubCategories)
@@ -27,32 +25,28 @@
                        asp-route-categoryId="@sub.Id"
                        asp-route-collectionId="@Model.SelectedCollectionId"
                        asp-route-gender="@Model.SelectedGender"
-                       class="d-block text-decoration-none ps-3 small @(Model.SelectedCategoryId == sub.Id ? "fw-bold" : "")">
+                       class="ps-3 @(Model.SelectedCategoryId == sub.Id ? "active-filter" : "")">
                         @sub.Name
                     </a>
                 }
             }
-        </div>
 
-        <div class="mb-3">
             <h6>Collection</h6>
             <a asp-controller="Shop" asp-action="Index"
                asp-route-categoryId="@Model.SelectedCategoryId"
                asp-route-gender="@Model.SelectedGender"
-               class="d-block text-decoration-none @(Model.SelectedCollectionId == null ? "fw-bold" : "")">All</a>
+               class="@(Model.SelectedCollectionId == null ? "active-filter" : "")">All</a>
             @foreach (var col in Model.Collections)
             {
                 <a asp-controller="Shop" asp-action="Index"
                    asp-route-collectionId="@col.Id"
                    asp-route-categoryId="@Model.SelectedCategoryId"
                    asp-route-gender="@Model.SelectedGender"
-                   class="d-block text-decoration-none @(Model.SelectedCollectionId == col.Id ? "fw-bold" : "")">
+                   class="@(Model.SelectedCollectionId == col.Id ? "active-filter" : "")">
                     @col.Name
                 </a>
             }
-        </div>
 
-        <div class="mb-3">
             <h6>Gender</h6>
             @foreach (var g in new[] { ("", "All"), ("Men", "Men"), ("Women", "Women"), ("Unisex", "Unisex") })
             {
@@ -60,7 +54,7 @@
                    asp-route-gender="@g.Item1"
                    asp-route-categoryId="@Model.SelectedCategoryId"
                    asp-route-collectionId="@Model.SelectedCollectionId"
-                   class="d-block text-decoration-none @(Model.SelectedGender == g.Item1 ? "fw-bold" : "")">
+                   class="@(Model.SelectedGender == g.Item1 ? "active-filter" : "")">
                     @g.Item2
                 </a>
             }
@@ -69,7 +63,7 @@
 
     <!-- Product grid -->
     <div class="col-md-9">
-        <h4>@Model.Products.Count() Products</h4>
+        <p class="text-muted small mb-3">@Model.Products.Count() products</p>
         @if (!Model.Products.Any())
         {
             <p class="text-muted">No products found.</p>

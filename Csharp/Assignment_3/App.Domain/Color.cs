@@ -9,5 +9,5 @@ public class Color : BaseEntity
 
     public string HexCode { get; set; } = string.Empty;
 
-    public ICollection<ProductVariant>? ProductVariants { get; set; }
+    public ICollection<ProductVariant> ProductVariants { get; set; } = null!;
 }

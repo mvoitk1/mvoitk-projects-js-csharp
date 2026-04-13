@@ -23,5 +23,5 @@ public class Order : BaseEntity
     public Guid AppUserId { get; set; }
     public AppUser? AppUser { get; set; }
 
-    public ICollection<OrderItem>? Items { get; set; }
+    public ICollection<OrderItem> Items { get; set; } = null!;
 }

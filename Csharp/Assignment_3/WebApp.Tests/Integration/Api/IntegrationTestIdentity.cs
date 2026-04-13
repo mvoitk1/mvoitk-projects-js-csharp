@@ -33,6 +33,8 @@ public class IntegrationTestIdentity : IClassFixture<CustomWebApplicationFactory
         // Arrange
         var data = new Register()
         {
+            FirstName = "Test",
+            LastName = "User",
             Password = dataPassword,
             Email = dataEmail,
         };
@@ -60,6 +62,8 @@ public class IntegrationTestIdentity : IClassFixture<CustomWebApplicationFactory
         // Arrange
         var data = new Register()
         {
+            FirstName = "Login",
+            LastName = "User",
             Password = dataPassword,
             Email = dataEmail,
         };

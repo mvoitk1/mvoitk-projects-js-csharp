@@ -21,7 +21,7 @@ public class Product : BaseEntity
     public Guid? CollectionId { get; set; }
     public Collection? Collection { get; set; }
 
-    public ICollection<ProductVariant>? Variants { get; set; }
-    public ICollection<ProductImage>? Images { get; set; }
-    public ICollection<ProductCategory>? ProductCategories { get; set; }
+    public ICollection<ProductVariant> Variants { get; set; } = null!;
+    public ICollection<ProductImage> Images { get; set; } = null!;
+    public ICollection<ProductCategory> ProductCategories { get; set; } = null!;
 }

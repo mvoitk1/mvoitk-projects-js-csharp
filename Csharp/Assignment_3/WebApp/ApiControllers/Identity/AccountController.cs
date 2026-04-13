@@ -178,7 +178,8 @@ public class AccountController : ControllerBase
         {
             Email = registerModel.Email,
             UserName = registerModel.Email,
-
+            FirstName = registerModel.FirstName,
+            LastName = registerModel.LastName,
             RefreshTokens = new List<AppRefreshToken>()
             {
                 refreshToken

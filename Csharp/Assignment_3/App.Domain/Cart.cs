@@ -12,5 +12,5 @@ public class Cart : BaseEntity
     public Guid AppUserId { get; set; }
     public AppUser? AppUser { get; set; }
 
-    public ICollection<CartItem>? Items { get; set; }
+    public ICollection<CartItem> Items { get; set; } = null!;
 }

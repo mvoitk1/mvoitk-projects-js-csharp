@@ -32,6 +32,17 @@ deploy_csharp_a1:
     - printf "APP_PORT=%s\nASPNETCORE_ENVIRONMENT=%s\nPOSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\n" "${CSHARP_A1_APP_PORT:-81}" "${CSHARP_A1_ASPNETCORE_ENVIRONMENT:-Production}" "${CSHARP_A1_POSTGRES_DB:-csharp_madis}" "${CSHARP_A1_POSTGRES_USER:-madis}" "${CSHARP_A1_POSTGRES_PASSWORD}" > .env
     - docker compose -p csharp_a1 up --build --remove-orphans --detach
 
+deploy_csharp_a3:
+  stage: deploy
+  only:
+    - main
+  tags:
+    - shared
+  script:
+    - cd "Csharp/Assignment_3"
+    - printf "APP_PORT=%s\nASPNETCORE_ENVIRONMENT=%s\nPOSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\nJWT_KEY=%s\nJWT_ISSUER=%s\nJWT_AUDIENCE=%s\n" "${CSHARP_A3_APP_PORT:-82}" "${CSHARP_A3_ASPNETCORE_ENVIRONMENT:-Production}" "${CSHARP_A3_POSTGRES_DB:-csharp_a3}" "${CSHARP_A3_POSTGRES_USER:-csharp_a3}" "${CSHARP_A3_POSTGRES_PASSWORD}" "${CSHARP_A3_JWT_KEY}" "${CSHARP_A3_JWT_ISSUER:-https://shop.local}" "${CSHARP_A3_JWT_AUDIENCE:-https://shop.local}" > .env
+    - docker compose -p csharp_a3 up --build --remove-orphans --detach
+
 deploy_javascript_a4:
   stage: deploy
   only:

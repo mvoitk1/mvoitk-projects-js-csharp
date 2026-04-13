@@ -10,6 +10,6 @@ public class Category : BaseEntity
     public Guid? ParentCategoryId { get; set; }
     public Category? ParentCategory { get; set; }
 
-    public ICollection<Category>? SubCategories { get; set; }
-    public ICollection<ProductCategory>? ProductCategories { get; set; }
+    public ICollection<Category> SubCategories { get; set; } = null!;
+    public ICollection<ProductCategory> ProductCategories { get; set; } = null!;
 }

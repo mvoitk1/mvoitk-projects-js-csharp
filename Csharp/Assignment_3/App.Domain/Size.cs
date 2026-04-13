@@ -9,5 +9,5 @@ public class Size : BaseEntity
     [Column(TypeName = "jsonb")]
     public LangStr DisplayName { get; set; } = new LangStr();
 
-    public ICollection<ProductVariant>? ProductVariants { get; set; }
+    public ICollection<ProductVariant> ProductVariants { get; set; } = null!;
 }

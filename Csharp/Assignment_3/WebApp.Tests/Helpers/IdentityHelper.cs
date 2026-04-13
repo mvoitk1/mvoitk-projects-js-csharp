@@ -13,6 +13,8 @@ public static class IdentityHelper
     {
         var data = new Register()
         {
+            FirstName = firstName,
+            LastName = lastName,
             Password = password,
             Email = email,
         };

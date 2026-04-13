@@ -7,13 +7,11 @@ public static class InitialData
         [
             ("admin", null),
             ("user", null),
-            ("root", null),
         ];
 
     public static readonly (string name, string password, Guid? id, string[] roles)[]
         Users =
         [
-            ("akaver@akaver.com", "Kala.Maja.101", null, ["admin", "root", "user"]),
-            ("andres.kaver@taltech.ee", "Kala.Maja.101", null, ["admin", "root", "user"]),
+            ("admin@example.com", "Admin.Password.1", null, ["admin", "user"]),
         ];
 }

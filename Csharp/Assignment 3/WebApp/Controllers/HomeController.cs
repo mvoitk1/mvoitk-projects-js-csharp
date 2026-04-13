@@ -14,7 +14,6 @@ public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly AppDbContext _context;
-    private static int _counter = 0;
 
     public HomeController(AppDbContext context, ILogger<HomeController> logger)
     {
@@ -26,13 +25,6 @@ public class HomeController : Controller
     {
         return View();
     }
-
-    public async Task<string> HtmxClicked()
-    {
-        _counter++;
-        return "Htmx Click Me - " + _counter;
-    }
-
 
     public IActionResult Privacy()
     {

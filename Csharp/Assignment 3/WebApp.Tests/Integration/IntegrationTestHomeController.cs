@@ -11,7 +11,6 @@ public class IntegrationTestHomeController : IClassFixture<CustomWebApplicationF
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory<Program> _factory;
 
-
     public IntegrationTestHomeController(CustomWebApplicationFactory<Program> factory)
     {
         _factory = factory;
@@ -21,17 +20,10 @@ public class IntegrationTestHomeController : IClassFixture<CustomWebApplicationF
         });
     }
 
-
     [Fact]
     public async Task Get_Index_IsSuccessful()
     {
-        // Arrange
-            
-        // Act
         var response = await _client.GetAsync("/");
-        
-        // Assert
         response.EnsureSuccessStatusCode();
     }
-
 }

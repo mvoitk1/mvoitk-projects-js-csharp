@@ -1,4 +1,4 @@
-﻿@using System.Threading
+@using System.Threading
 @using WebApp.Helpers
 @inject AppNameService AppNameService;
 <!DOCTYPE html>
@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - Robot</title>
+    <title>@ViewData["Title"] - @AppNameService.AppName</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
@@ -14,45 +14,70 @@
     @await RenderSectionAsync("HeaderScripts", required: false)
 </head>
 <body>
-<header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+<header class="site-header sticky-top">
+    <div class="top-bar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="top-bar-message d-none d-md-inline">Free shipping on orders over €100 · 30-day returns</span>
+            <ul class="navbar-nav flex-row gap-3 ms-auto align-items-center top-bar-links">
+                <partial name="_LanguageSelection"/>
+                <partial name="_LoginPartial"/>
+            </ul>
+        </div>
+    </div>
+    <nav class="navbar navbar-expand-lg bg-white main-nav">
         <div class="container">
             <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">@AppNameService.AppName</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mx-auto main-links">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="shopDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">Shop</a>
+                        <ul class="dropdown-menu" aria-labelledby="shopDropdown">
+                            <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index">All products</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index" asp-route-gender="Women">Women</a></li>
+                            <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index" asp-route-gender="Men">Men</a></li>
+                            <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index" asp-route-gender="Unisex">Unisex</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Shop" asp-action="Index">Shop</a>
+                        <a class="nav-link" asp-controller="Shop" asp-action="Index" asp-route-gender="Women">Women</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Shop" asp-action="Index" asp-route-gender="Men">Men</a>
                     </li>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Orders" asp-action="Index">My Orders</a>
+                            <a class="nav-link" asp-controller="Orders" asp-action="Index">My Orders</a>
                         </li>
                     }
                     @if (User.IsInRole("Admin"))
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
+                            <a class="nav-link text-danger fw-semibold" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
                         </li>
                     }
                 </ul>
-                <ul class="navbar-nav align-items-center gap-1">
-                    <partial name="_LanguageSelection"/>
+                <ul class="navbar-nav align-items-center nav-actions">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Cart" asp-action="Index">Cart</a>
+                            <a class="nav-link icon-link" asp-controller="Cart" asp-action="Index" title="Cart">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                </svg>
+                                <span class="d-lg-none ms-2">Cart</span>
+                            </a>
                         </li>
                     }
-                    <partial name="_LoginPartial"/>
                 </ul>
             </div>
         </div>
@@ -64,11 +89,34 @@
     </main>
 </div>
 
-<footer class="border-top footer text-muted">
-    <div class="container">
-        @AppNameService.AppName - <a asp-area="" asp-controller="Home" asp-action="Privacy">@App.Resources.Views.Shared._Layout.Privacy</a> | 
-        <a href="/swagger">Api</a> | 
-        @Thread.CurrentThread.CurrentCulture.Name
+<footer class="site-footer border-top mt-5">
+    <div class="container py-4">
+        <div class="row gy-3">
+            <div class="col-md-4">
+                <h6 class="fw-bold mb-2">@AppNameService.AppName</h6>
+                <p class="small text-muted mb-0">Modern wardrobe essentials, crafted with care.</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-uppercase small fw-bold mb-2">Shop</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li><a class="footer-link" asp-controller="Shop" asp-action="Index">All products</a></li>
+                    <li><a class="footer-link" asp-controller="Shop" asp-action="Index" asp-route-gender="Women">Women</a></li>
+                    <li><a class="footer-link" asp-controller="Shop" asp-action="Index" asp-route-gender="Men">Men</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-uppercase small fw-bold mb-2">More</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li><a class="footer-link" asp-area="" asp-controller="Home" asp-action="Privacy">@App.Resources.Views.Shared._Layout.Privacy</a></li>
+                    <li><a class="footer-link" href="/swagger">API documentation</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr class="my-3"/>
+        <div class="d-flex justify-content-between small text-muted">
+            <span>© @DateTime.Now.Year @AppNameService.AppName</span>
+            <span>@Thread.CurrentThread.CurrentCulture.Name</span>
+        </div>
     </div>
 </footer>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>

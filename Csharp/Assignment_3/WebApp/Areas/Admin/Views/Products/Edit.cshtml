@@ -1,0 +1,143 @@
+@using App.DTO.v1.Admin
+@model App.DTO.v1.Admin.AdminProductWriteDto
+@{
+    ViewData["Title"] = "Edit Product";
+    var product = ViewData["Product"] as AdminProductDto;
+}
+
+<h2>Edit Product</h2>
+<a asp-action="Index" class="text-decoration-none text-muted mb-3 d-block">← Back to Products</a>
+
+<form asp-action="Edit" asp-route-id="@product?.Id" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <partial name="_ProductForm" model="Model"/>
+    <button type="submit" class="btn btn-dark mt-3">Save Changes</button>
+</form>
+
+@if (product != null)
+{
+    <!-- Variants -->
+    <hr class="my-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Variants</h4>
+    </div>
+
+    @if (product.Variants.Any())
+    {
+        <table class="table align-middle mb-4">
+            <thead>
+                <tr><th>SKU</th><th>Color</th><th>Size</th><th>Price</th><th>Stock</th><th>Active</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var v in product.Variants)
+                {
+                    <tr>
+                        <td>@v.Sku</td>
+                        <td>@v.ColorName</td>
+                        <td>@v.SizeCode</td>
+                        <td>@v.Price.ToString("C")</td>
+                        <td>@v.StockQty</td>
+                        <td>@(v.IsActive ? "✓" : "—")</td>
+                        <td>
+                            <form asp-action="DeleteVariant" method="post"
+                                  onsubmit="return confirm('Delete variant @v.Sku?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@product.Id">
+                                <input type="hidden" name="variantId" value="@v.Id">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h6>Add Variant</h6>
+    <form asp-action="AddVariant" method="post" class="row g-2 align-items-end">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="productId" value="@product.Id">
+        <div class="col-md-2">
+            <label class="form-label small">SKU</label>
+            <input name="Sku" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">Price (€)</label>
+            <input name="Price" type="number" step="0.01" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">Unit Price (€)</label>
+            <input name="UnitPrice" type="number" step="0.01" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-1">
+            <label class="form-label small">Stock</label>
+            <input name="StockQty" type="number" class="form-control form-control-sm" value="0">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">Color</label>
+            <select name="ColorId" asp-items="@(ViewData["Colors"] as SelectList)" class="form-select form-select-sm">
+                <option value="">-- color --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">Size</label>
+            <select name="SizeId" asp-items="@(ViewData["Sizes"] as SelectList)" class="form-select form-select-sm">
+                <option value="">-- size --</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-dark btn-sm w-100">Add</button>
+        </div>
+    </form>
+
+    <!-- Images -->
+    <hr class="my-5">
+    <h4>Images</h4>
+
+    @if (product.Images.Any())
+    {
+        <div class="d-flex gap-3 flex-wrap mb-4">
+            @foreach (var img in product.Images)
+            {
+                <div class="position-relative">
+                    <img src="@img.Url" alt="@img.AltTextEn" width="120" height="120"
+                         style="object-fit:cover;" class="rounded border">
+                    <form asp-action="DeleteImage" method="post" class="mt-1">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="productId" value="@product.Id">
+                        <input type="hidden" name="imageId" value="@img.Id">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">Remove</button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+
+    <h6>Add Image</h6>
+    <form asp-action="AddImage" method="post" class="row g-2 align-items-end">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="productId" value="@product.Id">
+        <div class="col-md-4">
+            <label class="form-label small">Image URL</label>
+            <input name="Url" class="form-control form-control-sm" placeholder="https://..." required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Alt text (EN)</label>
+            <input name="AltTextEn" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Alt text (ET)</label>
+            <input name="AltTextEt" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-1">
+            <label class="form-label small">Order</label>
+            <input name="SortOrder" type="number" class="form-control form-control-sm" value="0">
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-dark btn-sm w-100">Add</button>
+        </div>
+    </form>
+}
+
+@section Scripts { <partial name="_ValidationScriptsPartial"/> }

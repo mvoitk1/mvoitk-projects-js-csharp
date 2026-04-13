@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>1.3</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="YourCart" xml:space="preserve"><value>Sinu ostukorv</value></data>
+  <data name="CartEmpty" xml:space="preserve"><value>Sinu ostukorv on tühi.</value></data>
+  <data name="ContinueShopping" xml:space="preserve"><value>Jätka ostlemist</value></data>
+  <data name="Product" xml:space="preserve"><value>Toode</value></data>
+  <data name="Variant" xml:space="preserve"><value>Variant</value></data>
+  <data name="Price" xml:space="preserve"><value>Hind</value></data>
+  <data name="Qty" xml:space="preserve"><value>Kogus</value></data>
+  <data name="Total" xml:space="preserve"><value>Kokku</value></data>
+  <data name="Update" xml:space="preserve"><value>Uuenda</value></data>
+  <data name="Remove" xml:space="preserve"><value>Eemalda</value></data>
+  <data name="OrderSummary" xml:space="preserve"><value>Tellimuse kokkuvõte</value></data>
+  <data name="Items" xml:space="preserve"><value>Tooted</value></data>
+  <data name="ProceedToCheckout" xml:space="preserve"><value>Mine kassasse</value></data>
+</root>

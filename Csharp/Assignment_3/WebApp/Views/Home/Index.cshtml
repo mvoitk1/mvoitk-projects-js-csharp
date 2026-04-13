@@ -1,0 +1,96 @@
+@model WebApp.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- Hero -->
+<div class="p-5 mb-4 bg-dark text-white rounded-3">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold">New Season, New Style</h1>
+        <p class="col-md-8 fs-4">Explore our latest collections crafted for the modern wardrobe.</p>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-light btn-lg">Shop Now</a>
+    </div>
+</div>
+
+<!-- Collections -->
+@if (Model.Collections.Any())
+{
+    <section class="mb-5">
+        <h2 class="mb-3">Collections</h2>
+        <div class="row g-3">
+            @foreach (var collection in Model.Collections.Take(3))
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@collection.Name</h5>
+                            <p class="card-text text-muted small">@collection.Description</p>
+                            <a asp-controller="Shop" asp-action="Index" asp-route-collectionId="@collection.Id"
+                               class="btn btn-outline-dark btn-sm">View Collection</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Featured Products -->
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Featured Products</h2>
+        <a asp-controller="Shop" asp-action="Index" class="text-decoration-none">View all →</a>
+    </div>
+    <div class="row g-4">
+        @foreach (var product in Model.FeaturedProducts)
+        {
+            <div class="col-6 col-md-4 col-lg-2">
+                <a asp-controller="Shop" asp-action="Detail" asp-route-id="@product.Id" class="text-decoration-none text-dark">
+                    <div class="card h-100 border-0 shadow-sm">
+                        @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
+                        {
+                            <img src="@product.PrimaryImageUrl" class="card-img-top" alt="@product.Name"
+                                 style="height:220px;object-fit:cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px;">
+                                <span class="text-muted">No image</span>
+                            </div>
+                        }
+                        <div class="card-body p-2">
+                            <p class="mb-1 fw-semibold small">@product.Name</p>
+                            @if (product.LowestPrice.HasValue)
+                            {
+                                <p class="text-muted small mb-0">From @product.LowestPrice.Value.ToString("C")</p>
+                            }
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Categories -->
+@if (Model.Categories.Any())
+{
+    <section class="mb-5">
+        <h2 class="mb-3">Shop by Category</h2>
+        <div class="row g-3">
+            @foreach (var category in Model.Categories.Take(4))
+            {
+                <div class="col-6 col-md-3">
+                    <a asp-controller="Shop" asp-action="Index" asp-route-categoryId="@category.Id"
+                       class="text-decoration-none">
+                        <div class="card text-center border-0 shadow-sm py-4">
+                            <div class="card-body">
+                                <h5 class="card-title">@category.Name</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </section>
+}

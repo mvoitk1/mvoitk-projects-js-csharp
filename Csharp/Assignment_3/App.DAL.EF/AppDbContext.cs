@@ -1,4 +1,5 @@
-﻿using App.Domain.Identity;
+﻿using App.Domain;
+using App.Domain.Identity;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,25 @@ namespace App.DAL.EF;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppUser, AppRole, Guid>(options), IDataProtectionKeyContext
 {
-
     public DbSet<AppRefreshToken> RefreshTokens { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
-    
+
+    // Catalogue
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Collection> Collections { get; set; }
+    public DbSet<Color> Colors { get; set; }
+    public DbSet<Size> Sizes { get; set; }
+    public DbSet<Product> Products { get; set; }
+    public DbSet<ProductCategory> ProductCategories { get; set; }
+    public DbSet<ProductImage> ProductImages { get; set; }
+    public DbSet<ProductVariant> ProductVariants { get; set; }
+
+    // Cart & Orders
+    public DbSet<Cart> Carts { get; set; }
+    public DbSet<CartItem> CartItems { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -19,7 +35,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
         // Configure all DateTime properties to use UTC
         ConfigureDateTimeAsUtc(builder);
 
-        // disable cascade delete
+        // ProductCategory — composite PK
+        builder.Entity<ProductCategory>()
+            .HasKey(pc => new { pc.ProductId, pc.CategoryId });
+
+        // Category self-reference
+        builder.Entity<Category>()
+            .HasOne(c => c.ParentCategory)
+            .WithMany(c => c.SubCategories)
+            .HasForeignKey(c => c.ParentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // disable cascade delete globally
         foreach (var relationship in builder.Model
                      .GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
         {

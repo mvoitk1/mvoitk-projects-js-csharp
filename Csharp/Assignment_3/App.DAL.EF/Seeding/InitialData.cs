@@ -5,13 +5,13 @@ public static class InitialData
     public static readonly (string roleName, Guid? id)[]
         Roles =
         [
-            ("admin", null),
-            ("user", null),
+            ("Admin", null),
+            ("Customer", null),
         ];
 
     public static readonly (string name, string password, Guid? id, string[] roles)[]
         Users =
         [
-            ("admin@example.com", "Admin.Password.1", null, ["admin", "user"]),
+            ("admin@shop.ee", "Admin.Password.1", null, ["Admin", "Customer"]),
         ];
 }

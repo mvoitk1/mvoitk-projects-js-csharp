@@ -104,6 +104,12 @@ public static class AppDataInitExtensions
                 logger.LogWarning("Waiting for db connection. Sleep 1 sec");
                 Thread.Sleep(1000);
             }
+            catch (Npgsql.NpgsqlException e)
+            {
+                // Network-level failure (connection refused, DNS not yet ready, etc.)
+                logger.LogWarning("Waiting for db (network error): {}", e.Message);
+                Thread.Sleep(1000);
+            }
         }
     }
 }

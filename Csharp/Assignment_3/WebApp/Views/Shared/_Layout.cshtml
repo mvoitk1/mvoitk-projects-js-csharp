@@ -36,11 +36,6 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Orders" asp-action="Index">My Orders</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Cart" asp-action="Index">
-                                🛒 Cart
-                            </a>
-                        </li>
                     }
                     @if (User.IsInRole("Admin"))
                     {
@@ -48,9 +43,17 @@
                             <a class="nav-link text-dark" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
                         </li>
                     }
-                    <partial name="_LanguageSelection"/>
                 </ul>
-                <partial name="_LoginPartial"/>
+                <ul class="navbar-nav align-items-center gap-1">
+                    <partial name="_LanguageSelection"/>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Cart" asp-action="Index">Cart</a>
+                        </li>
+                    }
+                    <partial name="_LoginPartial"/>
+                </ul>
             </div>
         </div>
     </nav>

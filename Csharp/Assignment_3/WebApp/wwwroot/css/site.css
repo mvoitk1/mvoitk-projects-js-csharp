@@ -34,6 +34,45 @@ body {
     margin-bottom: 1em;
 }
 
+/* Consistent page heading */
+.page-heading {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Shop filter sidebar */
+.filter-sidebar {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 1rem;
+    background: #fafafa;
+}
+
+.filter-sidebar h6 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.filter-sidebar h6:first-child {
+    margin-top: 0;
+}
+
+.filter-sidebar a {
+    color: #212529;
+    padding: 2px 0;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.filter-sidebar a.active-filter {
+    font-weight: 600;
+}
+
 .navbar .nav-link.dropdown-toggle,
 .navbar .btn-link.nav-link {
     color: var(--bs-navbar-color);

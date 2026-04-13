@@ -77,7 +77,7 @@ public static class AppDataInit
         if (context.Products.Any()) return;
 
         var collection = context.Collections.First();
-        var tshirtCategory = context.Categories.First(c => c.Name.ContainsKey("en") && c.Name["en"] == "T-Shirts");
+        var tshirtCategory = context.Categories.AsEnumerable().First(c => c.Name.ContainsKey("en") && c.Name["en"] == "T-Shirts");
         var black = context.Colors.First(c => c.HexCode == "#000000");
         var white = context.Colors.First(c => c.HexCode == "#FFFFFF");
         var sizeS = context.Sizes.First(s => s.SizeCode == "S");

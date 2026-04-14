@@ -1,6 +1,7 @@
 # assignment4.1
 
 This template should help get you started developing with Vue 3 in Vite.
+URL: https://mvoitk-vue2.proxy.itcollege.ee/
 
 ## Recommended IDE Setup
 

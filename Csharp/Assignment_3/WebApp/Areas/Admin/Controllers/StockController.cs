@@ -1,5 +1,6 @@
 using App.BLL.Services;
 using App.DAL.EF;
+using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,17 @@ public class StockController(IAdminCatalogueService catalogueService, AppDbConte
             .OrderBy(v => v.StockQty)
             .ToListAsync();
 
-        return View(variants);
+        var items = variants.Select(v => new AdminStockItemDto
+        {
+            VariantId = v.Id,
+            ProductName = v.Product?.Name.Translate() ?? string.Empty,
+            Sku = v.Sku,
+            ColorName = v.Color?.Name.Translate() ?? string.Empty,
+            SizeCode = v.Size?.SizeCode ?? string.Empty,
+            StockQty = v.StockQty
+        });
+
+        return View(items);
     }
 
     [HttpPost, ValidateAntiForgeryToken]

@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - Robot</title>
+    <title>@ViewData["Title"] — @AppNameService.AppName</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
@@ -48,9 +48,7 @@
                     <partial name="_LanguageSelection"/>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Cart" asp-action="Index">Cart</a>
-                        </li>
+                        @await Component.InvokeAsync("CartBadge")
                     }
                     <partial name="_LoginPartial"/>
                 </ul>

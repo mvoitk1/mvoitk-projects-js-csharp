@@ -30,8 +30,8 @@ public class ProductsController(IAdminProductService productService, AppDbContex
             await PopulateSelectListsAsync();
             return View(dto);
         }
-        await productService.CreateAsync(dto);
-        return RedirectToAction(nameof(Index));
+        var created = await productService.CreateAsync(dto);
+        return RedirectToAction(nameof(Edit), new { id = created.Id });
     }
 
     public async Task<IActionResult> Edit(Guid id)

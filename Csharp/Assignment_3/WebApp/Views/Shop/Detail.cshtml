@@ -2,7 +2,8 @@
 @model App.DTO.v1.Products.ProductDto
 @{
     ViewData["Title"] = Model.Name;
-    var variantsJson = JsonSerializer.Serialize(Model.Variants);
+    var variantsJson = JsonSerializer.Serialize(Model.Variants,
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 }
 
 <nav aria-label="breadcrumb" class="mb-3">

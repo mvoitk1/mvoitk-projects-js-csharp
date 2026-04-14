@@ -3,8 +3,10 @@ stages:
 
 deploy_javascript_a1:
   stage: deploy
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - JS/assignment1/**/*
   tags:
     - shared
   script:
@@ -13,8 +15,10 @@ deploy_javascript_a1:
 
 deploy_javascript_a2:
   stage: deploy
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - JS/assignment2/**/*
   tags:
     - shared
   script:
@@ -23,8 +27,10 @@ deploy_javascript_a2:
 
 deploy_csharp_a1:
   stage: deploy
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - Csharp/Conference and Event Venue Platform SaaS v2/**/*
   tags:
     - shared
   script:
@@ -34,8 +40,10 @@ deploy_csharp_a1:
 
 deploy_csharp_a3:
   stage: deploy
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - Csharp/Assignment_3/**/*
   tags:
     - shared
   script:
@@ -47,8 +55,10 @@ deploy_csharp_a3:
 
 deploy_javascript_a4:
   stage: deploy
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - JS/assignment4/**/*
   tags:
     - shared
   script:
@@ -58,8 +68,10 @@ deploy_javascript_a4:
 
 deploy_javascript_a4_1:
   stage: deploy
-  only:
-    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - JS/assignment4.1/**/*
   tags:
     - shared
   script:

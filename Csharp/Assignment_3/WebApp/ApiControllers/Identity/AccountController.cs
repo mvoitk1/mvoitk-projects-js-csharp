@@ -336,8 +336,10 @@ public class AccountController : ControllerBase
         return Ok(res);
     }
 
+    /// <summary>Invalidate the current refresh token, effectively logging the user out.</summary>
     [Produces("application/json")]
     [Consumes("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(App.Dto.v1.Message), StatusCodes.Status404NotFound)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPost]

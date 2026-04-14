@@ -1,0 +1,17 @@
+services:
+  vue-app-4-1:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: https://taltech.akaver.com
+    container_name: vue-app-taltech-4-1
+    restart: unless-stopped
+    ports:
+      - "76:80"
+    networks:
+      - infra
+
+networks:
+  infra:
+    name: infra
+    external: true

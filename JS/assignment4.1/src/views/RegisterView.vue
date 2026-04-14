@@ -33,62 +33,28 @@ async function submit() {
 </script>
 
 <template>
-  <div class="form-container">
+  <div class="auth-container">
     <h2>Register</h2>
-    <p v-if="error" class="error">{{ error }}</p>
     <form @submit.prevent="submit">
-      <label>First Name<input v-model="firstName" type="text" required /></label>
-      <label>Last Name<input v-model="lastName" type="text" required /></label>
-      <label>Email<input v-model="email" type="email" required /></label>
-      <label>Password<input v-model="password" type="password" required /></label>
+      <div class="field">
+        <label>First Name</label>
+        <input v-model="firstName" type="text" required />
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input v-model="lastName" type="text" required />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input v-model="email" type="email" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input v-model="password" type="password" required />
+      </div>
+      <p v-if="error" class="error">{{ error }}</p>
       <button type="submit" :disabled="loading">{{ loading ? 'Registering…' : 'Register' }}</button>
     </form>
-    <p>Already have an account? <RouterLink to="/login">Sign in</RouterLink></p>
+    <p>Already have an account? <RouterLink to="/login">Login</RouterLink></p>
   </div>
 </template>
-
-<style scoped>
-.form-container {
-  max-width: 400px;
-  margin: 4rem auto;
-  padding: 2rem;
-  border: 1px solid #333;
-  border-radius: 8px;
-}
-h2 {
-  margin-bottom: 1.5rem;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-input {
-  padding: 0.5rem;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background: #222;
-  color: inherit;
-}
-button {
-  padding: 0.6rem;
-  background: #1565c0;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-.error {
-  color: #ef5350;
-  margin-bottom: 0.5rem;
-}
-</style>

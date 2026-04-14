@@ -1,3 +1,63 @@
+<template>
+  <section class="create-task-page">
+    <div class="page-header">
+      <div>
+        <h1>Create task</h1>
+      </div>
+      <div class="page-actions">
+        <RouterLink class="button-secondary button-link" to="/dashboard">Back to dashboard</RouterLink>
+      </div>
+    </div>
+
+    <form class="task-form" @submit.prevent="submit">
+      <div class="field">
+        <label for="taskName">Task name</label>
+        <input id="taskName" v-model.trim="taskName" type="text" required />
+      </div>
+
+      <div class="field">
+        <label for="dueDate">Due date</label>
+        <input id="dueDate" v-model="dueDt" type="date" />
+      </div>
+
+      <div class="field">
+        <label for="categorySelect">Category</label>
+        <div class="picker-row">
+          <select id="categorySelect" v-model="todoCategoryId">
+            <option value="">— none —</option>
+            <option v-for="c in categoryStore.items" :key="c.id" :value="c.id">
+              {{ c.categoryName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="prioritySelect">Priority</label>
+        <div class="picker-row">
+          <select id="prioritySelect" v-model="todoPriorityId">
+            <option value="">— none —</option>
+            <option v-for="p in priorityStore.items" :key="p.id" :value="p.id">
+              {{ p.priorityName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <p v-if="error || tasksStore.error" class="error">
+        {{ error || tasksStore.error }}
+      </p>
+
+      <div class="form-actions">
+        <button type="submit" :disabled="tasksStore.loading">
+          {{ tasksStore.loading ? 'Saving…' : 'Create task' }}
+        </button>
+        <RouterLink class="text-link" to="/dashboard">Cancel</RouterLink>
+      </div>
+    </form>
+  </section>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -14,7 +74,6 @@ const taskName = ref('')
 const dueDt = ref('')
 const todoCategoryId = ref('')
 const todoPriorityId = ref('')
-const taskSort = ref(0)
 const error = ref<string | null>(null)
 
 onMounted(() => {
@@ -30,7 +89,7 @@ async function submit() {
       dueDt: dueDt.value || undefined,
       isCompleted: false,
       isArchived: false,
-      taskSort: taskSort.value,
+      taskSort: tasksStore.items.length,
       todoCategoryId: todoCategoryId.value || undefined,
       todoPriorityId: todoPriorityId.value || undefined,
     })
@@ -40,91 +99,3 @@ async function submit() {
   }
 }
 </script>
-
-<template>
-  <div class="form-container">
-    <h2>New Task</h2>
-    <p v-if="error" class="error">{{ error }}</p>
-    <form @submit.prevent="submit">
-      <label>Task Name<input v-model="taskName" type="text" required /></label>
-      <label>Due Date<input v-model="dueDt" type="date" /></label>
-      <label>
-        Category
-        <select v-model="todoCategoryId">
-          <option value="">— none —</option>
-          <option v-for="c in categoryStore.items" :key="c.id" :value="c.id">
-            {{ c.categoryName }}
-          </option>
-        </select>
-      </label>
-      <label>
-        Priority
-        <select v-model="todoPriorityId">
-          <option value="">— none —</option>
-          <option v-for="p in priorityStore.items" :key="p.id" :value="p.id">
-            {{ p.priorityName }}
-          </option>
-        </select>
-      </label>
-      <label>Sort Order<input v-model.number="taskSort" type="number" /></label>
-      <div class="actions">
-        <button type="submit" :disabled="tasksStore.loading">
-          {{ tasksStore.loading ? 'Saving…' : 'Create' }}
-        </button>
-        <RouterLink to="/dashboard">Cancel</RouterLink>
-      </div>
-    </form>
-  </div>
-</template>
-
-<style scoped>
-.form-container {
-  max-width: 480px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border: 1px solid #333;
-  border-radius: 8px;
-}
-h2 {
-  margin-bottom: 1.5rem;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-input,
-select {
-  padding: 0.5rem;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background: #222;
-  color: inherit;
-}
-.actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-button {
-  padding: 0.6rem 1.2rem;
-  background: #1565c0;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-.error {
-  color: #ef5350;
-  margin-bottom: 0.5rem;
-}
-</style>

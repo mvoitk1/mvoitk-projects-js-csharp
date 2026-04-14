@@ -1,30 +1,146 @@
+<template>
+  <section class="dashboard">
+    <div class="page-header">
+      <div>
+        <h1>Dashboard</h1>
+      </div>
+      <div class="page-actions">
+        <RouterLink class="button-link" to="/tasks/new">Create task</RouterLink>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <article class="stat-card">
+        <span class="stat-label">Total tasks</span>
+        <strong>{{ tasks.length }}</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Due soon</span>
+        <strong>{{ dueSoonCount }}</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Completed</span>
+        <strong>{{ completedCount }}</strong>
+      </article>
+    </div>
+
+    <p v-if="forbiddenError" class="error">You don't have permission to access that resource.</p>
+    <p v-if="tasksStore.error" class="error">{{ tasksStore.error }}</p>
+
+    <div v-if="tasks.length" class="task-grid">
+      <article
+        v-for="task in tasks"
+        :key="task.id"
+        class="task-card"
+        :class="{ 'task-card--completed': task.isCompleted }"
+      >
+        <div class="task-card__top">
+          <label class="task-check">
+            <input
+              :checked="task.isCompleted"
+              type="checkbox"
+              @change="toggleComplete(task)"
+            />
+            <span>{{ task.isCompleted ? 'Completed' : 'Open' }}</span>
+          </label>
+          <button type="button" class="delete-btn" @click="removeTask(task.id)">Delete</button>
+        </div>
+
+        <h2>{{ task.taskName }}</h2>
+
+        <div class="task-meta">
+          <span class="meta-pill">
+            Due {{ task.dueDt ? formatDate(task.dueDt) : 'No due date' }}
+          </span>
+          <span class="meta-pill">
+            Category {{ categoryName(task.todoCategoryId) }}
+          </span>
+          <span
+            class="meta-pill"
+            :class="priorityToneClass(priorityName(task.todoPriorityId))"
+          >
+            Priority {{ priorityName(task.todoPriorityId) }}
+          </span>
+        </div>
+      </article>
+    </div>
+
+    <section v-else class="empty-state">
+      <h2>No tasks yet.</h2>
+      <RouterLink class="button-link" to="/tasks/new">Create your first task</RouterLink>
+    </section>
+  </section>
+</template>
+
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useTodoTasksStore } from '@/stores/todoTasks'
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTodoCategoryStore } from '@/stores/todoCategory'
 import { useTodoPriorityStore } from '@/stores/todoPriority'
+import { useTodoTasksStore } from '@/stores/todoTasks'
+import type { TodoTask } from '@/types'
 
 const route = useRoute()
-const router = useRouter()
 const tasksStore = useTodoTasksStore()
 const categoryStore = useTodoCategoryStore()
 const priorityStore = useTodoPriorityStore()
 
 const forbiddenError = computed(() => route.query.error === 'forbidden')
 
-onMounted(() => {
-  tasksStore.fetchAll()
-  categoryStore.fetchAll()
-  priorityStore.fetchAll()
+const tasks = computed(() =>
+  [...tasksStore.items].sort((left, right) => {
+    const leftDue = left.dueDt ? new Date(left.dueDt).getTime() : Number.MAX_SAFE_INTEGER
+    const rightDue = right.dueDt ? new Date(right.dueDt).getTime() : Number.MAX_SAFE_INTEGER
+    return leftDue - rightDue
+  })
+)
+
+const completedCount = computed(() => tasks.value.filter((task) => task.isCompleted).length)
+
+const dueSoonCount = computed(() => {
+  const now = new Date()
+  const inSevenDays = new Date()
+  inSevenDays.setDate(now.getDate() + 7)
+  return tasks.value.filter((task) => {
+    if (!task.dueDt || task.isCompleted) return false
+    const dueDate = new Date(task.dueDt)
+    return dueDate >= now && dueDate <= inSevenDays
+  }).length
 })
 
-function categoryName(id?: string) {
-  if (!id) return ''
-  return categoryStore.items.find((c) => c.id === id)?.categoryName ?? ''
+onMounted(async () => {
+  await Promise.all([
+    tasksStore.fetchAll(),
+    categoryStore.fetchAll(),
+    priorityStore.fetchAll(),
+  ])
+})
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value))
 }
 
-async function toggleComplete(task: (typeof tasksStore.items)[number]) {
+function categoryName(categoryId?: string) {
+  return categoryStore.items.find((c) => c.id === categoryId)?.categoryName ?? 'Uncategorized'
+}
+
+function priorityName(priorityId?: string) {
+  return priorityStore.items.find((p) => p.id === priorityId)?.priorityName ?? 'Not set'
+}
+
+function priorityToneClass(priority: string) {
+  const normalized = priority.toLowerCase()
+  if (normalized === 'high') return 'meta-pill--high'
+  if (normalized === 'medium') return 'meta-pill--medium'
+  if (normalized === 'low') return 'meta-pill--low'
+  return ''
+}
+
+async function toggleComplete(task: TodoTask) {
   await tasksStore.update(task.id, { ...task, isCompleted: !task.isCompleted })
 }
 
@@ -32,109 +148,3 @@ async function removeTask(id: string) {
   await tasksStore.remove(id)
 }
 </script>
-
-<template>
-  <div class="page">
-    <p v-if="forbiddenError" class="warning">You do not have permission to access that resource.</p>
-
-    <div class="header">
-      <h2>Tasks</h2>
-      <RouterLink to="/tasks/new" class="btn-new">+ New Task</RouterLink>
-    </div>
-
-    <p v-if="tasksStore.error" class="error">{{ tasksStore.error }}</p>
-    <p v-if="tasksStore.loading">Loading…</p>
-
-    <ul v-else class="task-list">
-      <li v-for="task in tasksStore.items" :key="task.id" class="task-item">
-        <input
-          type="checkbox"
-          :checked="task.isCompleted"
-          @change="toggleComplete(task)"
-        />
-        <RouterLink :to="`/todos/${task.id}`" :class="{ done: task.isCompleted }">
-          {{ task.taskName }}
-        </RouterLink>
-        <span v-if="categoryName(task.todoCategoryId)" class="tag">
-          {{ categoryName(task.todoCategoryId) }}
-        </span>
-        <span v-if="task.dueDt" class="due">{{ task.dueDt.slice(0, 10) }}</span>
-        <button class="btn-del" @click="removeTask(task.id)">Delete</button>
-      </li>
-      <li v-if="tasksStore.items.length === 0">No tasks yet.</li>
-    </ul>
-  </div>
-</template>
-
-<style scoped>
-.page {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
-.header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.btn-new {
-  padding: 0.35rem 0.9rem;
-  background: #1565c0;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-}
-.task-list {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.task-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid #333;
-  border-radius: 6px;
-}
-.task-item a {
-  flex: 1;
-  color: #90caf9;
-  text-decoration: none;
-}
-.task-item a.done {
-  text-decoration: line-through;
-  opacity: 0.6;
-}
-.tag {
-  font-size: 0.75rem;
-  background: #263238;
-  padding: 0.1rem 0.5rem;
-  border-radius: 10px;
-}
-.due {
-  font-size: 0.8rem;
-  color: #aaa;
-}
-.btn-del {
-  padding: 0.2rem 0.6rem;
-  background: #c62828;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.error {
-  color: #ef5350;
-}
-.warning {
-  background: #4a1010;
-  color: #ffcdd2;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-}
-</style>

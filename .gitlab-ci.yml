@@ -55,3 +55,14 @@ deploy_javascript_a4:
     - docker network create infra || true
     - cd JS/assignment4
     - docker compose -f docker-compose.production.yml -p jsassignment4 up --build --remove-orphans --detach
+
+deploy_javascript_a4_1:
+  stage: deploy
+  only:
+    - main
+  tags:
+    - shared
+  script:
+    - docker network create infra || true
+    - cd JS/assignment4.1
+    - docker compose -p jsassignment4_1 up --build --remove-orphans --detach

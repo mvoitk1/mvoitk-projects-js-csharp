@@ -8,12 +8,14 @@ using WebApp.Helpers;
 
 namespace WebApp.ApiControllers.v1;
 
+/// <summary>Order history and checkout for the authenticated customer.</summary>
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class OrdersController(IOrderService orderService) : ControllerBase
 {
+    /// <summary>List all orders placed by the current user.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<OrderListItemDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<OrderListItemDto>>> GetOrders()
@@ -22,6 +24,8 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         return Ok(await orderService.GetUserOrdersAsync(userId));
     }
 
+    /// <summary>Get full details of a single order belonging to the current user.</summary>
+    /// <param name="id">Order ID.</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -33,6 +37,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         return Ok(order);
     }
 
+    /// <summary>Place an order from the current cart.</summary>
     [HttpPost]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

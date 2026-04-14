@@ -8,12 +8,14 @@ using WebApp.Helpers;
 
 namespace WebApp.ApiControllers.v1;
 
+/// <summary>Shopping cart for the authenticated customer.</summary>
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class CartController(ICartService cartService) : ControllerBase
 {
+    /// <summary>Get the current user's cart (creates one if it doesn't exist yet).</summary>
     [HttpGet]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<CartDto>> GetCart()
@@ -22,6 +24,7 @@ public class CartController(ICartService cartService) : ControllerBase
         return Ok(await cartService.GetOrCreateCartAsync(userId));
     }
 
+    /// <summary>Add a product variant to the cart.</summary>
     [HttpPost("items")]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -38,6 +41,8 @@ public class CartController(ICartService cartService) : ControllerBase
         }
     }
 
+    /// <summary>Update the quantity of a cart line item.</summary>
+    /// <param name="cartItemId">Cart item ID to update.</param>
     [HttpPut("items/{cartItemId:guid}")]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -54,6 +59,8 @@ public class CartController(ICartService cartService) : ControllerBase
         }
     }
 
+    /// <summary>Remove a line item from the cart.</summary>
+    /// <param name="cartItemId">Cart item ID to remove.</param>
     [HttpDelete("items/{cartItemId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

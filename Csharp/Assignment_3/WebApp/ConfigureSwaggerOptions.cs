@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Asp.Versioning.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using WebApp.Setup;
 
 namespace WebApp;
 
@@ -19,49 +17,59 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         _descriptionProvider = descriptionProvider;
     }
 
-
     public void Configure(SwaggerGenOptions options)
     {
         foreach (var description in _descriptionProvider.ApiVersionDescriptions)
         {
             options.SwaggerDoc(
                 description.GroupName,
-                new OpenApiInfo()
+                new OpenApiInfo
                 {
-                    Title = $"API {description.ApiVersion}",
+                    Title = "Brand E-Commerce API",
                     Version = description.ApiVersion.ToString(),
-                    // Description = , TermsOfService = , Contact = , License = 
+                    Description =
+                        "REST API for the brand fashion e-commerce platform.\n\n" +
+                        "**Authentication:** Use `POST /api/v1/Account/Login` to obtain a JWT, " +
+                        "then click **Authorize** and enter `Bearer <your-token>`.\n\n" +
+                        "**Roles:** Endpoints under `/admin/` require the `Admin` role."
                 }
             );
         }
 
-        // use fqn for dto descriptions
-        options.CustomSchemaIds(t => t.FullName);
-        
-        
-        // include xml comments (enable creation in csproj file)
-        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        // options.IncludeXmlComments(xmlPath);
-        
-        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+        // Strip the "App.DTO.v1." namespace prefix so schema names are readable
+        // e.g. "App.DTO.v1.Products.ProductDto" → "Products.ProductDto"
+        options.CustomSchemaIds(t =>
         {
-            Description =
-                "foo bar",
-            Name = "Authorization",
-            In = ParameterLocation.Header,
-            Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer"
-        });
-        
-        options.AddSecurityRequirement(_ =>
-        {
-            var securityRequirement = new OpenApiSecurityRequirement();
-            var schemeReference = new OpenApiSecuritySchemeReference("Bearer");
-            securityRequirement[schemeReference] = new List<string>();
-            return securityRequirement;
+            var name = t.FullName ?? t.Name;
+            const string prefix = "App.DTO.v1.";
+            if (name.StartsWith(prefix))
+                name = name[prefix.Length..];
+            return name.Replace("+", ".");
         });
 
-        
+        // Include XML doc comments from this assembly
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath))
+            options.IncludeXmlComments(xmlPath);
+
+        // Define the Bearer JWT security scheme
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description =
+                "JWT Authorization header. Enter your token below.\n\n" +
+                "Example: `Bearer eyJhbGci...`",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        });
+
+        // Apply security + 401/403 only to [Authorize] endpoints
+        options.OperationFilter<AuthOperationFilter>();
+
+        // Rename auto-generated controller tags to human-readable names
+        options.OperationFilter<TagGroupingOperationFilter>();
     }
 }

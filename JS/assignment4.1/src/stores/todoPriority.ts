@@ -13,8 +13,9 @@ export const useTodoPriorityStore = defineStore('todoPriority', () => {
     error.value = null
     try {
       items.value = (await todoPriorityApi.getAll()).data
-    } catch {
+    } catch (e) {
       error.value = 'Failed to load priorities'
+      throw e
     } finally {
       loading.value = false
     }
@@ -26,8 +27,9 @@ export const useTodoPriorityStore = defineStore('todoPriority', () => {
     try {
       const res = await todoPriorityApi.create(data)
       items.value.push(res.data)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to create priority'
+      throw e
     } finally {
       loading.value = false
     }
@@ -40,8 +42,9 @@ export const useTodoPriorityStore = defineStore('todoPriority', () => {
       const res = await todoPriorityApi.update(id, data)
       const idx = items.value.findIndex((p) => p.id === id)
       if (idx !== -1) items.value.splice(idx, 1, res.data)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to update priority'
+      throw e
     } finally {
       loading.value = false
     }
@@ -53,8 +56,9 @@ export const useTodoPriorityStore = defineStore('todoPriority', () => {
     try {
       await todoPriorityApi.remove(id)
       items.value = items.value.filter((p) => p.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to delete priority'
+      throw e
     } finally {
       loading.value = false
     }

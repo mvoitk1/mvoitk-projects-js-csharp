@@ -13,8 +13,9 @@ export const useTodoCategoryStore = defineStore('todoCategory', () => {
     error.value = null
     try {
       items.value = (await todoCategoryApi.getAll()).data
-    } catch {
+    } catch (e) {
       error.value = 'Failed to load categories'
+      throw e
     } finally {
       loading.value = false
     }
@@ -26,8 +27,9 @@ export const useTodoCategoryStore = defineStore('todoCategory', () => {
     try {
       const res = await todoCategoryApi.create(data)
       items.value.push(res.data)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to create category'
+      throw e
     } finally {
       loading.value = false
     }
@@ -40,8 +42,9 @@ export const useTodoCategoryStore = defineStore('todoCategory', () => {
       const res = await todoCategoryApi.update(id, data)
       const idx = items.value.findIndex((c) => c.id === id)
       if (idx !== -1) items.value.splice(idx, 1, res.data)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to update category'
+      throw e
     } finally {
       loading.value = false
     }
@@ -53,8 +56,9 @@ export const useTodoCategoryStore = defineStore('todoCategory', () => {
     try {
       await todoCategoryApi.remove(id)
       items.value = items.value.filter((c) => c.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to delete category'
+      throw e
     } finally {
       loading.value = false
     }

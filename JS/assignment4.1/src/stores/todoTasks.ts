@@ -13,8 +13,9 @@ export const useTodoTasksStore = defineStore('todoTasks', () => {
     error.value = null
     try {
       items.value = (await todoTasksApi.getAll()).data
-    } catch {
+    } catch (e) {
       error.value = 'Failed to load tasks'
+      throw e
     } finally {
       loading.value = false
     }
@@ -26,8 +27,9 @@ export const useTodoTasksStore = defineStore('todoTasks', () => {
     try {
       const res = await todoTasksApi.create(data)
       items.value.push(res.data)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to create task'
+      throw e
     } finally {
       loading.value = false
     }
@@ -40,8 +42,9 @@ export const useTodoTasksStore = defineStore('todoTasks', () => {
       const res = await todoTasksApi.update(id, data)
       const idx = items.value.findIndex((t) => t.id === id)
       if (idx !== -1) items.value.splice(idx, 1, res.data)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to update task'
+      throw e
     } finally {
       loading.value = false
     }
@@ -53,8 +56,9 @@ export const useTodoTasksStore = defineStore('todoTasks', () => {
     try {
       await todoTasksApi.remove(id)
       items.value = items.value.filter((t) => t.id !== id)
-    } catch {
+    } catch (e) {
       error.value = 'Failed to delete task'
+      throw e
     } finally {
       loading.value = false
     }

@@ -1,0 +1,63 @@
+schema: spec-driven
+
+# Project context for Conference & Event Venue Platform SaaS
+# This is shown to AI when creating artifacts.
+context: |
+  ## Technology Stack
+  - Backend: ASP.NET Core MVC
+  - Database: PostgreSQL with EF Core
+  - Authentication: ASP.NET Core Identity
+  - API: RESTful API with Swagger
+  
+  ## Architecture
+  - N-Tier layered architecture:
+    - Domain layer (App.Domain)
+    - Data Access Layer (App.DAL.EF)
+    - Business Logic Layer (App.BLL)
+    - UI Layer (WebApp)
+  - Design principles: SOLID, Clean Code, KISS, DRY, YAGNI, Onion Architecture
+  
+  ## Project Structure
+  - Solution: VenuePlatform.sln
+  - Projects:
+    - App.Domain - Domain entities and interfaces
+    - App.DAL.EF - Entity Framework context and migrations
+    - App.BLL - Business logic services
+    - App.DTO - Data transfer objects
+    - App.Helpers - Utility helpers
+    - App.Resources - Localization resources
+    - WebApp - Main MVC application
+    - WebApp.Tests - Unit and integration tests
+
+# Per-artifact rules
+rules:
+  proposal:
+    - Focus on venue management features (spaces, equipment, catering, bookings, invoicing)
+    - Consider user roles: CompanyEmployee, CompanyManager, CompanyAdmin
+    - Include subscription tiering: Standard (single-venue), Premium (multi-venue)
+    - Address scalability for different venue sizes
+    - Apply YAGNI: Only propose features that are explicitly needed
+  
+  design:
+    - Follow existing N-Tier architecture (Domain, DAL, BLL, UI)
+    - Use EF Core for database operations
+    - Implement proper separation of concerns
+    - Consider the existing project structure when proposing changes
+    - Apply Clean Code: Write readable, maintainable code
+    - Apply KISS: Keep solutions simple and straightforward
+    - Apply DRY: Avoid code duplication, extract common logic
+    - Apply Onion Architecture: Depend on core domain, not infrastructure
+  
+  tasks:
+    - Break implementation into Domain → DAL → BLL → UI layers
+    - Include database migrations when needed
+    - Add unit tests for business logic
+    - Consider backward compatibility with existing features
+    - Refactor existing code when improving - remove duplication (DRY)
+    - Remove unused code and features (YAGNI)
+
+  prompt_handling:
+  record_user_prompts: true
+  prompt_log_file: AI/ai-prompts.md
+  instruction: "If the user gives a prompt to the agent, write that prompt into AI/ai-prompts.md."
+

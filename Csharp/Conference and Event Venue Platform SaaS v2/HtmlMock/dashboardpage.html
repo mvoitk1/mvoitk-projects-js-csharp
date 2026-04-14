@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VenueFlow | Dashboard</title>
+    <style>
+        :root {
+            --sand: #f5efe5;
+            --sand-deep: #e7dac6;
+            --forest: #1f2a2a;
+            --forest-soft: #30423e;
+            --cream: rgba(255, 250, 244, 0.9);
+            --cream-strong: rgba(255, 248, 241, 0.96);
+            --text: #1d201d;
+            --muted: #5d615a;
+            --accent: #b45d3c;
+            --accent-dark: #8d4226;
+            --gold: #cf9b4d;
+            --line: rgba(76, 57, 43, 0.12);
+            --shadow: 0 24px 60px rgba(23, 23, 23, 0.16);
+            --success: #3c6b57;
+            --warning: #a26534;
+            --danger: #8f3e31;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(232, 192, 165, 0.78), transparent 26%),
+                radial-gradient(circle at bottom right, rgba(45, 84, 74, 0.18), transparent 34%),
+                linear-gradient(135deg, #efe5d4 0%, #f8f3ec 46%, #ece2d6 100%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .dashboard-shell {
+            width: min(1380px, calc(100% - 28px));
+            margin: 18px auto;
+            border-radius: 34px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 250, 244, 0.36);
+            box-shadow: var(--shadow);
+            background: rgba(255, 248, 241, 0.55);
+            backdrop-filter: blur(18px);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            min-height: calc(100vh - 36px);
+        }
+
+        .sidebar {
+            padding: 28px 22px;
+            color: #f7f0e8;
+            background:
+                linear-gradient(rgba(22, 31, 31, 0.36), rgba(22, 31, 31, 0.44)),
+                linear-gradient(165deg, #6d7c71 0%, #324441 42%, #1d2423 100%);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            font-size: 1rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 240, 224, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .venue-card,
+        .spotlight,
+        .card,
+        .timeline-item,
+        .invoice-row {
+            border: 1px solid rgba(255, 244, 232, 0.12);
+            background: rgba(255, 250, 245, 0.08);
+            backdrop-filter: blur(8px);
+        }
+
+        .venue-card {
+            padding: 18px;
+            border-radius: 24px;
+        }
+
+        .venue-card strong,
+        .mini-kpi strong,
+        .metric strong,
+        .timeline-time,
+        .amount {
+            display: block;
+        }
+
+        .eyebrow,
+        .nav a,
+        .sidebar-note,
+        .chip,
+        .pill,
+        .muted,
+        .table,
+        .spotlight p,
+        .section-subtitle,
+        .timeline-copy,
+        .invoice-meta,
+        .header-copy p {
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            color: #f0d5bd;
+            background: rgba(255, 245, 232, 0.1);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .venue-card strong {
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-note {
+            margin: 0;
+            color: rgba(249, 239, 229, 0.78);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .nav {
+            margin: 28px 0;
+            display: grid;
+            gap: 8px;
+        }
+
+        .nav a {
+            padding: 12px 14px;
+            border-radius: 16px;
+            color: rgba(247, 240, 232, 0.84);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav a.active,
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff8f0;
+            transform: translateX(2px);
+        }
+
+        .spotlight {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 24px;
+        }
+
+        .spotlight h3,
+        .card h3,
+        .section-title,
+        .header-copy h1 {
+            margin: 0;
+            letter-spacing: -0.04em;
+        }
+
+        .spotlight h3 {
+            font-size: 1.35rem;
+            margin-bottom: 10px;
+        }
+
+        .spotlight p {
+            margin: 0 0 14px;
+            color: rgba(247, 240, 232, 0.8);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .spotlight .button {
+            width: 100%;
+        }
+
+        .main {
+            padding: 28px;
+        }
+
+        .topbar,
+        .header,
+        .stats-row,
+        .content-grid,
+        .section-head,
+        .timeline-item,
+        .invoice-row,
+        .table-row {
+            display: flex;
+        }
+
+        .topbar,
+        .section-head {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar {
+            margin-bottom: 24px;
+            gap: 18px;
+        }
+
+        .owner-access {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 24px;
+            border: 1px solid rgba(76, 57, 43, 0.12);
+            background: rgba(255, 251, 247, 0.82);
+            box-shadow: 0 12px 26px rgba(31, 42, 42, 0.08);
+        }
+
+        .owner-copy {
+            max-width: 270px;
+        }
+
+        .owner-label,
+        .owner-copy p {
+            margin: 0;
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .owner-label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent-dark);
+        }
+
+        .owner-copy p {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.45;
+        }
+
+        .owner-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .button.ghost {
+            color: var(--forest-soft);
+            background: rgba(48, 66, 62, 0.08);
+            box-shadow: none;
+        }
+
+        .button.ghost:hover {
+            background: rgba(48, 66, 62, 0.14);
+        }
+
+        .button,
+        .chip {
+            border-radius: 999px;
+        }
+
+        .button {
+            padding: 12px 18px;
+            font-weight: 700;
+            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            cursor: pointer;
+            color: #fff7f0;
+            background: var(--accent);
+            box-shadow: 0 14px 28px rgba(180, 93, 60, 0.22);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button:hover {
+            background: var(--accent-dark);
+        }
+
+        .header {
+            align-items: end;
+            justify-content: space-between;
+            gap: 22px;
+            padding: 30px;
+            margin-bottom: 22px;
+            border-radius: 30px;
+            background:
+                linear-gradient(rgba(255, 251, 247, 0.46), rgba(255, 251, 247, 0.75)),
+                linear-gradient(120deg, rgba(255, 213, 184, 0.56), rgba(255, 248, 241, 0.32));
+            border: 1px solid rgba(255, 255, 255, 0.42);
+        }
+
+        .header-copy h1 {
+            font-size: clamp(2.5rem, 5vw, 4.2rem);
+            line-height: 0.95;
+        }
+
+        .header-copy p {
+            margin: 16px 0 0;
+            max-width: 760px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .mini-kpis {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(150px, 1fr));
+            gap: 14px;
+            min-width: min(100%, 360px);
+        }
+
+        .mini-kpi {
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(255, 250, 245, 0.72);
+            border: 1px solid rgba(76, 57, 43, 0.1);
+        }
+
+        .mini-kpi strong {
+            font-size: 1.55rem;
+            margin-bottom: 6px;
+        }
+
+        .mini-kpi span {
+            color: var(--muted);
+            font-family: "Trebuchet MS", sans-serif;
+            font-size: 0.88rem;
+        }
+
+        .stats-row {
+            gap: 16px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            flex: 1 1 180px;
+            padding: 20px 22px;
+            border-radius: 24px;
+            background: var(--cream-strong);
+            border: 1px solid var(--line);
+        }
+
+        .metric strong {
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+        }
+
+        .metric span {
+            color: var(--muted);
+            font-size: 0.92rem;
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .content-grid {
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        .primary-column {
+            flex: 1.45;
+            display: grid;
+            gap: 18px;
+        }
+
+        .secondary-column {
+            flex: 0.95;
+            display: grid;
+            gap: 18px;
+        }
+
+        .card {
+            padding: 22px;
+            border-radius: 28px;
+            background: var(--cream);
+            border: 1px solid var(--line);
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .chips,
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip,
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+        }
+
+        .chip {
+            background: rgba(48, 66, 62, 0.08);
+            color: var(--forest-soft);
+        }
+
+        .pill {
+            border-radius: 999px;
+            background: rgba(180, 93, 60, 0.1);
+            color: var(--accent-dark);
+        }
+
+        .floorplan {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .room {
+            padding: 16px;
+            border-radius: 22px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.54);
+        }
+
+        .room.combined {
+            grid-column: span 2;
+            background:
+                linear-gradient(135deg, rgba(207, 155, 77, 0.2), rgba(180, 93, 60, 0.08)),
+                rgba(255, 255, 255, 0.62);
+        }
+
+        .room h4,
+        .table-row strong,
+        .invoice-row strong {
+            margin: 0 0 6px;
+            font-size: 1.03rem;
+        }
+
+        .room p,
+        .room ul,
+        .muted,
+        .invoice-meta {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .room ul {
+            padding-left: 18px;
+            margin-top: 10px;
+            font-family: "Trebuchet MS", sans-serif;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .table {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .table-row,
+        .invoice-row {
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 18px;
+            border-radius: 20px;
+        }
+
+        .table-row {
+            background: rgba(255, 255, 255, 0.58);
+            border: 1px solid rgba(76, 57, 43, 0.08);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-family: "Trebuchet MS", sans-serif;
+            font-weight: 700;
+        }
+
+        .status.success {
+            color: var(--success);
+            background: rgba(60, 107, 87, 0.12);
+        }
+
+        .status.warning {
+            color: var(--warning);
+            background: rgba(162, 101, 52, 0.12);
+        }
+
+        .status.danger {
+            color: var(--danger);
+            background: rgba(143, 62, 49, 0.12);
+        }
+
+        .timeline {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .timeline-item {
+            gap: 16px;
+            padding: 16px 18px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.58);
+            border: 1px solid rgba(76, 57, 43, 0.08);
+        }
+
+        .timeline-time {
+            min-width: 78px;
+            color: var(--accent-dark);
+            font-size: 0.92rem;
+            font-family: "Trebuchet MS", sans-serif;
+            font-weight: 700;
+        }
+
+        .timeline-copy {
+            line-height: 1.6;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .timeline-copy strong {
+            display: block;
+            margin-bottom: 3px;
+            color: var(--text);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1rem;
+        }
+
+        .invoice-stack {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .invoice-row {
+            align-items: center;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .invoice-meta {
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        .amount {
+            text-align: right;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .progress-card {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(31, 42, 42, 0.92);
+            color: #f7f0e8;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-family: "Trebuchet MS", sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 12px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .progress-bar span {
+            display: block;
+            width: 78%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #cf9b4d, #b45d3c);
+        }
+
+        @media (max-width: 1120px) {
+            .dashboard-grid,
+            .content-grid,
+            .header {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .mini-kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 820px) {
+            .dashboard-shell {
+                width: min(100%, calc(100% - 16px));
+                margin: 8px auto;
+                border-radius: 24px;
+            }
+
+            .dashboard-grid {
+                min-height: auto;
+            }
+
+            .sidebar,
+            .main {
+                padding: 22px 18px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .owner-access {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .owner-copy {
+                max-width: none;
+            }
+
+            .owner-actions {
+                justify-content: stretch;
+            }
+
+            .owner-actions .button {
+                width: 100%;
+            }
+
+            .header {
+                padding: 22px;
+            }
+
+            .mini-kpis,
+            .floorplan {
+                grid-template-columns: 1fr;
+            }
+
+            .room.combined {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-shell">
+    <div class="dashboard-grid">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">VF</div>
+                <span>VenueFlow</span>
+            </div>
+
+            <section class="venue-card">
+                <span class="eyebrow">Selected Venue</span>
+                <strong>Harbor Summit Centre</strong>
+                <p class="sidebar-note">Singapore · 18 spaces · 3 catering partners · Client dashboard for upcoming events, service choices, and billing.</p>
+            </section>
+
+            <nav class="nav">
+                <a class="active" href="#">Dashboard</a>
+                <a href="#">Browse Venues</a>
+                <a href="#">My Bookings</a>
+                <a href="#">Spaces & Layouts</a>
+                <a href="#">Catering Orders</a>
+                <a href="#">Recurring Templates</a>
+                <a href="#">Invoices & Billing</a>
+            </nav>
+
+            <section class="spotlight">
+                <span class="eyebrow">Venue Switch</span>
+                <h3>Compare and choose a new venue</h3>
+                <p>Review available spaces, equipment packages, catering support, and booking rules before moving your next event to another location.</p>
+                <a class="button" href="#">Open venue selector</a>
+            </section>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div class="owner-access">
+                    <div class="owner-copy">
+                        <span class="owner-label">Venue Owner Access</span>
+                        <p>Manage your own venue from the employee side, or create a venue here first if you do not have one yet.</p>
+                    </div>
+                    <div class="owner-actions">
+                        <a class="button ghost" href="requestvenue.html">Create My Venue</a>
+                        <a class="button" href="employeeview.html">Switch to Employee View</a>
+                    </div>
+                </div>
+            </div>
+
+            <section class="header">
+                <div class="header-copy">
+                    <span class="eyebrow" style="color: var(--accent-dark); background: rgba(180, 93, 60, 0.1);">Client Booking Workspace</span>
+                    <h1>Plan events, manage bookings, and switch venues without losing context.</h1>
+                    <p>Review available venues, compare layouts and service packages, manage recurring events, track catering lock windows, and approve itemized split billing from one client-facing dashboard.</p>
+                </div>
+                <div class="mini-kpis">
+                    <div class="mini-kpi">
+                        <strong>3</strong>
+                        <span>Active venues saved for comparison</span>
+                    </div>
+                    <div class="mini-kpi">
+                        <strong>7</strong>
+                        <span>Upcoming bookings this quarter</span>
+                    </div>
+                    <div class="mini-kpi">
+                        <strong>72h</strong>
+                        <span>Default catering lock lead time</span>
+                    </div>
+                    <div class="mini-kpi">
+                        <strong>2</strong>
+                        <span>Draft quotes awaiting approval</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-row">
+                <article class="metric">
+                    <strong>12</strong>
+                    <span>Venue options matching your attendee profile</span>
+                </article>
+                <article class="metric">
+                    <strong>4</strong>
+                    <span>Bookings ready for service customization</span>
+                </article>
+                <article class="metric">
+                    <strong>186</strong>
+                    <span>Attendees tracked with dietary profiles</span>
+                </article>
+                <article class="metric">
+                    <strong>$42.8k</strong>
+                    <span>Total upcoming booking value</span>
+                </article>
+            </section>
+
+            <div class="content-grid">
+                <div class="primary-column">
+                    <section class="card">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Venue Comparison Board</h2>
+                                <p class="section-subtitle">Compare room combinations, minimum durations, and pricing before choosing a new venue.</p>
+                            </div>
+                            <div class="chips">
+                                <span class="chip">3 saved venues</span>
+                                <span class="chip">6 combinable layouts</span>
+                                <span class="chip">Hourly pricing visible</span>
+                            </div>
+                        </div>
+
+                        <div class="floorplan">
+                            <article class="room combined">
+                                <h4>Orchid Hall A + B</h4>
+                                <p>Harbor Summit Centre · Combined auditorium · 200 guests · $420/hr · 4-hour minimum</p>
+                                <ul>
+                                    <li>Best fit for keynote and dinner conversion</li>
+                                    <li>Recording suite and hybrid broadcast package available</li>
+                                </ul>
+                            </article>
+
+                            <article class="room">
+                                <h4>Meridian Board Suite</h4>
+                                <p>Nordic Exchange House · 16 guests · $120/hr · 2-hour minimum</p>
+                                <ul>
+                                    <li>Strong fit for recurring executive sessions</li>
+                                </ul>
+                            </article>
+
+                            <article class="room">
+                                <h4>Skyline Studio</h4>
+                                <p>Atlas Convention Loft · 40 guests · $175/hr · 3-hour minimum</p>
+                                <ul>
+                                    <li>Video conferencing and recording bundle available</li>
+                                </ul>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Booking & Service Monitor</h2>
+                                <p class="section-subtitle">See which bookings need client action before service, catering, or equipment choices lock in.</p>
+                            </div>
+                            <div class="pill-row">
+                                <span class="pill">Live venue availability</span>
+                                <span class="pill">Catering integrations active</span>
+                            </div>
+                        </div>
+
+                        <div class="table">
+                            <div class="table-row">
+                                <div>
+                                    <strong>Global Health Forum</strong>
+                                    <div class="muted">Current venue has an AV inventory conflict on March 18, 2026. Switching to Atlas Convention Loft clears the projector shortfall.</div>
+                                </div>
+                                <span class="status warning">Compare venue</span>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <strong>Quarterly Training Series</strong>
+                                    <div class="muted">Lunch selection and dietary confirmations are still open for 34 attendees.</div>
+                                </div>
+                                <span class="status success">Ready to edit</span>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <strong>Board Meeting Template</strong>
+                                    <div class="muted">The next recurring instance can be moved to a new venue without rebuilding the agenda or attendee list.</div>
+                                </div>
+                                <span class="status success">Switch enabled</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Upcoming Client Timeline</h2>
+                                <p class="section-subtitle">Key booking decisions, service cutoffs, and approval milestones.</p>
+                            </div>
+                            <span class="chip">March 12, 2026</span>
+                        </div>
+
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-time">08:00</div>
+                                <div class="timeline-copy">
+                                    <strong>Quarterly Training Series Setup</strong>
+                                    Finalize venue choice and confirm coffee service for 34 attendees before the catering lock window closes.
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-time">11:30</div>
+                                <div class="timeline-copy">
+                                    <strong>Board Meeting Template Instance</strong>
+                                    Clone the monthly executive template and switch the March session to Meridian Board Suite if the new quote is approved.
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-time">17:00</div>
+                                <div class="timeline-copy">
+                                    <strong>Global Health Forum Turnover</strong>
+                                    Approve split billing and dinner upgrade after comparing Harbor Summit Centre and Atlas Convention Loft proposals.
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="secondary-column">
+                    <section class="card">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Your Booking Preferences</h2>
+                                <p class="section-subtitle">Saved client preferences follow you when you move an event to another venue.</p>
+                            </div>
+                        </div>
+
+                        <div class="table">
+                            <div class="table-row">
+                                <div>
+                                    <strong>Executive Meetings</strong>
+                                    <div class="muted">Prefer still water only, U-shape boardroom layout, and split invoices by finance and strategy departments.</div>
+                                </div>
+                                <span class="status success">Applied</span>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <strong>Training Events</strong>
+                                    <div class="muted">Recurring training needs captioning, hybrid AV, and gluten-free lunch labels regardless of selected venue.</div>
+                                </div>
+                                <span class="status success">Portable</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Recurring Event Templates</h2>
+                                <p class="section-subtitle">Reusable booking patterns that can be rebooked into a different venue.</p>
+                            </div>
+                        </div>
+
+                        <div class="table">
+                            <div class="table-row">
+                                <div>
+                                    <strong>Monthly Board Meeting</strong>
+                                    <div class="muted">Repeats first Tuesday · 10 attendees · boardroom package + coffee service · venue can be swapped per instance</div>
+                                </div>
+                                <span class="status success">Auto-ready</span>
+                            </div>
+                            <div class="table-row">
+                                <div>
+                                    <strong>Quarterly Training</strong>
+                                    <div class="muted">Repeats every 3 months · 40 attendees · hybrid AV + lunch package · quote venues side by side before confirming</div>
+                                </div>
+                                <span class="status success">Template valid</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Quotes & Split Billing</h2>
+                                <p class="section-subtitle">Compare quotes for different venues and approve itemized split billing.</p>
+                            </div>
+                        </div>
+
+                        <div class="invoice-stack">
+                            <div class="invoice-row">
+                                <div>
+                                    <strong>Q-20318 · Global Health Forum</strong>
+                                    <div class="invoice-meta">Harbor Summit Centre quote with auditorium rental, AV production, and dinner service split 60/40 between sponsors and host ops.</div>
+                                </div>
+                                <span class="amount">$28,640</span>
+                            </div>
+                            <div class="invoice-row">
+                                <div>
+                                    <strong>Q-20325 · Atlas Convention Loft</strong>
+                                    <div class="invoice-meta">Alternative venue quote with upgraded AV bundle and adjusted room rental for the same event footprint.</div>
+                                </div>
+                                <span class="amount">$30,180</span>
+                            </div>
+                        </div>
+
+                        <div class="progress-card">
+                            <div class="progress-labels">
+                                <span>Quote approval progress</span>
+                                <span>64%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <span style="width: 64%;"></span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

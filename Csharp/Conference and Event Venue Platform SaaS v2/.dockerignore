@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+**/*.db
+**/*.log
+
+.git
+.gitignore
+.dockerignore
+README.md
+README-TECH.md
+
+WebApp/appsettings.Development.json

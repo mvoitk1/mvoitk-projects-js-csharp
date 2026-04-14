@@ -1,0 +1,78 @@
+@using WebApp.Helpers
+@inject AppNameService AppNameService
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] — Admin — @AppNameService.AppName</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <style>
+        .admin-nav .nav-link {
+            color: rgba(255,255,255,0.6);
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .admin-nav .nav-link:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+        }
+        .admin-nav .nav-link.active-nav {
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+        }
+    </style>
+</head>
+<body>
+<div class="d-flex" style="min-height:100vh;">
+    <!-- Sidebar -->
+    <nav class="bg-dark text-white p-3" style="width:220px;min-height:100vh;">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+           class="text-white text-decoration-none fs-5 fw-bold d-block mb-4">
+            @AppNameService.AppName Admin
+        </a>
+        @{
+            var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+        }
+        <ul class="nav flex-column gap-1 admin-nav">
+            <li class="nav-item">
+                <a class="nav-link @(ctrl == "Dashboard" ? "active-nav" : "")"
+                   asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ctrl == "Products" ? "active-nav" : "")"
+                   asp-area="Admin" asp-controller="Products" asp-action="Index">Products</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ctrl == "Categories" ? "active-nav" : "")"
+                   asp-area="Admin" asp-controller="Categories" asp-action="Index">Categories</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ctrl == "Collections" ? "active-nav" : "")"
+                   asp-area="Admin" asp-controller="Collections" asp-action="Index">Collections</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ctrl == "Orders" ? "active-nav" : "")"
+                   asp-area="Admin" asp-controller="Orders" asp-action="Index">Orders</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ctrl == "Stock" ? "active-nav" : "")"
+                   asp-area="Admin" asp-controller="Stock" asp-action="Index">Stock</a>
+            </li>
+        </ul>
+        <hr class="border-secondary mt-3">
+        <a class="nav-link text-white-50 small" asp-area="" asp-controller="Home" asp-action="Index">← Back to Shop</a>
+    </nav>
+
+    <!-- Main content -->
+    <div class="flex-grow-1 p-4">
+        @RenderBody()
+    </div>
+</div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,12 @@
+services:
+  webapp-taltech-development:
+    build: .
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=com-akaver-taltech;Username=postgres;Password=postgres"
+    ports:
+      - "6004:8080"
+
+volumes:
+  mssql-taltech-volume-development: 

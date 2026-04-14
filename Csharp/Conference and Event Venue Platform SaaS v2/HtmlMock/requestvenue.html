@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VenueFlow | Request My Venue</title>
+    <style>
+        :root {
+            --sand: #f5efe5;
+            --sand-deep: #e7dac6;
+            --forest: #1f2a2a;
+            --forest-soft: #30423e;
+            --cream: rgba(255, 250, 244, 0.9);
+            --cream-strong: rgba(255, 248, 241, 0.96);
+            --text: #1d201d;
+            --muted: #5d615a;
+            --accent: #b45d3c;
+            --accent-dark: #8d4226;
+            --line: rgba(76, 57, 43, 0.12);
+            --shadow: 0 24px 60px rgba(23, 23, 23, 0.16);
+            --success: #3c6b57;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(232, 192, 165, 0.78), transparent 26%),
+                radial-gradient(circle at bottom right, rgba(45, 84, 74, 0.18), transparent 34%),
+                linear-gradient(135deg, #efe5d4 0%, #f8f3ec 46%, #ece2d6 100%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .page-shell {
+            width: min(1320px, calc(100% - 28px));
+            margin: 18px auto;
+            border-radius: 34px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 250, 244, 0.36);
+            box-shadow: var(--shadow);
+            background: rgba(255, 248, 241, 0.55);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            min-height: calc(100vh - 36px);
+        }
+
+        .sidebar {
+            padding: 28px 22px;
+            color: #f7f0e8;
+            background:
+                linear-gradient(rgba(22, 31, 31, 0.36), rgba(22, 31, 31, 0.44)),
+                linear-gradient(165deg, #6d7c71 0%, #324441 42%, #1d2423 100%);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            font-size: 1rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 240, 224, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-card,
+        .main-card,
+        .info-card {
+            border: 1px solid rgba(255, 244, 232, 0.12);
+            background: rgba(255, 250, 245, 0.08);
+            backdrop-filter: blur(8px);
+        }
+
+        .sidebar-card {
+            padding: 18px;
+            border-radius: 24px;
+            margin-bottom: 22px;
+        }
+
+        .eyebrow,
+        .nav a,
+        .sidebar-note,
+        label,
+        input,
+        textarea,
+        select,
+        .helper,
+        .pill,
+        .info-card p {
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            color: #f0d5bd;
+            background: rgba(255, 245, 232, 0.1);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-note {
+            margin: 0;
+            color: rgba(249, 239, 229, 0.78);
+            line-height: 1.6;
+            font-size: 0.92rem;
+        }
+
+        .nav {
+            display: grid;
+            gap: 8px;
+        }
+
+        .nav a {
+            padding: 12px 14px;
+            border-radius: 16px;
+            color: rgba(247, 240, 232, 0.84);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav a.active,
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff8f0;
+            transform: translateX(2px);
+        }
+
+        .main {
+            padding: 28px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .hero h1,
+        .main-card h2,
+        .info-card h3 {
+            margin: 0;
+            letter-spacing: -0.04em;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.4rem, 4vw, 3.7rem);
+            max-width: 760px;
+        }
+
+        .hero p {
+            max-width: 700px;
+            margin: 14px 0 0;
+            color: var(--muted);
+            line-height: 1.7;
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            color: var(--success);
+            background: rgba(60, 107, 87, 0.12);
+            white-space: nowrap;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.75fr);
+            gap: 22px;
+        }
+
+        .main-card,
+        .info-card {
+            padding: 24px;
+            border-radius: 28px;
+            background: rgba(255, 252, 248, 0.72);
+            border: 1px solid var(--line);
+        }
+
+        .main-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .main-card p {
+            margin: 0 0 20px;
+            color: var(--muted);
+            line-height: 1.7;
+            font-family: "Trebuchet MS", sans-serif;
+        }
+
+        form {
+            display: grid;
+            gap: 18px;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.92rem;
+            color: var(--forest-soft);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid rgba(76, 57, 43, 0.16);
+            border-radius: 16px;
+            padding: 14px 16px;
+            font-size: 0.98rem;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.84);
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 2px solid rgba(180, 93, 60, 0.2);
+            border-color: rgba(180, 93, 60, 0.38);
+        }
+
+        .helper {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding-top: 6px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: none;
+            border-radius: 999px;
+            padding: 13px 22px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .button.primary {
+            color: #fff9f1;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            box-shadow: 0 16px 30px rgba(141, 66, 38, 0.2);
+        }
+
+        .button.ghost {
+            color: var(--forest);
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(76, 57, 43, 0.12);
+        }
+
+        .button:hover {
+            transform: translateY(-1px);
+        }
+
+        .info-stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .info-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .info-list {
+            margin: 16px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            font-family: "Trebuchet MS", sans-serif;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 1080px) {
+            .page-grid,
+            .layout,
+            .field-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-shell {
+                width: min(100%, calc(100% - 16px));
+                margin: 8px auto;
+                border-radius: 24px;
+            }
+
+            .main,
+            .sidebar {
+                padding: 20px;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="page-grid">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">VF</div>
+                <span>VenueFlow</span>
+            </div>
+
+            <section class="sidebar-card">
+                <span class="eyebrow">Venue Owner Access</span>
+                <strong>Request Your Venue</strong>
+                <p class="sidebar-note">Submit your company details so your venue can be reviewed and enabled for owner-side management.</p>
+            </section>
+
+            <nav class="nav">
+                <a href="dashboardpage.html">Dashboard</a>
+                <a href="browsevenues.html">Browse Venues</a>
+                <a href="mybookingsview.html">My Bookings</a>
+                <a href="spaceslayouts.html">Spaces & Layouts</a>
+                <a href="cateringorders.html">Catering Orders</a>
+                <a class="active" href="requestvenue.html">Create My Venue</a>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <section class="hero">
+                <div>
+                    <span class="eyebrow" style="color: var(--accent-dark); background: rgba(180, 93, 60, 0.1);">New Venue Request</span>
+                    <h1>Tell us about your company and the venue you want to manage.</h1>
+                    <p>Use this mock view as the destination from the dashboard. The company name is required so the request can be associated with the correct business account before approval.</p>
+                </div>
+                <div class="pill">Review target: within 2 business days</div>
+            </section>
+
+            <div class="layout">
+                <section class="main-card">
+                    <h2>Venue request form</h2>
+                    <p>Fill in the business and venue details below. This mockup focuses on the initial onboarding flow for owners who do not yet have a venue in VenueFlow.</p>
+
+                    <form>
+                        <div class="field-grid">
+                            <div class="field">
+                                <label for="company-name">Company name *</label>
+                                <input id="company-name" name="company-name" type="text" placeholder="Example Events Ltd." required>
+                                <span class="helper">Required. This is the business name tied to the venue request.</span>
+                            </div>
+
+                            <div class="field">
+                                <label for="contact-name">Contact person</label>
+                                <input id="contact-name" name="contact-name" type="text" placeholder="Alex Morgan">
+                            </div>
+
+                            <div class="field">
+                                <label for="business-email">Business email</label>
+                                <input id="business-email" name="business-email" type="email" placeholder="hello@exampleevents.com">
+                            </div>
+
+                            <div class="field">
+                                <label for="phone-number">Phone number</label>
+                                <input id="phone-number" name="phone-number" type="tel" placeholder="+372 5555 5555">
+                            </div>
+
+                            <div class="field">
+                                <label for="venue-name">Venue name</label>
+                                <input id="venue-name" name="venue-name" type="text" placeholder="Harbor Summit Centre">
+                            </div>
+
+                            <div class="field">
+                                <label for="city">Primary city</label>
+                                <input id="city" name="city" type="text" placeholder="Tallinn">
+                            </div>
+
+                            <div class="field">
+                                <label for="venue-type">Venue type</label>
+                                <select id="venue-type" name="venue-type">
+                                    <option value="">Select venue type</option>
+                                    <option>Conference center</option>
+                                    <option>Hotel meeting venue</option>
+                                    <option>Banquet hall</option>
+                                    <option>Coworking and event space</option>
+                                    <option>Outdoor venue</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="capacity">Estimated max capacity</label>
+                                <input id="capacity" name="capacity" type="number" min="1" placeholder="250">
+                            </div>
+
+                            <div class="field full">
+                                <label for="request-notes">What should we know about this venue?</label>
+                                <textarea id="request-notes" name="request-notes" placeholder="Describe the venue, available spaces, services, or any setup details that matter for onboarding."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button class="button primary" type="submit">Submit Venue Request</button>
+                            <a class="button ghost" href="dashboardpage.html">Back to Dashboard</a>
+                        </div>
+                    </form>
+                </section>
+
+                <aside class="info-stack">
+                    <section class="info-card">
+                        <h3>What happens next</h3>
+                        <p>Your request is reviewed by the onboarding team. Once approved, the venue can be accessed from the employee-side workspace for operational management.</p>
+                        <ul class="info-list">
+                            <li>Business details are checked against your account.</li>
+                            <li>Venue ownership or management rights are verified.</li>
+                            <li>Your owner dashboard is enabled after approval.</li>
+                        </ul>
+                    </section>
+
+                    <section class="info-card">
+                        <h3>Recommended fields</h3>
+                        <p>If you want this mock to go further later, the next additions should be venue documents, billing details, and space inventory setup.</p>
+                    </section>
+                </aside>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

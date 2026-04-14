@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VenueFlow | Admin Access Control</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --bg-deep: #040a14;
+            --panel: rgba(10, 22, 38, 0.86);
+            --panel-strong: rgba(13, 29, 49, 0.94);
+            --line: rgba(126, 169, 219, 0.18);
+            --line-strong: rgba(126, 169, 219, 0.36);
+            --text: #e8f1fb;
+            --muted: #8aa0b9;
+            --accent: #49dcb1;
+            --accent-deep: #1b9f82;
+            --warning: #ffb84d;
+            --danger: #ff6b6b;
+            --info: #5ebcff;
+            --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "Trebuchet MS", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(73, 220, 177, 0.16), transparent 22%),
+                radial-gradient(circle at right 20%, rgba(94, 188, 255, 0.12), transparent 24%),
+                linear-gradient(160deg, #08111c 0%, #07111f 44%, #030812 100%);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 24px 24px;
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 92%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .page-shell {
+            width: min(1480px, calc(100% - 28px));
+            margin: 18px auto;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            background: rgba(4, 12, 22, 0.72);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: 300px minmax(0, 1fr);
+            min-height: calc(100vh - 36px);
+        }
+
+        .sidebar {
+            padding: 28px 22px;
+            background:
+                linear-gradient(180deg, rgba(8, 18, 31, 0.98), rgba(6, 13, 23, 0.98)),
+                linear-gradient(160deg, rgba(73, 220, 177, 0.06), transparent 60%);
+            border-right: 1px solid var(--line);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 26px;
+            font-family: "Courier New", monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-size: 0.95rem;
+        }
+
+        .brand-mark {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: var(--bg);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--info));
+            box-shadow: 0 12px 26px rgba(73, 220, 177, 0.25);
+        }
+
+        .sidebar-card,
+        .hero,
+        .panel,
+        .request-card,
+        .assignment-row,
+        .helper-card {
+            background: linear-gradient(180deg, rgba(15, 30, 50, 0.96), rgba(9, 20, 34, 0.94));
+            border: 1px solid var(--line);
+        }
+
+        .sidebar-card {
+            padding: 18px;
+            border-radius: 22px;
+        }
+
+        .eyebrow,
+        .nav a,
+        .pill,
+        .status,
+        .meta,
+        label,
+        select {
+            font-family: "Courier New", monospace;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(73, 220, 177, 0.22);
+            color: var(--accent);
+            background: rgba(73, 220, 177, 0.08);
+            font-size: 0.76rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-card strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+
+        .sidebar-note,
+        .hero p,
+        .panel-subtitle,
+        .meta,
+        .helper-card p,
+        .assignment-row p {
+            color: var(--muted);
+            line-height: 1.65;
+            font-size: 0.92rem;
+        }
+
+        .nav {
+            display: grid;
+            gap: 8px;
+            margin: 24px 0;
+        }
+
+        .nav a {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            color: #adc0d7;
+            font-size: 0.86rem;
+            letter-spacing: 0.04em;
+            transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .nav a.active,
+        .nav a:hover {
+            transform: translateX(3px);
+            border-color: var(--line-strong);
+            color: var(--text);
+            background: rgba(94, 188, 255, 0.08);
+        }
+
+        .main {
+            padding: 26px;
+        }
+
+        .topbar,
+        .hero,
+        .content-grid,
+        .panel-head,
+        .request-top,
+        .request-actions,
+        .assignment-row {
+            display: flex;
+        }
+
+        .topbar,
+        .panel-head,
+        .request-top {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar {
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .queue-strip {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 184, 77, 0.22);
+            color: #ffe0a7;
+            background: linear-gradient(90deg, rgba(255, 184, 77, 0.16), rgba(255, 107, 107, 0.08));
+        }
+
+        .queue-strip strong {
+            font-family: "Courier New", monospace;
+            letter-spacing: 0.06em;
+        }
+
+        .button,
+        .pill,
+        .status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+        }
+
+        .button {
+            padding: 12px 18px;
+            border: 1px solid transparent;
+            color: var(--bg);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #7bedc7);
+            box-shadow: 0 14px 28px rgba(73, 220, 177, 0.18);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(73, 220, 177, 0.26);
+        }
+
+        .button.ghost {
+            color: var(--text);
+            border-color: var(--line-strong);
+            background: rgba(94, 188, 255, 0.06);
+            box-shadow: none;
+        }
+
+        .hero {
+            justify-content: space-between;
+            gap: 28px;
+            padding: 28px;
+            margin-bottom: 20px;
+            border-radius: 28px;
+            background:
+                linear-gradient(135deg, rgba(94, 188, 255, 0.08), rgba(73, 220, 177, 0.06)),
+                linear-gradient(180deg, rgba(15, 30, 50, 0.96), rgba(9, 20, 34, 0.94));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -120px -120px auto;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(73, 220, 177, 0.18), transparent 68%);
+        }
+
+        .hero h1,
+        .panel h2,
+        .request-card h3,
+        .helper-card h3,
+        .assignment-row strong {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            letter-spacing: -0.05em;
+        }
+
+        .hero h1 {
+            max-width: 760px;
+            font-size: clamp(2.6rem, 5vw, 4.3rem);
+            line-height: 0.94;
+        }
+
+        .hero-stack {
+            min-width: 280px;
+            display: grid;
+            gap: 12px;
+            align-content: start;
+        }
+
+        .pill {
+            justify-content: flex-start;
+            padding: 11px 14px;
+            border: 1px solid var(--line-strong);
+            color: #cae7ff;
+            background: rgba(94, 188, 255, 0.08);
+            font-size: 0.82rem;
+            letter-spacing: 0.05em;
+        }
+
+        .content-grid {
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .primary-column {
+            flex: 1.16;
+            display: grid;
+            gap: 16px;
+        }
+
+        .secondary-column {
+            flex: 1;
+            display: grid;
+            gap: 16px;
+        }
+
+        .panel,
+        .helper-card {
+            padding: 22px;
+            border-radius: 24px;
+        }
+
+        .panel h2 {
+            font-size: 1.7rem;
+        }
+
+        .panel-subtitle {
+            margin-top: 8px;
+        }
+
+        .request-list,
+        .assignment-list {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .request-card,
+        .assignment-row {
+            padding: 18px;
+            border-radius: 18px;
+        }
+
+        .request-card {
+            display: grid;
+            gap: 14px;
+        }
+
+        .request-card h3 {
+            font-size: 1.2rem;
+        }
+
+        .request-actions {
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+        }
+
+        .status.ready {
+            color: #88ffd7;
+            background: rgba(73, 220, 177, 0.12);
+        }
+
+        .status.pending {
+            color: #ffd48a;
+            background: rgba(255, 184, 77, 0.12);
+        }
+
+        .status.review {
+            color: #ffb0b0;
+            background: rgba(255, 107, 107, 0.12);
+        }
+
+        .assignment-row {
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .assignment-controls {
+            min-width: 250px;
+            display: grid;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 0.82rem;
+            color: #cae7ff;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        select {
+            width: 100%;
+            border: 1px solid rgba(126, 169, 219, 0.22);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--text);
+            background: rgba(18, 39, 62, 0.92);
+            font-size: 0.9rem;
+        }
+
+        .helper-list {
+            margin: 14px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        @media (max-width: 1120px) {
+            .page-grid,
+            .content-grid {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
+
+            .hero,
+            .assignment-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero-stack,
+            .assignment-controls {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-shell {
+                width: min(100%, calc(100% - 14px));
+                margin: 7px auto;
+                border-radius: 22px;
+            }
+
+            .sidebar,
+            .main {
+                padding: 18px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="page-grid">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">VF</div>
+                <span>Admin Grid</span>
+            </div>
+
+            <section class="sidebar-card">
+                <span class="eyebrow">Approval Layer</span>
+                <strong>Requests and permissions</strong>
+                <p class="sidebar-note">This screen now uses the same blue command-center system as the venue dashboard, so the admin area reads as one product surface.</p>
+            </section>
+
+            <nav class="nav">
+                <a href="adminvenuesdashboard.html">Venue Command</a>
+                <a class="active" href="adminvenuerequests.html">Approvals / Access</a>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div class="queue-strip">
+                    <strong>QUEUE STATUS / ELEVATED</strong>
+                    <span>12 venue requests and 9 access decisions are waiting for admin action.</span>
+                </div>
+                <a class="button ghost" href="adminvenuesdashboard.html">Back to venue command</a>
+            </div>
+
+            <section class="hero">
+                <div>
+                    <span class="eyebrow">Admin Access Control</span>
+                    <h1>Approve venues, then bind employee accounts to the right venue authority.</h1>
+                    <p>This admin view treats venue onboarding and permissions as a single operational flow, using the same command-center design as the venue overview.</p>
+                </div>
+                <div class="hero-stack">
+                    <div class="pill">queue / venue requests / 12</div>
+                    <div class="pill">queue / employee rights / 9</div>
+                    <div class="pill">manual review / 3 high-risk submissions</div>
+                </div>
+            </section>
+
+            <div class="content-grid">
+                <section class="primary-column">
+                    <article class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Venue approval queue</h2>
+                                <div class="panel-subtitle">Review business legitimacy, venue ownership, and submission quality before allowing access.</div>
+                            </div>
+                        </div>
+
+                        <div class="request-list">
+                            <article class="request-card">
+                                <div class="request-top">
+                                    <div>
+                                        <h3>Greenline Campus Hub</h3>
+                                        <div class="meta">submitter / mia.tamm / company / Greenline Events OU / city / Narva / capacity / 180</div>
+                                    </div>
+                                    <span class="status ready">READY</span>
+                                </div>
+                                <div class="meta">registry verified, company email matches request, venue images attached, recommended for approval and immediate staff assignment.</div>
+                                <div class="request-actions">
+                                    <a class="button" href="#">Approve venue</a>
+                                    <a class="button ghost" href="#">Hold for review</a>
+                                    <a class="button ghost" href="#">Reject</a>
+                                </div>
+                            </article>
+
+                            <article class="request-card">
+                                <div class="request-top">
+                                    <div>
+                                        <h3>Riverside Loft</h3>
+                                        <div class="meta">submitter / oliver.saar / company / Riverside Hospitality / city / Parnu / capacity / 90</div>
+                                    </div>
+                                    <span class="status pending">PENDING</span>
+                                </div>
+                                <div class="meta">ownership documents incomplete. Keep blocked until legal proof is uploaded and linked to the venue request.</div>
+                                <div class="request-actions">
+                                    <a class="button ghost" href="#">Request documents</a>
+                                    <a class="button ghost" href="#">Open details</a>
+                                </div>
+                            </article>
+
+                            <article class="request-card">
+                                <div class="request-top">
+                                    <div>
+                                        <h3>Skybridge Expo Annex</h3>
+                                        <div class="meta">submitter / unknown-domain email / city / Tallinn / capacity / 420 / domain mismatch flagged</div>
+                                    </div>
+                                    <span class="status review">REVIEW</span>
+                                </div>
+                                <div class="meta">business domain does not align with declared company. Requires manual validation before any approval or staff access can proceed.</div>
+                                <div class="request-actions">
+                                    <a class="button ghost" href="#">Open verification</a>
+                                    <a class="button ghost" href="#">Reject request</a>
+                                </div>
+                            </article>
+                        </div>
+                    </article>
+                </section>
+
+                <aside class="secondary-column">
+                    <article class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Employee rights assignment</h2>
+                                <div class="panel-subtitle">Only grant venue access after the corresponding venue request reaches an approved state.</div>
+                            </div>
+                        </div>
+
+                        <div class="assignment-list">
+                            <article class="assignment-row">
+                                <div>
+                                    <strong>anna@greenline.ee</strong>
+                                    <p>Eligible for assignment. Company and venue request are already verified.</p>
+                                </div>
+                                <div class="assignment-controls">
+                                    <div>
+                                        <label for="venue-anna">target venue</label>
+                                        <select id="venue-anna">
+                                            <option>Greenline Campus Hub</option>
+                                            <option>Harbor Summit Centre</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="role-anna">access level</label>
+                                        <select id="role-anna">
+                                            <option>Venue employee</option>
+                                            <option>Venue manager</option>
+                                        </select>
+                                    </div>
+                                    <a class="button" href="#">Grant rights</a>
+                                </div>
+                            </article>
+
+                            <article class="assignment-row">
+                                <div>
+                                    <strong>markus@riversideloft.ee</strong>
+                                    <p>Blocked. Employee exists, but venue approval has not been completed.</p>
+                                </div>
+                                <div class="assignment-controls">
+                                    <div>
+                                        <label for="venue-markus">target venue</label>
+                                        <select id="venue-markus">
+                                            <option>Riverside Loft</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="role-markus">access level</label>
+                                        <select id="role-markus">
+                                            <option>Venue employee</option>
+                                            <option>Venue manager</option>
+                                        </select>
+                                    </div>
+                                    <a class="button ghost" href="#">Waiting for approval</a>
+                                </div>
+                            </article>
+
+                            <article class="assignment-row">
+                                <div>
+                                    <strong>liis@aurorahotel.ee</strong>
+                                    <p>Existing employee requesting expanded venue authority. Manager-level access needs manual confirmation.</p>
+                                </div>
+                                <div class="assignment-controls">
+                                    <div>
+                                        <label for="venue-liis">target venue</label>
+                                        <select id="venue-liis">
+                                            <option>Aurora Hotel Forum</option>
+                                            <option>Harbor Summit Centre</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="role-liis">access level</label>
+                                        <select id="role-liis">
+                                            <option>Venue manager</option>
+                                            <option>Venue employee</option>
+                                        </select>
+                                    </div>
+                                    <a class="button" href="#">Update rights</a>
+                                </div>
+                            </article>
+                        </div>
+                    </article>
+
+                    <article class="helper-card">
+                        <h3>Decision rules</h3>
+                        <p>The screen now shares the same blue control-room styling as the venue command dashboard.</p>
+                        <ul class="helper-list">
+                            <li>Never grant venue rights before venue approval is final.</li>
+                            <li>Use manual review for domain mismatches or incomplete legal proof.</li>
+                            <li>Restrict manager access to verified employees only.</li>
+                            <li>Leave a clear blocked state when a request is still pending.</li>
+                        </ul>
+                    </article>
+                </aside>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

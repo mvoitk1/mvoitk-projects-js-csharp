@@ -1,0 +1,267 @@
+@using App.Resources.Views.Public
+@model WebApp.ViewModels.Public.PublicVenueDetailsViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = string.Format(Pages.VenueDetailsTitle, Model.Name);
+}
+
+<section class="page-hero">
+    <div>
+        <p class="eyebrow">@Pages.VenueDetailsEyebrow</p>
+        <h1>@Model.Name</h1>
+        <p class="page-description">@(!string.IsNullOrWhiteSpace(Model.Description) ? Model.Description : Pages.VenueDetailsFallbackDescription)</p>
+    </div>
+    <div class="hero-actions">
+        <a class="public-button" asp-action="Index">@Pages.VenueDetailsBackToBrowse</a>
+        <a class="action-link" href="#booking-request">@Pages.VenueDetailsRequestBooking</a>
+    </div>
+</section>
+
+@if (TempData["BookingRequestSuccess"] is string successMessage)
+{
+    <div class="status-banner success">
+        <strong>@Pages.BookingRequestSuccessTitle</strong>
+        <span>@successMessage</span>
+    </div>
+}
+
+<section class="venue-grid venue-detail-grid">
+    <article class="venue-card">
+        <div class="venue-card-top">
+            <div>
+                <p class="eyebrow">@Model.City, @Model.Country</p>
+                <h3>@Pages.VenueDetailsOverviewTitle</h3>
+            </div>
+            <span class="venue-rate">@Model.HourlyRate</span>
+        </div>
+        <dl class="venue-stats">
+            <div>
+                <dt>@Pages.VenueCapacityLabel</dt>
+                <dd>@Model.Capacity</dd>
+            </div>
+            <div>
+                <dt>@Pages.VenueSpacesLabel</dt>
+                <dd>@Model.Spaces.Count</dd>
+            </div>
+            <div>
+                <dt>@Pages.VenueBookingsLabel</dt>
+                <dd>@Model.UpcomingBookingsCount</dd>
+            </div>
+        </dl>
+        <p class="venue-address"><strong>@Pages.VenueAddressLabel:</strong> @Model.AddressLine1</p>
+    </article>
+</section>
+
+<section class="feature-section">
+    <div class="section-heading">
+        <h2>@Pages.VenueDetailsSpacesTitle</h2>
+        <p>@Pages.VenueDetailsSpacesDescription</p>
+    </div>
+
+    @if (Model.Spaces.Count == 0)
+    {
+        <section class="empty-state">
+            <p>@Pages.VenueDetailsSpacesEmpty</p>
+        </section>
+    }
+    else
+    {
+        <section class="venue-grid">
+            @foreach (var space in Model.Spaces)
+            {
+                <article class="venue-card">
+                    <div class="venue-card-top">
+                        <div>
+                            <p class="eyebrow">@space.Code</p>
+                            <h3>@space.Name</h3>
+                        </div>
+                        <span class="venue-rate">@space.HourlyRate</span>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(space.Description))
+                    {
+                        <p class="venue-copy">@space.Description</p>
+                    }
+                    <dl class="venue-stats">
+                        <div>
+                            <dt>@Pages.VenueCapacityLabel</dt>
+                            <dd>@space.MaximumCapacity</dd>
+                        </div>
+                        <div>
+                            <dt>@Pages.VenueSpaceMinimumDurationLabel</dt>
+                            <dd>@string.Format(Pages.VenueSpaceMinutesValue, space.MinimumBookingDurationMinutes)</dd>
+                        </div>
+                        <div>
+                            <dt>@Pages.VenueSpaceStatusLabel</dt>
+                            <dd>@space.Status</dd>
+                        </div>
+                    </dl>
+                    @if (space.Layouts.Count > 0)
+                    {
+                        <div class="field-helper">
+                            <strong>@Pages.LayoutSelectionLabel:</strong>
+                            @string.Join(", ", space.Layouts.Select(layout => $"{layout.Name} ({layout.Capacity})"))
+                        </div>
+                    }
+                </article>
+            }
+        </section>
+    }
+</section>
+
+<section class="request-layout" id="booking-request">
+    <article class="form-card">
+        <h2>@Pages.BookingRequestTitle</h2>
+        <p>@Pages.BookingRequestDescription</p>
+
+        @if (!Model.CanRequestBooking)
+        {
+            <p>@Pages.BookingRequestSignInPrompt</p>
+            <a class="public-button" asp-area="Identity" asp-page="/Account/Login">@Pages.NavLogin</a>
+        }
+        else
+        {
+            <form asp-action="RequestBooking" asp-route-slug="@Model.Slug" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                <div class="field-grid">
+                    <div class="field">
+                        <label asp-for="BookingRequest.SpaceId"></label>
+                        <select asp-for="BookingRequest.SpaceId">
+                            @foreach (var space in Model.Spaces.Where(space => string.Equals(space.Status, "Active", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                <option value="@space.SpaceId">@space.Name (@space.MaximumCapacity)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="BookingRequest.SpaceId" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.LayoutId"></label>
+                        <select asp-for="BookingRequest.LayoutId">
+                            <option value="">@Pages.BookingRequestLayoutOptional</option>
+                            @foreach (var space in Model.Spaces.Where(space => string.Equals(space.Status, "Active", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                @foreach (var layout in space.Layouts)
+                                {
+                                    <option value="@layout.LayoutId">@space.Name - @layout.Name (@layout.Capacity)</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="BookingRequest.LayoutId" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.EventTitle"></label>
+                        <input asp-for="BookingRequest.EventTitle" />
+                        <span asp-validation-for="BookingRequest.EventTitle" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.ClientName"></label>
+                        <input asp-for="BookingRequest.ClientName" />
+                        <span asp-validation-for="BookingRequest.ClientName" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.StartsAt"></label>
+                        <input asp-for="BookingRequest.StartsAt" type="datetime-local" />
+                        <span asp-validation-for="BookingRequest.StartsAt" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.EndsAt"></label>
+                        <input asp-for="BookingRequest.EndsAt" type="datetime-local" />
+                        <span asp-validation-for="BookingRequest.EndsAt" class="field-validation-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="BookingRequest.ExpectedAttendees"></label>
+                        <input asp-for="BookingRequest.ExpectedAttendees" />
+                        <span asp-validation-for="BookingRequest.ExpectedAttendees" class="field-validation-error"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label asp-for="BookingRequest.CateringNotes"></label>
+                        <div class="field-helper">@Pages.BookingRequestCateringOptionsHint</div>
+                        <div class="checkbox-group-grid">
+                            @for (var groupIndex = 0; groupIndex < WebApp.ViewModels.Public.PublicBookingRequestViewModel.CateringOptionGroups.Count; groupIndex++)
+                            {
+                                var group = WebApp.ViewModels.Public.PublicBookingRequestViewModel.CateringOptionGroups[groupIndex];
+                                <fieldset class="selection-group">
+                                    <legend>@group.Label</legend>
+                                    @for (var optionIndex = 0; optionIndex < group.Options.Count; optionIndex++)
+                                    {
+                                        var option = group.Options[optionIndex];
+                                        var isSelected = Model.BookingRequest.SelectedCateringOptions.Contains(option);
+                                        <label class="checkbox-option">
+                                            @if (isSelected)
+                                            {
+                                                <input
+                                                    type="checkbox"
+                                                    name="BookingRequest.SelectedCateringOptions"
+                                                    value="@option"
+                                                    checked />
+                                            }
+                                            else
+                                            {
+                                                <input
+                                                    type="checkbox"
+                                                    name="BookingRequest.SelectedCateringOptions"
+                                                    value="@option" />
+                                            }
+                                            <span>@option</span>
+                                        </label>
+                                    }
+                                </fieldset>
+                            }
+                        </div>
+                        <textarea asp-for="BookingRequest.CateringNotes" rows="4"></textarea>
+                        <span asp-validation-for="BookingRequest.CateringNotes" class="field-validation-error"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label asp-for="BookingRequest.SetupRequirements"></label>
+                        <div class="field-helper">@Pages.BookingRequestSetupOptionsHint</div>
+                        <div class="checkbox-group-grid">
+                            <fieldset class="selection-group">
+                                <legend>@Pages.BookingRequestSetupOptionsLabel</legend>
+                                @for (var setupIndex = 0; setupIndex < WebApp.ViewModels.Public.PublicBookingRequestViewModel.SetupOptions.Count; setupIndex++)
+                                {
+                                    var option = WebApp.ViewModels.Public.PublicBookingRequestViewModel.SetupOptions[setupIndex];
+                                    var isSelected = Model.BookingRequest.SelectedSetupOptions.Contains(option);
+                                    <label class="checkbox-option">
+                                        @if (isSelected)
+                                        {
+                                            <input
+                                                type="checkbox"
+                                                name="BookingRequest.SelectedSetupOptions"
+                                                value="@option"
+                                                checked />
+                                        }
+                                        else
+                                        {
+                                            <input
+                                                type="checkbox"
+                                                name="BookingRequest.SelectedSetupOptions"
+                                                value="@option" />
+                                        }
+                                        <span>@option</span>
+                                    </label>
+                                }
+                            </fieldset>
+                        </div>
+                        <textarea asp-for="BookingRequest.SetupRequirements" rows="3"></textarea>
+                        <span asp-validation-for="BookingRequest.SetupRequirements" class="field-validation-error"></span>
+                    </div>
+                    <div class="field field-full">
+                        <label asp-for="BookingRequest.AdditionalRequirements"></label>
+                        <textarea asp-for="BookingRequest.AdditionalRequirements" rows="3"></textarea>
+                        <span asp-validation-for="BookingRequest.AdditionalRequirements" class="field-validation-error"></span>
+                        <span class="field-helper">@Pages.BookingRequestHelperText</span>
+                    </div>
+                </div>
+                <button class="public-button" type="submit">@Pages.SubmitBookingRequestCta</button>
+            </form>
+        }
+    </article>
+    <aside class="sidebar-card">
+        <h3>@Pages.BookingRequestSidebarTitle</h3>
+        <p>@Pages.BookingRequestSidebarBody</p>
+    </aside>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

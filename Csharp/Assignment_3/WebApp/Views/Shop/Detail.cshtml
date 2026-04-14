@@ -1,0 +1,179 @@
+@using System.Text.Json
+@model App.DTO.v1.Products.ProductDto
+@{
+    ViewData["Title"] = Model.Name;
+    var variantsJson = JsonSerializer.Serialize(Model.Variants);
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index">Shop</a></li>
+        <li class="breadcrumb-item active">@Model.Name</li>
+    </ol>
+</nav>
+
+<div class="row g-5" x-data="variantSelector(@Html.Raw(variantsJson))">
+    <!-- Images -->
+    <div class="col-md-6">
+        @if (Model.Images.Any())
+        {
+            <img :src="primaryImage" :alt="primaryAlt" class="img-fluid rounded shadow-sm w-100"
+                 style="max-height:500px;object-fit:cover;">
+            @if (Model.Images.Count > 1)
+            {
+                <div class="d-flex gap-2 mt-2 flex-wrap">
+                    @foreach (var img in Model.Images)
+                    {
+                        <img src="@img.Url" alt="@img.AltText"
+                             class="rounded" style="height:70px;width:70px;object-fit:cover;cursor:pointer;"
+                             @@click="selectImage('@img.Url', '@img.AltText')">
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                 style="height:400px;">
+                <span class="text-muted">No image available</span>
+            </div>
+        }
+    </div>
+
+    <!-- Details & variant selector -->
+    <div class="col-md-6">
+        <h1 class="h2">@Model.Name</h1>
+        @if (!string.IsNullOrEmpty(Model.CollectionName))
+        {
+            <p class="text-muted small mb-1">@Model.CollectionName</p>
+        }
+        <p class="fs-4 fw-semibold text-dark" x-text="selectedPrice || 'Select a variant'"></p>
+
+        <p class="mb-4">@Model.Description</p>
+        @if (!string.IsNullOrEmpty(Model.Material))
+        {
+            <p class="text-muted small">Material: @Model.Material</p>
+        }
+
+        <!-- Color selector -->
+        @if (Model.Variants.Select(v => v.ColorId).Distinct().Count() > 1)
+        {
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Color: <span x-text="selectedColorName" class="fw-normal"></span></label>
+                <div class="d-flex gap-2 flex-wrap">
+                    @foreach (var color in Model.Variants.GroupBy(v => v.ColorId).Select(g => g.First()))
+                    {
+                        <button type="button"
+                                class="btn btn-sm rounded-circle border border-2"
+                                style="width:32px;height:32px;background-color:@color.ColorHex;"
+                                title="@color.ColorName"
+                                @@click="selectColor('@color.ColorId')"
+                                :class="selectedColorId === '@color.ColorId' ? 'border-dark' : 'border-secondary'">
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Size selector -->
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Size</label>
+            <div class="d-flex gap-2 flex-wrap">
+                @foreach (var size in Model.Variants.GroupBy(v => v.SizeId).Select(g => g.First()))
+                {
+                    <button type="button"
+                            class="btn btn-sm border"
+                            @@click="selectSize('@size.SizeId')"
+                            :disabled="!isSizeAvailable('@size.SizeId')"
+                            :class="selectedSizeId === '@size.SizeId' ? 'btn-dark' : 'btn-outline-secondary'">
+                        @size.SizeCode
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Stock indicator -->
+        <p class="small" x-show="selectedVariant">
+            <span x-show="selectedVariant?.stockQty > 0" class="text-success">
+                In stock (<span x-text="selectedVariant?.stockQty"></span> left)
+            </span>
+            <span x-show="selectedVariant?.stockQty === 0" class="text-danger">Out of stock</span>
+        </p>
+
+        <!-- Add to cart -->
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <form asp-controller="Cart" asp-action="AddItem" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productVariantId" :value="selectedVariantId">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-dark btn-lg w-100"
+                        :disabled="!selectedVariantId || selectedVariant?.stockQty === 0">
+                    Add to Cart
+                </button>
+            </form>
+        }
+        else
+        {
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-dark btn-lg w-100">
+                Login to purchase
+            </a>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function variantSelector(variants) {
+            return {
+                variants,
+                selectedColorId: null,
+                selectedSizeId: null,
+                primaryImage: '@(Model.Images.FirstOrDefault()?.Url ?? "")',
+                primaryAlt: '@(Model.Images.FirstOrDefault()?.AltText ?? "")',
+
+                get selectedVariant() {
+                    if (!this.selectedColorId || !this.selectedSizeId) return null;
+                    return this.variants.find(v =>
+                        v.colorId === this.selectedColorId && v.sizeId === this.selectedSizeId
+                    ) || null;
+                },
+
+                get selectedVariantId() {
+                    return this.selectedVariant?.id || null;
+                },
+
+                get selectedPrice() {
+                    if (!this.selectedVariant) return null;
+                    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR' })
+                        .format(this.selectedVariant.price);
+                },
+
+                get selectedColorName() {
+                    const v = this.variants.find(v => v.colorId === this.selectedColorId);
+                    return v?.colorName || '';
+                },
+
+                selectColor(colorId) {
+                    this.selectedColorId = colorId;
+                },
+
+                selectSize(sizeId) {
+                    this.selectedSizeId = sizeId;
+                },
+
+                isSizeAvailable(sizeId) {
+                    if (!this.selectedColorId) return true;
+                    return this.variants.some(v =>
+                        v.colorId === this.selectedColorId && v.sizeId === sizeId && v.stockQty > 0
+                    );
+                },
+
+                selectImage(url, alt) {
+                    this.primaryImage = url;
+                    this.primaryAlt = alt;
+                }
+            }
+        }
+    </script>
+}

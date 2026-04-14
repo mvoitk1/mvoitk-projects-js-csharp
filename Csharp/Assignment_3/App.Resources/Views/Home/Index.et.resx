@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>1.3</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="HeroTitle" xml:space="preserve"><value>Uus Hooaeg, Uus Stiil</value></data>
+  <data name="HeroSubtitle" xml:space="preserve"><value>Avasta meie uusimad kollektsioonid kaasaegse garderoobi jaoks.</value></data>
+  <data name="ShopNow" xml:space="preserve"><value>Osta nüüd</value></data>
+  <data name="Collections" xml:space="preserve"><value>Kollektsioonid</value></data>
+  <data name="ViewCollection" xml:space="preserve"><value>Vaata kollektsiooni</value></data>
+  <data name="FeaturedProducts" xml:space="preserve"><value>Esiletõstetud tooted</value></data>
+  <data name="ViewAll" xml:space="preserve"><value>Vaata kõiki</value></data>
+  <data name="ShopByCategory" xml:space="preserve"><value>Osta kategooria järgi</value></data>
+  <data name="From" xml:space="preserve"><value>Alates</value></data>
+  <data name="NoImage" xml:space="preserve"><value>Pilt puudub</value></data>
+</root>

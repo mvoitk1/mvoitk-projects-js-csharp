@@ -1,0 +1,9 @@
+@if (TempData["WorkspaceSuccess"] is string successMessage)
+{
+    <div class="workspace-message is-success">@successMessage</div>
+}
+
+@if (TempData["WorkspaceError"] is string errorMessage)
+{
+    <div class="workspace-message is-error">@errorMessage</div>
+}

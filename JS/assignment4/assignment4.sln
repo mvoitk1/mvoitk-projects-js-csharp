@@ -1,0 +1,92 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "WebApp\WebApp.csproj", "{AD7366BD-F814-4B2E-9BA8-FB772FB3AC48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Domain", "App.Domain\App.Domain.csproj", "{3B4559DC-875D-474F-9840-6F8F1EE63F54}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.DAL.EF", "App.DAL.EF\App.DAL.EF.csproj", "{B033C7EF-5103-409F-A2B6-329D0E639D84}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A027AA51-08FA-4C66-94E6-77EC39781C7E}"
+ProjectSection(SolutionItems) = preProject
+	.dockerignore = .dockerignore
+	.gitignore = .gitignore
+	.gitlab-ci.yml = .gitlab-ci.yml
+	Directory.Build.props = Directory.Build.props
+	docker-compose.development.yml = docker-compose.development.yml
+	docker-compose.production.yml = docker-compose.production.yml
+	docker-compose.yml = docker-compose.yml
+	Dockerfile = Dockerfile
+	nuget.config = nuget.config
+	README.md = README.md
+EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublicApi.DTO.v1", "PublicApi.DTO.v1\PublicApi.DTO.v1.csproj", "{3740D22B-5308-4896-A84E-3E8DDCA3691D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resources", "Resources\Resources.csproj", "{19F0999D-FCF8-45FC-922E-19310A03FB49}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Base", "Base", "{9EC9BA72-3140-4DE0-B301-B5DDAA3D67B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.akaver.Domain.Base", "com.akaver.Domain.Base\com.akaver.Domain.Base.csproj", "{E137C5FC-5528-4DA3-9FA0-440691054EDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.akaver.Contracts.Domain.Base", "com.akaver.Contracts.Domain.Base\com.akaver.Contracts.Domain.Base.csproj", "{5D076A66-F493-46BA-B076-DCB3AA85A088}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.akaver.DAL.Base.EF", "com.akaver.DAL.Base.EF\com.akaver.DAL.Base.EF.csproj", "{30B68400-75FA-47FF-84E1-678A2A6DDAA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.akaver.Extensions", "com.akaver.Extensions\com.akaver.Extensions.csproj", "{B754666E-2040-4CFF-93C8-D1C941FD10C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{F8BA1DD6-0F91-4BC8-87C6-5263E179965E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AD7366BD-F814-4B2E-9BA8-FB772FB3AC48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD7366BD-F814-4B2E-9BA8-FB772FB3AC48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD7366BD-F814-4B2E-9BA8-FB772FB3AC48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD7366BD-F814-4B2E-9BA8-FB772FB3AC48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B4559DC-875D-474F-9840-6F8F1EE63F54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B4559DC-875D-474F-9840-6F8F1EE63F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B4559DC-875D-474F-9840-6F8F1EE63F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B4559DC-875D-474F-9840-6F8F1EE63F54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B033C7EF-5103-409F-A2B6-329D0E639D84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B033C7EF-5103-409F-A2B6-329D0E639D84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B033C7EF-5103-409F-A2B6-329D0E639D84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B033C7EF-5103-409F-A2B6-329D0E639D84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3740D22B-5308-4896-A84E-3E8DDCA3691D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3740D22B-5308-4896-A84E-3E8DDCA3691D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3740D22B-5308-4896-A84E-3E8DDCA3691D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3740D22B-5308-4896-A84E-3E8DDCA3691D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19F0999D-FCF8-45FC-922E-19310A03FB49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19F0999D-FCF8-45FC-922E-19310A03FB49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19F0999D-FCF8-45FC-922E-19310A03FB49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19F0999D-FCF8-45FC-922E-19310A03FB49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E137C5FC-5528-4DA3-9FA0-440691054EDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E137C5FC-5528-4DA3-9FA0-440691054EDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E137C5FC-5528-4DA3-9FA0-440691054EDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E137C5FC-5528-4DA3-9FA0-440691054EDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D076A66-F493-46BA-B076-DCB3AA85A088}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D076A66-F493-46BA-B076-DCB3AA85A088}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D076A66-F493-46BA-B076-DCB3AA85A088}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D076A66-F493-46BA-B076-DCB3AA85A088}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30B68400-75FA-47FF-84E1-678A2A6DDAA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30B68400-75FA-47FF-84E1-678A2A6DDAA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30B68400-75FA-47FF-84E1-678A2A6DDAA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30B68400-75FA-47FF-84E1-678A2A6DDAA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B754666E-2040-4CFF-93C8-D1C941FD10C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B754666E-2040-4CFF-93C8-D1C941FD10C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B754666E-2040-4CFF-93C8-D1C941FD10C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B754666E-2040-4CFF-93C8-D1C941FD10C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8BA1DD6-0F91-4BC8-87C6-5263E179965E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8BA1DD6-0F91-4BC8-87C6-5263E179965E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8BA1DD6-0F91-4BC8-87C6-5263E179965E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8BA1DD6-0F91-4BC8-87C6-5263E179965E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E137C5FC-5528-4DA3-9FA0-440691054EDC} = {9EC9BA72-3140-4DE0-B301-B5DDAA3D67B1}
+		{5D076A66-F493-46BA-B076-DCB3AA85A088} = {9EC9BA72-3140-4DE0-B301-B5DDAA3D67B1}
+		{30B68400-75FA-47FF-84E1-678A2A6DDAA2} = {9EC9BA72-3140-4DE0-B301-B5DDAA3D67B1}
+		{B754666E-2040-4CFF-93C8-D1C941FD10C9} = {9EC9BA72-3140-4DE0-B301-B5DDAA3D67B1}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>1.3</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="WorkspaceTitle" xml:space="preserve"><value>VenueFlow | Workspace</value></data>
+  <data name="WorkspaceRedirectDescription" xml:space="preserve"><value>Routing you to the workspace that matches your role and active venue context.</value></data>
+  <data name="VenueSelectorLabel" xml:space="preserve"><value>Venue context</value></data>
+  <data name="VenueSelectorButton" xml:space="preserve"><value>Switch venue</value></data>
+  <data name="NoVenueMembershipTitle" xml:space="preserve"><value>No venue access yet</value></data>
+  <data name="NoVenueMembershipBody" xml:space="preserve"><value>Your account does not have an active venue membership. Submit a venue request or ask an admin to assign access.</value></data>
+  <data name="WorkspaceAccessReadyTitle" xml:space="preserve"><value>Your venue access is ready</value></data>
+  <data name="WorkspaceAccessReadyBody" xml:space="preserve"><value>Your account now has venue access in the database. If you are still seeing this page, sign out and back in to refresh your workspace role.</value></data>
+  <data name="WorkspaceOpenBookingsButton" xml:space="preserve"><value>My bookings</value></data>
+  <data name="WorkspaceRequestsTitle" xml:space="preserve"><value>Your venue requests</value></data>
+  <data name="WorkspaceRequestsDescription" xml:space="preserve"><value>Track submitted venue onboarding requests and their latest review status here.</value></data>
+  <data name="WorkspaceRequestsEmpty" xml:space="preserve"><value>You have not submitted any venue requests yet.</value></data>
+  <data name="WorkspaceBookingRequestsTitle" xml:space="preserve"><value>Your booking requests</value></data>
+  <data name="WorkspaceBookingRequestsDescription" xml:space="preserve"><value>See requests you have made, and when one is approved it becomes part of the venue calendar.</value></data>
+  <data name="WorkspaceBookingRequestsEmpty" xml:space="preserve"><value>You have not requested any bookings yet.</value></data>
+  <data name="WorkspaceBookingCalendarTitle" xml:space="preserve"><value>Your booking calendar</value></data>
+  <data name="WorkspaceBookingCalendarDescription" xml:space="preserve"><value>See when each requested or approved venue booking starts, ends, and how long the space is reserved.</value></data>
+  <data name="WorkspaceBookingCalendarEmpty" xml:space="preserve"><value>Your booking calendar is empty right now.</value></data>
+  <data name="WorkspaceBookingRequestPendingApproval" xml:space="preserve"><value>Waiting for a venue employee or manager to approve this booking request.</value></data>
+  <data name="WorkspaceBookingRequestConfirmed" xml:space="preserve"><value>Approved and scheduled. This booking is now part of the venue calendar.</value></data>
+  <data name="WorkspaceBookingRequestOpenVenue" xml:space="preserve"><value>Open venue page</value></data>
+  <data name="WorkspaceBookingRequestViewDetails" xml:space="preserve"><value>View booking details</value></data>
+  <data name="WorkspaceBookingDetailsTitle" xml:space="preserve"><value>VenueFlow | Booking details</value></data>
+  <data name="WorkspaceBookingDetailsEyebrow" xml:space="preserve"><value>Booking request</value></data>
+  <data name="WorkspaceBookingDetailsDescription" xml:space="preserve"><value>Review the latest approval status, booking schedule, and service deadlines for this request.</value></data>
+  <data name="WorkspaceUserBookingsTitle" xml:space="preserve"><value>VenueFlow | My bookings</value></data>
+  <data name="WorkspaceUserBookingsEyebrow" xml:space="preserve"><value>Your bookings</value></data>
+  <data name="WorkspaceUserBookingsHeadline" xml:space="preserve"><value>See every venue booking you requested in one calendar view.</value></data>
+  <data name="WorkspaceUserBookingsDescription" xml:space="preserve"><value>Open this page any time to check when your venue space is booked, when it starts, and how long the booking lasts.</value></data>
+  <data name="WorkspaceBookingBackToRequests" xml:space="preserve"><value>Back to workspace</value></data>
+  <data name="WorkspaceBookingDueLabel" xml:space="preserve"><value>Due</value></data>
+  <data name="WorkspaceBookingPriceLabel" xml:space="preserve"><value>Space charge</value></data>
+  <data name="WorkspaceBookingServicesLabel" xml:space="preserve"><value>Linked services</value></data>
+  <data name="WorkspaceBookingServicesValue" xml:space="preserve"><value>{0} catering, {1} equipment</value></data>
+  <data name="WorkspaceBookingCateringDeadlineLabel" xml:space="preserve"><value>Catering change deadline</value></data>
+  <data name="WorkspaceBookingNoCateringDeadline" xml:space="preserve"><value>No catering deadline is linked to this request.</value></data>
+  <data name="WorkspaceBookingNotesLabel" xml:space="preserve"><value>Booking notes</value></data>
+  <data name="WorkspaceRequestApprovedPendingAccess" xml:space="preserve"><value>Approved. A platform admin still needs to assign venue membership before the full workspace becomes available.</value></data>
+  <data name="WorkspaceRequestApprovedWithMembership" xml:space="preserve"><value>Approved and access assigned. Refresh your session to open the venue workspace.</value></data>
+  <data name="WorkspaceRequestRejected" xml:space="preserve"><value>Rejected. The venue was not approved for onboarding.</value></data>
+  <data name="WorkspaceVenueRejectedTitle" xml:space="preserve"><value>This venue has been rejected</value></data>
+  <data name="WorkspaceVenueRejectedDescription" xml:space="preserve"><value>The platform admin archived this venue after rejecting its onboarding request. Venue employees and managers can still see the venue context and review notes here.</value></data>
+  <data name="VenueRequiredMessage" xml:space="preserve"><value>Select a venue before opening this workspace.</value></data>
+  <data name="NavEmployeeDashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="NavEmployeeBookings" xml:space="preserve"><value>Bookings</value></data>
+  <data name="NavEmployeeCoordination" xml:space="preserve"><value>Coordination</value></data>
+  <data name="NavEmployeeCatering" xml:space="preserve"><value>Catering</value></data>
+  <data name="EmployeeDashboardTitle" xml:space="preserve"><value>VenueFlow | Employee dashboard</value></data>
+  <data name="EmployeeDashboardEyebrow" xml:space="preserve"><value>Operational overview</value></data>
+  <data name="EmployeeDashboardHeadline" xml:space="preserve"><value>Track live bookings, service readiness, and coordination signals for the selected venue.</value></data>
+  <data name="EmployeeDashboardDescription" xml:space="preserve"><value>The dashboard uses aggregated booking and catering data from the business layer so employees stay in the current venue context.</value></data>
+  <data name="EmployeeMetricUpcoming" xml:space="preserve"><value>upcoming bookings</value></data>
+  <data name="EmployeeMetricPending" xml:space="preserve"><value>draft or pending bookings</value></data>
+  <data name="EmployeeMetricCatering" xml:space="preserve"><value>catering orders</value></data>
+  <data name="EmployeeMetricEquipment" xml:space="preserve"><value>equipment allocations</value></data>
+  <data name="EmployeeUpcomingSection" xml:space="preserve"><value>Next bookings in rotation</value></data>
+  <data name="EmployeeUpcomingEmpty" xml:space="preserve"><value>No upcoming bookings are scheduled for this venue yet.</value></data>
+  <data name="EmployeePendingApprovalSection" xml:space="preserve"><value>Incoming booking requests</value></data>
+  <data name="EmployeePendingApprovalEmpty" xml:space="preserve"><value>No booking requests are waiting for approval right now.</value></data>
+  <data name="EmployeeBookingsTitle" xml:space="preserve"><value>VenueFlow | My bookings</value></data>
+  <data name="EmployeeBookingsEyebrow" xml:space="preserve"><value>Booking workspace</value></data>
+  <data name="EmployeeBookingsHeadline" xml:space="preserve"><value>Review venue bookings with schedule, space, attendee, and service summaries in one list.</value></data>
+  <data name="EmployeeBookingsDescription" xml:space="preserve"><value>Each booking card is sourced from the employee workspace service rather than direct data access in the MVC layer.</value></data>
+  <data name="EmployeeBookingsCalendarTitle" xml:space="preserve"><value>Venue booking calendar</value></data>
+  <data name="EmployeeBookingsCalendarDescription" xml:space="preserve"><value>Track when each space is booked, how long the reservation runs, and which items still need approval.</value></data>
+  <data name="EmployeeBookingsEmpty" xml:space="preserve"><value>No bookings match the current venue selection.</value></data>
+  <data name="EmployeeCoordinationTitle" xml:space="preserve"><value>VenueFlow | Coordination</value></data>
+  <data name="EmployeeCoordinationEyebrow" xml:space="preserve"><value>Day-of coordination</value></data>
+  <data name="EmployeeCoordinationHeadline" xml:space="preserve"><value>Inspect staffing notes, equipment readiness, and linked catering for a selected booking.</value></data>
+  <data name="EmployeeCoordinationDescription" xml:space="preserve"><value>When no booking is specified, the first booking in the current venue context is opened automatically.</value></data>
+  <data name="EmployeeCoordinationEmpty" xml:space="preserve"><value>No coordination data is available until the venue has bookings.</value></data>
+  <data name="EmployeeCoordinationNotes" xml:space="preserve"><value>Coordination notes</value></data>
+  <data name="EmployeeEquipmentSection" xml:space="preserve"><value>Equipment plan</value></data>
+  <data name="EmployeeCateringLinkedSection" xml:space="preserve"><value>Linked catering orders</value></data>
+  <data name="EmployeeCateringTitle" xml:space="preserve"><value>VenueFlow | Catering orders</value></data>
+  <data name="EmployeeCateringEyebrow" xml:space="preserve"><value>Catering workspace</value></data>
+  <data name="EmployeeCateringHeadline" xml:space="preserve"><value>Review booking-linked catering orders, lock timing, and editable order details for the selected venue.</value></data>
+  <data name="EmployeeCateringDescription" xml:space="preserve"><value>Editable forms are only available while the catering order is still before its lock deadline.</value></data>
+  <data name="EmployeeCateringEmpty" xml:space="preserve"><value>No catering orders are attached to this venue yet.</value></data>
+  <data name="CateringEditTitle" xml:space="preserve"><value>Edit catering order</value></data>
+  <data name="CateringGuestCountLabel" xml:space="preserve"><value>Guest count</value></data>
+  <data name="CateringNotesLabel" xml:space="preserve"><value>Service notes</value></data>
+  <data name="CateringLineNameLabel" xml:space="preserve"><value>Menu line</value></data>
+  <data name="CateringLineQuantityLabel" xml:space="preserve"><value>Quantity</value></data>
+  <data name="CateringLinePriceLabel" xml:space="preserve"><value>Unit price</value></data>
+  <data name="CateringLineDietaryLabel" xml:space="preserve"><value>Dietary notes</value></data>
+  <data name="CateringLockMessage" xml:space="preserve"><value>This order is locked because the catering change deadline has passed.</value></data>
+  <data name="CateringSaveSuccess" xml:space="preserve"><value>Catering order updated.</value></data>
+  <data name="CateringSaveButton" xml:space="preserve"><value>Save catering changes</value></data>
+  <data name="ManagerDashboardTitle" xml:space="preserve"><value>VenueFlow | Venue admin dashboard</value></data>
+  <data name="ManagerDashboardEyebrow" xml:space="preserve"><value>Venue command</value></data>
+  <data name="ManagerDashboardHeadline" xml:space="preserve"><value>Monitor venue-level readiness, booking pressure, and membership coverage for the active venue.</value></data>
+  <data name="ManagerDashboardDescription" xml:space="preserve"><value>The manager dashboard stays scoped to the selected venue and highlights operational follow-up items.</value></data>
+  <data name="ManagerMetricSpaces" xml:space="preserve"><value>active spaces</value></data>
+  <data name="ManagerMetricBookings" xml:space="preserve"><value>upcoming bookings</value></data>
+  <data name="ManagerMetricPendingApprovals" xml:space="preserve"><value>pending approvals</value></data>
+  <data name="ManagerMetricMembers" xml:space="preserve"><value>active memberships</value></data>
+  <data name="ManagerActionItemsTitle" xml:space="preserve"><value>Operational action items</value></data>
+  <data name="ManagerActionItemsEmpty" xml:space="preserve"><value>No urgent action items are open for this venue.</value></data>
+  <data name="ManagerPendingApprovalSection" xml:space="preserve"><value>Incoming booking requests</value></data>
+  <data name="ManagerPendingApprovalEmpty" xml:space="preserve"><value>No booking requests are waiting for manager review right now.</value></data>
+  <data name="ManagerBookingsCalendarTitle" xml:space="preserve"><value>Venue occupancy calendar</value></data>
+  <data name="ManagerBookingsCalendarDescription" xml:space="preserve"><value>Review the active venue timeline to see when rooms are booked and how long each reservation occupies the space.</value></data>
+  <data name="NavManagerDashboard" xml:space="preserve"><value>Venue dashboard</value></data>
+  <data name="NavManagerSpaces" xml:space="preserve"><value>Spaces &amp; layouts</value></data>
+  <data name="NavAdminRequests" xml:space="preserve"><value>Venue requests</value></data>
+  <data name="RequestReviewTitle" xml:space="preserve"><value>VenueFlow | Venue requests</value></data>
+  <data name="RequestReviewEyebrow" xml:space="preserve"><value>Platform review</value></data>
+  <data name="RequestReviewHeadline" xml:space="preserve"><value>Review venue onboarding requests, update decision state, and assign rights where approval allows it.</value></data>
+  <data name="RequestReviewDescription" xml:space="preserve"><value>The request list includes pending and processed onboarding items so admins can triage the queue from one workspace.</value></data>
+  <data name="RequestReviewEmpty" xml:space="preserve"><value>No venue access requests are currently stored.</value></data>
+  <data name="RequestReviewFormTitle" xml:space="preserve"><value>Review selected request</value></data>
+  <data name="RequestReviewStatusLabel" xml:space="preserve"><value>Review status</value></data>
+  <data name="RequestReviewNotesLabel" xml:space="preserve"><value>Review notes</value></data>
+  <data name="RequestReviewAccessLabel" xml:space="preserve"><value>Approved access level</value></data>
+  <data name="RequestReviewAssignLabel" xml:space="preserve"><value>Assign venue membership after approval</value></data>
+  <data name="RequestReviewOnboardingNotice" xml:space="preserve"><value>This request is an initial venue onboarding application. Approving it creates the company and venue records from the submitted details.</value></data>
+  <data name="RequestReviewMembershipPendingSetup" xml:space="preserve"><value>After approval, you can assign venue access for the requester from the same review page.</value></data>
+  <data name="RequestReviewSaveButton" xml:space="preserve"><value>Save review decision</value></data>
+  <data name="RequestReviewSuccess" xml:space="preserve"><value>Venue request updated.</value></data>
+  <data name="RequestReviewFailed" xml:space="preserve"><value>The venue request review could not be saved.</value></data>
+  <data name="RequestArchiveRejectedVenueTitle" xml:space="preserve"><value>Archive rejected venue</value></data>
+  <data name="RequestArchiveRejectedVenueDescription" xml:space="preserve"><value>Keep the rejected venue and request records, but archive the venue so its rejected status is visible to venue employees and managers.</value></data>
+  <data name="RequestArchiveRejectedVenueButton" xml:space="preserve"><value>Archive rejected venue</value></data>
+  <data name="RequestArchiveRejectedVenueSuccess" xml:space="preserve"><value>Rejected venue archived.</value></data>
+  <data name="RequestSubmittedByLabel" xml:space="preserve"><value>Submitted by</value></data>
+  <data name="RequestSubmittedByUserIdLabel" xml:space="preserve"><value>Requester account ID</value></data>
+  <data name="RequestReviewedByLabel" xml:space="preserve"><value>Reviewed by</value></data>
+  <data name="RequestCompanyNameLabel" xml:space="preserve"><value>Company</value></data>
+  <data name="RequestVenueNameLabel" xml:space="preserve"><value>Venue</value></data>
+  <data name="RequestContactNameLabel" xml:space="preserve"><value>Contact name</value></data>
+  <data name="RequestContactEmailLabel" xml:space="preserve"><value>Contact email</value></data>
+  <data name="RequestContactPhoneLabel" xml:space="preserve"><value>Contact phone</value></data>
+  <data name="RequestCityLabel" xml:space="preserve"><value>City</value></data>
+  <data name="RequestCountryLabel" xml:space="preserve"><value>Country</value></data>
+  <data name="RequestAddressLabel" xml:space="preserve"><value>Address</value></data>
+  <data name="RequestEstimatedMonthlyBookingsLabel" xml:space="preserve"><value>Estimated monthly bookings</value></data>
+  <data name="RequestSubmittedNotesLabel" xml:space="preserve"><value>Submitted notes</value></data>
+  <data name="SpacesTitle" xml:space="preserve"><value>VenueFlow | Spaces &amp; layouts</value></data>
+  <data name="SpacesEyebrow" xml:space="preserve"><value>Space configuration</value></data>
+  <data name="SpacesHeadline" xml:space="preserve"><value>Maintain venue spaces, capacity profiles, and layout options from the manager workspace.</value></data>
+  <data name="SpacesDescription" xml:space="preserve"><value>Changes are submitted through the BLL configuration workflow so controller code stays thin.</value></data>
+  <data name="SpacesListTitle" xml:space="preserve"><value>Venue spaces</value></data>
+  <data name="SpacesListDescription" xml:space="preserve"><value>Create new rooms, then keep booking rules, pricing, and layouts aligned for the active venue.</value></data>
+  <data name="SpacesCreateButton" xml:space="preserve"><value>Create new space</value></data>
+  <data name="SpacesEmpty" xml:space="preserve"><value>No spaces are configured for this venue yet.</value></data>
+  <data name="SpaceFormTitle" xml:space="preserve"><value>Edit space configuration</value></data>
+  <data name="SpaceCreateTitle" xml:space="preserve"><value>Create a venue space</value></data>
+  <data name="SpaceEditTitle" xml:space="preserve"><value>Edit venue space</value></data>
+  <data name="SpaceParametersTitle" xml:space="preserve"><value>Space parameters</value></data>
+  <data name="SpaceParametersDescription" xml:space="preserve"><value>Define the operational details managers use for pricing, availability, and setup planning.</value></data>
+  <data name="SpaceListLayoutsCount" xml:space="preserve"><value>{0} layouts</value></data>
+  <data name="SpaceListCapacityLabel" xml:space="preserve"><value>Recommended capacity</value></data>
+  <data name="SpaceNameLabel" xml:space="preserve"><value>Space name</value></data>
+  <data name="SpaceCodeLabel" xml:space="preserve"><value>Code</value></data>
+  <data name="SpaceStatusLabel" xml:space="preserve"><value>Status</value></data>
+  <data name="SpaceDescriptionLabel" xml:space="preserve"><value>Description</value></data>
+  <data name="SpaceMinimumDurationLabel" xml:space="preserve"><value>Minimum booking minutes</value></data>
+  <data name="SpaceHourlyRateLabel" xml:space="preserve"><value>Hourly rate</value></data>
+  <data name="SpaceCurrencyLabel" xml:space="preserve"><value>Currency</value></data>
+  <data name="SpaceMinimumCapacityLabel" xml:space="preserve"><value>Minimum capacity</value></data>
+  <data name="SpaceRecommendedCapacityLabel" xml:space="preserve"><value>Recommended capacity</value></data>
+  <data name="SpaceMaximumCapacityLabel" xml:space="preserve"><value>Maximum capacity</value></data>
+  <data name="SpaceLayoutsTitle" xml:space="preserve"><value>Layouts</value></data>
+  <data name="SpaceLayoutNameLabel" xml:space="preserve"><value>Layout name</value></data>
+  <data name="SpaceLayoutTypeLabel" xml:space="preserve"><value>Layout type</value></data>
+  <data name="SpaceLayoutCapacityLabel" xml:space="preserve"><value>Capacity</value></data>
+  <data name="SpaceLayoutDefaultLabel" xml:space="preserve"><value>Default</value></data>
+  <data name="SpaceLayoutNotesLabel" xml:space="preserve"><value>Layout notes</value></data>
+  <data name="SpaceLayoutAddButton" xml:space="preserve"><value>Add another layout</value></data>
+  <data name="SpaceLayoutRemoveButton" xml:space="preserve"><value>Remove layout</value></data>
+  <data name="SpaceSaveButton" xml:space="preserve"><value>Save space configuration</value></data>
+  <data name="SpaceSaveSuccess" xml:space="preserve"><value>Space configuration saved.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="PositiveNumberField" xml:space="preserve"><value>Enter a value greater than zero.</value></data>
+  <data name="ReturnToPublicSite" xml:space="preserve"><value>Back to public site</value></data>
+  <data name="BookingClientLabel" xml:space="preserve"><value>Client</value></data>
+  <data name="BookingScheduleLabel" xml:space="preserve"><value>Schedule</value></data>
+  <data name="BookingDurationLabel" xml:space="preserve"><value>Duration</value></data>
+  <data name="BookingAttendeesLabel" xml:space="preserve"><value>Attendees</value></data>
+  <data name="BookingSpaceLabel" xml:space="preserve"><value>Space</value></data>
+  <data name="BookingStatusLabel" xml:space="preserve"><value>Status</value></data>
+  <data name="BookingServicesLabel" xml:space="preserve"><value>Services</value></data>
+  <data name="BookingApproveButton" xml:space="preserve"><value>Approve request</value></data>
+  <data name="BookingApproveSuccess" xml:space="preserve"><value>Booking request approved.</value></data>
+  <data name="BookingApproveFailed" xml:space="preserve"><value>The booking request could not be approved.</value></data>
+  <data name="BookingNoNotes" xml:space="preserve"><value>No coordination notes are attached to this booking yet.</value></data>
+  <data name="EquipmentEmpty" xml:space="preserve"><value>No equipment allocations are linked to this booking.</value></data>
+  <data name="CateringLinkedEmpty" xml:space="preserve"><value>No catering orders are linked to this booking.</value></data>
+  <data name="RequestSubmittedLabel" xml:space="preserve"><value>Submitted</value></data>
+  <data name="RequestReviewedLabel" xml:space="preserve"><value>Reviewed</value></data>
+  <data name="AssignmentSummaryTitle" xml:space="preserve"><value>Assigned membership</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusPendingApproval" xml:space="preserve"><value>Pending approval</value></data>
+  <data name="StatusConfirmed" xml:space="preserve"><value>Confirmed</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="StatusPendingReview" xml:space="preserve"><value>Pending review</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>In review</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusMaintenance" xml:space="preserve"><value>Maintenance</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="StatusSuspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="StatusBlocked" xml:space="preserve"><value>Blocked</value></data>
+</root>

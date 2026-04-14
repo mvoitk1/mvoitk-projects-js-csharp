@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    container_name: jsassignment2
+    ports:
+      - "78:80" 

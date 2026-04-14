@@ -1,0 +1,19 @@
+@using App.Resources.Views.Workspace
+@model WebApp.ViewModels.Workspace.WorkspaceUserBookingsPageViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.WorkspaceUserBookingsTitle;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.WorkspaceUserBookingsEyebrow</p>
+        <h1>@Pages.WorkspaceUserBookingsHeadline</h1>
+        <p>@Pages.WorkspaceUserBookingsDescription</p>
+    </div>
+    <div class="hero-actions">
+        <a class="action-link" asp-controller="Workspace" asp-action="Index">@Pages.WorkspaceBookingBackToRequests</a>
+    </div>
+</section>
+
+@await Html.PartialAsync("~/Views/Shared/Workspace/_BookingCalendar.cshtml", Model.BookingCalendar)

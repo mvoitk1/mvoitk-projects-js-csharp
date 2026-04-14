@@ -1,0 +1,27 @@
+@using App.Resources.Views.Workspace
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/employee-workspace.css" asp-append-version="true" />
+</head>
+<body class="workspace-body employee-theme">
+@{
+    var workspaceLayout = (WorkspaceLayoutViewModel?)ViewData["WorkspaceLayout"] ?? new WorkspaceLayoutViewModel();
+}
+<div class="workspace-shell">
+    <div class="workspace-grid">
+        @await Html.PartialAsync("_EmployeeSidebar", workspaceLayout)
+        <main class="workspace-main">
+            @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceTopBar.cshtml")
+            @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceMessages.cshtml")
+            @await Html.PartialAsync("~/Views/Shared/Workspace/_WorkspaceRejectedVenueNotice.cshtml", workspaceLayout.Context)
+            @RenderBody()
+        </main>
+    </div>
+</div>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

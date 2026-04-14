@@ -1,0 +1,69 @@
+@using App.Resources.Views.Public
+@model WebApp.ViewModels.Public.BrowseVenuesViewModel
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = Pages.BrowseTitle;
+}
+
+<section class="page-hero">
+    <div>
+        <p class="eyebrow">@Pages.BrowseEyebrow</p>
+        <h1>@Pages.BrowseHeadline</h1>
+        <p class="page-description">@Pages.BrowseDescription</p>
+    </div>
+    <a class="public-button" asp-action="RequestVenue">@Pages.BrowsePrimaryCta</a>
+</section>
+
+<section class="form-card browse-filter-card">
+    <div class="browse-filter-copy">
+        <h2>@Pages.BrowseFilterTitle</h2>
+        <p>@Pages.BrowseFilterDescription</p>
+    </div>
+    <form method="get" class="browse-filter-form">
+        <div class="field-grid">
+            <div class="field">
+                <label for="city">@Pages.BrowseFilterCityLabel</label>
+                <select id="city" name="city">
+                    <option value="">@Pages.BrowseFilterAllCitiesOption</option>
+                    @foreach (var city in Model.AvailableCities)
+                    {
+                        <option value="@city" selected="@(string.Equals(Model.City, city, StringComparison.OrdinalIgnoreCase))">@city</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label for="minimumCapacity">@Pages.BrowseFilterCapacityLabel</label>
+                <input
+                    id="minimumCapacity"
+                    name="minimumCapacity"
+                    type="number"
+                    min="1"
+                    value="@Model.MinimumCapacity"
+                    placeholder="@Pages.BrowseFilterCapacityPlaceholder" />
+            </div>
+        </div>
+        <div class="browse-filter-actions">
+            <button type="submit" class="public-button">@Pages.BrowseFilterSubmitCta</button>
+            @if (Model.HasActiveFilters)
+            {
+                <a class="public-link-button" asp-action="Index">@Pages.BrowseFilterClearCta</a>
+            }
+        </div>
+    </form>
+</section>
+
+@if (Model.Venues.Count == 0)
+{
+    <section class="empty-state">
+        <p>@(Model.HasActiveFilters ? Pages.BrowseFilteredEmpty : Pages.BrowseEmpty)</p>
+    </section>
+}
+else
+{
+    <section class="venue-grid">
+        @foreach (var venue in Model.Venues)
+        {
+            <partial name="Public/_VenueCard" model="venue" />
+        }
+    </section>
+}

@@ -1,0 +1,36 @@
+@model App.Domain.ApiKey.ApiKey
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>ApiKey</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.SecretKey)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.SecretKey)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.IsDisabled)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.IsDisabled)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.AppName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.AppName)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model!.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

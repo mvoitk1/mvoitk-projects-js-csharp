@@ -1,0 +1,98 @@
+@model App.DTO.v1.Cart.CartDto
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<h2 class="page-heading">Your Cart</h2>
+
+@if (TempData["CartError"] != null)
+{
+    <div class="alert alert-danger">@TempData["CartError"]</div>
+}
+
+@if (!Model.Items.Any())
+{
+    <div class="text-center py-5">
+        <p class="text-muted fs-5">Your cart is empty.</p>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-dark">Continue Shopping</a>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Variant</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="" width="50" height="50"
+                                             style="object-fit:cover;" class="rounded">
+                                    }
+                                    <span class="fw-semibold">@item.ProductName</span>
+                                </div>
+                            </td>
+                            <td>
+                                <small class="text-muted">@item.ColorName / @item.SizeCode</small>
+                            </td>
+                            <td>@item.UnitPrice.ToString("C")</td>
+                            <td style="width:130px;">
+                                <form asp-controller="Cart" asp-action="UpdateItem" method="post" class="d-flex gap-1">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.Id">
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1" max="100"
+                                           class="form-control form-control-sm" style="width:70px;">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
+                                </form>
+                            </td>
+                            <td>@item.LineTotal.ToString("C")</td>
+                            <td>
+                                <form asp-controller="Cart" asp-action="RemoveItem" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.Id">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Items (@Model.ItemCount)</span>
+                        <span>@Model.Total.ToString("C")</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span>
+                        <span>@Model.Total.ToString("C")</span>
+                    </div>
+                    <a asp-controller="Checkout" asp-action="Index" class="btn btn-dark w-100 mt-3">
+                        Proceed to Checkout
+                    </a>
+                    <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-secondary w-100 mt-2">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}

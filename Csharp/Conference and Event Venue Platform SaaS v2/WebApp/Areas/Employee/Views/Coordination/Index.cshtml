@@ -1,0 +1,102 @@
+@model EmployeeCoordinationPageViewModel
+@{
+    ViewData["Title"] = Pages.EmployeeCoordinationTitle;
+    ViewData["WorkspaceLayout"] = Model.Layout;
+}
+
+<section class="workspace-hero">
+    <div>
+        <p class="eyebrow">@Pages.EmployeeCoordinationEyebrow</p>
+        <h1>@Pages.EmployeeCoordinationHeadline</h1>
+        <p>@Pages.EmployeeCoordinationDescription</p>
+    </div>
+    @if (Model.AvailableBookings.Count > 0)
+    {
+        <div class="hero-actions">
+            @foreach (var booking in Model.AvailableBookings.Take(3))
+            {
+                <a class="action-link" asp-area="Employee" asp-controller="Coordination" asp-action="Index" asp-route-bookingId="@booking.BookingId">@booking.Title</a>
+            }
+        </div>
+    }
+</section>
+
+@if (Model.Coordination == null)
+{
+    <section class="workspace-empty">
+        <h2>@Pages.EmployeeCoordinationEmpty</h2>
+    </section>
+}
+else
+{
+    <section class="workspace-panel">
+        <div class="card-top">
+            <div>
+                <h2>@Model.Coordination.Booking.Title</h2>
+                <p>@Model.Coordination.Booking.ClientName</p>
+            </div>
+            <span class="status-pill @WorkspacePresentation.ToBadgeClass(Model.Coordination.Booking.Status)">@WorkspacePresentation.ToStatusLabel(Model.Coordination.Booking.Status)</span>
+        </div>
+        <dl class="detail-grid">
+            <div><dt>@Pages.BookingScheduleLabel</dt><dd>@WorkspacePresentation.FormatSchedule(Model.Coordination.Booking.Schedule.StartsAt, Model.Coordination.Booking.Schedule.EndsAt)</dd></div>
+            <div><dt>@Pages.BookingSpaceLabel</dt><dd>@Model.Coordination.Booking.SpaceName</dd></div>
+            <div><dt>@Pages.BookingAttendeesLabel</dt><dd>@Model.Coordination.Booking.ExpectedAttendees</dd></div>
+        </dl>
+        @if (Model.Coordination.Booking.Status == "PendingApproval")
+        {
+            <form asp-area="Employee" asp-controller="Coordination" asp-action="Approve" method="post" class="action-row">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="bookingId" value="@Model.Coordination.Booking.BookingId" />
+                <button class="primary-button" type="submit">@Pages.BookingApproveButton</button>
+            </form>
+        }
+    </section>
+
+    <section class="workspace-panel">
+        <h2>@Pages.EmployeeCoordinationNotes</h2>
+        <p>@(string.IsNullOrWhiteSpace(Model.Coordination.CoordinationNotes) ? Pages.BookingNoNotes : Model.Coordination.CoordinationNotes)</p>
+    </section>
+
+    <section class="split-grid">
+        <article class="workspace-panel">
+            <h2>@Pages.EmployeeEquipmentSection</h2>
+            @if (Model.Coordination.EquipmentAllocations.Count == 0)
+            {
+                <p>@Pages.EquipmentEmpty</p>
+            }
+            else
+            {
+                <div class="card-stack compact">
+                    @foreach (var item in Model.Coordination.EquipmentAllocations)
+                    {
+                        <article class="workspace-card compact">
+                            <strong>@item.EquipmentName</strong>
+                            <p>@item.SpaceName</p>
+                            <p>@item.Quantity units, @WorkspacePresentation.FormatMoney(item.TotalPrice.Amount, item.TotalPrice.Currency)</p>
+                        </article>
+                    }
+                </div>
+            }
+        </article>
+        <article class="workspace-panel">
+            <h2>@Pages.EmployeeCateringLinkedSection</h2>
+            @if (Model.Coordination.CateringOrders.Count == 0)
+            {
+                <p>@Pages.CateringLinkedEmpty</p>
+            }
+            else
+            {
+                <div class="card-stack compact">
+                    @foreach (var item in Model.Coordination.CateringOrders)
+                    {
+                        <article class="workspace-card compact">
+                            <strong>@item.ProviderName</strong>
+                            <p>@item.GuestCount guests</p>
+                            <p>@WorkspacePresentation.FormatMoney(item.TotalPrice.Amount, item.TotalPrice.Currency)</p>
+                        </article>
+                    }
+                </div>
+            }
+        </article>
+    </section>
+}

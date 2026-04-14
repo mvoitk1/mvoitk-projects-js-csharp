@@ -1,0 +1,82 @@
+@model App.DTO.v1.Orders.OrderDto
+@{
+    ViewData["Title"] = $"Order {Model.OrderNumber}";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">My Orders</a></li>
+        <li class="breadcrumb-item active">@Model.OrderNumber</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5>Order @Model.OrderNumber</h5>
+                        <p class="text-muted small mb-0">Placed @Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</p>
+                    </div>
+                    <span class="badge fs-6 @(Model.Status == "Delivered" ? "bg-success" :
+                                             Model.Status == "Cancelled" ? "bg-danger" :
+                                             Model.Status == "Shipped" ? "bg-info" : "bg-secondary")">
+                        @Model.Status
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="mb-3">Items</h6>
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Variant</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.ProductName</td>
+                                <td><small class="text-muted">@item.ColorName / @item.SizeCode</small></td>
+                                <td>@item.Quantity</td>
+                                <td>@item.UnitPrice.ToString("C")</td>
+                                <td>@item.LineTotal.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">Total</td>
+                            <td class="fw-bold">@Model.TotalAmount.ToString("C")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="mb-3">Shipping Address</h6>
+                <address class="mb-0">
+                    <strong>@Model.ShippingFirstName @Model.ShippingLastName</strong><br>
+                    @Model.ShippingStreet<br>
+                    @Model.ShippingPostalCode @Model.ShippingCity<br>
+                    @Model.ShippingCountry<br>
+                    <abbr title="Email">E:</abbr> @Model.ShippingEmail<br>
+                    <abbr title="Phone">T:</abbr> @Model.ShippingPhone
+                </address>
+            </div>
+        </div>
+    </div>
+</div>

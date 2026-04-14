@@ -1,0 +1,16 @@
+@model App.DTO.v1.Admin.AdminProductWriteDto
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<h2>Create Product</h2>
+<a asp-action="Index" class="text-decoration-none text-muted mb-3 d-block">← Back to Products</a>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <partial name="_ProductForm" model="Model"/>
+    <button type="submit" class="btn btn-dark mt-3">Create Product</button>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial"/> }

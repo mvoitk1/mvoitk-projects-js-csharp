@@ -1,0 +1,56 @@
+@page
+@model WebApp.Areas.Identity.Pages.Account.RegisterModel
+@using App.Resources.Views.Public
+@{
+    Layout = "/Views/Shared/_PublicAuthLayout.cshtml";
+    ViewData["Title"] = Pages.AuthRegisterTitle;
+}
+
+<section class="auth-page">
+    <div class="auth-hero">
+        <partial name="/Views/Shared/Public/_PublicBrand.cshtml" />
+        <div class="auth-copy">
+            <p class="eyebrow">@Pages.AuthRegisterEyebrow</p>
+            <h1>@Pages.AuthRegisterHeadline</h1>
+            <p>@Pages.AuthRegisterDescription</p>
+        </div>
+        <div class="auth-stats">
+            <article class="metric-card"><strong>1</strong><span>@Pages.AuthPanelStatOne</span></article>
+            <article class="metric-card"><strong>2</strong><span>@Pages.AuthPanelStatTwo</span></article>
+            <article class="metric-card"><strong>3</strong><span>@Pages.AuthPanelStatThree</span></article>
+        </div>
+    </div>
+    <div class="auth-panel">
+        <div class="auth-card">
+            <h2>@Pages.RegisterHeading</h2>
+            <p>@Pages.RegisterBody</p>
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                <input asp-for="ReturnUrl" type="hidden" />
+                <div class="field">
+                    <label asp-for="Input.Email"></label>
+                    <input asp-for="Input.Email" />
+                    <span asp-validation-for="Input.Email" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Input.Password"></label>
+                    <input asp-for="Input.Password" />
+                    <span asp-validation-for="Input.Password" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Input.ConfirmPassword"></label>
+                    <input asp-for="Input.ConfirmPassword" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="field-validation-error"></span>
+                </div>
+                <button class="public-button auth-submit" type="submit">@Pages.RegisterButton</button>
+            </form>
+            <p class="auth-switch">
+                <a asp-page="/Account/Login" asp-route-returnUrl="@Model.ReturnUrl">@Pages.SwitchToLogin</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

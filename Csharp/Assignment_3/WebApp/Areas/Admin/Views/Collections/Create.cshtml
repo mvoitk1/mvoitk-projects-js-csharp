@@ -1,0 +1,13 @@
+@model App.DTO.v1.Admin.AdminCollectionWriteDto
+@{
+    ViewData["Title"] = "New Collection";
+}
+
+<h2>New Collection</h2>
+<a asp-action="Index" class="text-decoration-none text-muted mb-3 d-block">← Back</a>
+
+<form asp-action="Create" method="post" style="max-width:600px;">
+    @Html.AntiForgeryToken()
+    <partial name="_CollectionForm" model="Model"/>
+    <button type="submit" class="btn btn-dark mt-3">Create</button>
+</form>

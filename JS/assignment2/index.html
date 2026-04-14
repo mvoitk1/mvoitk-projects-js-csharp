@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assignment 2 - Task Manager</title>
+    <link rel="stylesheet" href="/src/styles/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>Task Forge</h1>
+          <p>Assignment 2</p>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-view="dashboard">Dashboard</button>
+          <button class="nav-item" data-view="tasks">Tasks</button>
+          <button class="nav-item" data-view="calendar">Calendar</button>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <h2 id="header-title">Dashboard</h2>
+          <div class="topbar-actions">
+            <label class="search-wrap" for="search-input">
+              <span>Search</span>
+              <input id="search-input" type="search" placeholder="Search tasks..." />
+            </label>
+            <button class="btn btn-primary" id="add-task-btn">+ Add Task</button>
+          </div>
+        </header>
+
+        <section id="dashboard-view" class="view active">
+          <div class="stats-grid">
+            <article class="stat-card">
+              <h3>Total</h3>
+              <p id="stat-total">0</p>
+            </article>
+            <article class="stat-card">
+              <h3>Pending</h3>
+              <p id="stat-pending">0</p>
+            </article>
+            <article class="stat-card">
+              <h3>In Progress</h3>
+              <p id="stat-progress">0</p>
+            </article>
+            <article class="stat-card">
+              <h3>Completed</h3>
+              <p id="stat-completed">0</p>
+            </article>
+          </div>
+
+          <div class="panel-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Recent Tasks</h3>
+                <button class="section-link" data-view="tasks">View all</button>
+              </div>
+              <div id="recent-tasks" class="cards-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Upcoming Deadlines</h3>
+                <button class="section-link" data-view="calendar">Open calendar</button>
+              </div>
+              <div id="upcoming-tasks" class="cards-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="tasks-view" class="view">
+          <div class="panel">
+            <div class="panel-head panel-head-wrap">
+              <h3>All Tasks</h3>
+              <div class="filters">
+                <button class="filter-btn active" data-status="all">All</button>
+                <button class="filter-btn" data-status="pending">Pending</button>
+                <button class="filter-btn" data-status="in-progress">In Progress</button>
+                <button class="filter-btn" data-status="completed">Completed</button>
+                <button class="filter-btn" data-status="cancelled">Cancelled</button>
+              </div>
+            </div>
+            <div id="all-tasks" class="cards-list"></div>
+          </div>
+        </section>
+
+        <section id="calendar-view" class="view">
+          <div class="panel">
+            <div class="panel-head panel-head-wrap">
+              <h3 id="calendar-month">Month</h3>
+              <div class="calendar-controls">
+                <button class="btn btn-ghost" id="prev-month">Prev</button>
+                <button class="btn btn-ghost" id="today-btn">Today</button>
+                <button class="btn btn-ghost" id="next-month">Next</button>
+              </div>
+            </div>
+            <div id="calendar-grid" class="calendar-grid"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="task-modal" class="modal" aria-hidden="true">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-head">
+          <h3 id="modal-title">New Task</h3>
+          <button class="icon-btn" id="modal-close" aria-label="Close dialog">✕</button>
+        </div>
+
+        <form id="task-form" class="form-grid" onsubmit="return false;">
+          <input id="task-id" type="hidden" />
+
+          <label for="task-title">Title</label>
+          <input id="task-title" type="text" maxlength="100" required />
+
+          <label for="task-description">Description</label>
+          <textarea id="task-description" rows="4" maxlength="1000"></textarea>
+
+          <div class="inline-grid">
+            <div>
+              <label for="task-status">Status</label>
+              <select id="task-status">
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label for="task-priority">Priority</label>
+              <select id="task-priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
+              <label for="task-due-date">Due Date</label>
+              <input id="task-due-date" type="date" />
+            </div>
+          </div>
+
+          <label for="tags-input">Tags</label>
+          <div id="tags-container" class="tags-input-wrap">
+            <input id="tags-input" type="text" class="tags-input" placeholder="Add tags (press Enter)" />
+          </div>
+
+          <label for="checklist-input">Checklist</label>
+          <div class="checklist-controls">
+            <input id="checklist-input" type="text" placeholder="Add checklist item and press Enter" />
+            <button type="button" class="btn btn-ghost" id="add-checklist-btn">Add</button>
+          </div>
+          <div id="checklist-items" class="checklist-items"></div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-danger" id="delete-task-btn">Delete</button>
+            <div class="action-group">
+              <button type="button" class="btn btn-ghost" id="cancel-btn">Cancel</button>
+              <button type="button" class="btn btn-primary" id="save-task-btn">Save Task</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

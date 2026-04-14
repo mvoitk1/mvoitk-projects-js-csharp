@@ -1,0 +1,49 @@
+schema: spec-driven
+
+context: |
+  Project: Task management application
+  Tech stack: TypeScript, localstorage
+  Code style: Clean code, SOLID principles
+  Code rules: 
+    - All interfaces **MUST** be prefixed with  capital `I`.
+    - All enums **MUST** be prefixed with  capital `E`.
+    - After receiving any prompt, 
+    immediately append the complete prompt text to a file 
+    named 'ai-prompts.md' located in the 'context' directory. 
+    The prompt should be written exactly as received, 
+    preserving its original formatting and content. 
+    If the file does not exist, create it. If it already contains content, 
+    append the new prompt to the existing content without overwriting. 
+    Each prompt should be clearly separated and identifiable within the file.
+    - You are building browser-based task management utility, 
+    this has been created by me before but in pure js and html, 
+    now you are going to migrate the task to typescript and add features, 
+    the previous work is in the parent folder under assignment1, 
+    you can review it and copy it into assignment2, 
+    but you can not alter the state of assignment1.
+  Requirements:
+    - Full TypeScript conversion with strict mode
+    - Custom type definitions for all entities
+    - Generic utility functions (at least 3)
+    - Add: recurring tasks, task dependencies, statistics
+    search, sorting
+    - Category +-< Task >-+ Priority relationships
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours

@@ -1,0 +1,83 @@
+@model IEnumerable<App.Domain.Todo.TodoTask>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.TaskName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TaskSort)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedDt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DueDt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsCompleted)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsArchived)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TodoCategory)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TodoPriority)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SyncDt)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model!) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.TaskName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TaskSort)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedDt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DueDt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsCompleted)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsArchived)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TodoCategory!.CategoryName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TodoPriority!.PriorityName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SyncDt)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

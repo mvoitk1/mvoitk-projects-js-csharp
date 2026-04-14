@@ -69,7 +69,23 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         // Apply security + 401/403 only to [Authorize] endpoints
         options.OperationFilter<AuthOperationFilter>();
 
-        // Rename auto-generated controller tags to human-readable names
-        options.OperationFilter<TagGroupingOperationFilter>();
+        // Assign human-readable tags at discovery time (avoids empty ghost groups)
+        options.TagActionsBy(api =>
+        {
+            if (!api.ActionDescriptor.RouteValues.TryGetValue("controller", out var controller)
+                || controller is null)
+                return new[] { "Other" };
+
+            return controller switch
+            {
+                "Account"            => new[] { "Authentication" },
+                "AdminProducts"      => new[] { "Admin — Products" },
+                "AdminOrders"        => new[] { "Admin — Orders" },
+                "AdminCategories"    => new[] { "Admin — Categories" },
+                "AdminCollections"   => new[] { "Admin — Collections" },
+                "AdminStock"         => new[] { "Admin — Stock" },
+                _                    => new[] { controller }
+            };
+        });
     }
 }

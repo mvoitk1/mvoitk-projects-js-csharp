@@ -1,0 +1,17 @@
+services:
+  vue-front-to-pp:
+    build:
+      context: .
+      args:
+        VITE_API_BASE: https://mvoitk-cs3.proxy.itcollege.ee/api/v1
+    container_name: vue-front-to-pp
+    restart: unless-stopped
+    ports:
+      - "75:80"
+    networks:
+      - infra
+
+networks:
+  infra:
+    name: infra
+    external: true

@@ -78,3 +78,29 @@ deploy_javascript_a4_1:
     - docker network create infra || true
     - cd JS/assignment4.1
     - docker compose -p jsassignment4_1 up --build --remove-orphans --detach
+
+deploy_vue_listitems:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - JS/vue-listitems/**/*
+  tags:
+    - shared
+  script:
+    - docker network create infra || true
+    - cd JS/vue-listitems
+    - docker compose -p vue_listitems up --build --remove-orphans --detach
+
+deploy_vue_front_to_pp:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - JS/vue_front_to_PP/**/*
+  tags:
+    - shared
+  script:
+    - docker network create infra || true
+    - cd JS/vue_front_to_PP
+    - docker compose -p vue_front_to_pp up --build --remove-orphans --detach

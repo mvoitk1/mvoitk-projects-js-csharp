@@ -1,0 +1,15 @@
+services:
+  vue-listitems:
+    build:
+      context: .
+    container_name: vue-listitems
+    restart: unless-stopped
+    ports:
+      - "74:80"
+    networks:
+      - infra
+
+networks:
+  infra:
+    name: infra
+    external: true

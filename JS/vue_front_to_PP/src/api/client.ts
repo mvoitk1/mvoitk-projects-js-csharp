@@ -6,15 +6,26 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 let isRefreshing = false
 
-function isJwtExpired(jwt: string): boolean {
+function dispatchAuthTokens(jwt: string | null, refreshToken: string | null): void {
+  window.dispatchEvent(new CustomEvent('auth:tokens', { detail: { jwt, refreshToken } }))
+}
+
+function decodeJwtPayload(jwt: string): Record<string, unknown> | null {
   try {
-    const payload = JSON.parse(atob(jwt.split('.')[1] ?? ''))
-    const exp = payload.exp as number
-    if (typeof exp !== 'number') return false
-    return Date.now() / 1000 > exp - 30 // refresh 30 s before actual expiry
+    const base64Url = jwt.split('.')[1] ?? ''
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    return JSON.parse(atob(padded)) as Record<string, unknown>
   } catch {
-    return false
+    return null
   }
+}
+
+function isJwtExpired(jwt: string): boolean {
+  const payload = decodeJwtPayload(jwt)
+  const exp = payload?.exp
+  if (typeof exp !== 'number') return false
+  return Date.now() / 1000 > exp - 30 // refresh 30 s before actual expiry
 }
 
 function getJwt(): string | null {
@@ -28,11 +39,13 @@ function getRefreshToken(): string | null {
 function saveTokens(jwt: string, refreshToken: string): void {
   localStorage.setItem('jwt', jwt)
   localStorage.setItem('refreshToken', refreshToken)
+  dispatchAuthTokens(jwt, refreshToken)
 }
 
 function clearTokens(): void {
   localStorage.removeItem('jwt')
   localStorage.removeItem('refreshToken')
+  dispatchAuthTokens(null, null)
 }
 
 async function renewToken(): Promise<boolean> {

@@ -5,10 +5,28 @@ import type { LoginPayload, RegisterPayload } from '@/types'
 
 function decodePayload(jwt: string): Record<string, unknown> {
   try {
-    return JSON.parse(atob(jwt.split('.')[1] ?? ''))
+    const base64Url = jwt.split('.')[1] ?? ''
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    return JSON.parse(atob(padded))
   } catch {
     return {}
   }
+}
+
+function hasAdminRole(jwt: string | null): boolean {
+  if (!jwt) return false
+
+  const payload = decodePayload(jwt)
+  const roleClaims = [
+    payload.role,
+    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+  ]
+
+  return roleClaims.some((claim) => {
+    if (Array.isArray(claim)) return claim.includes('Admin')
+    return claim === 'Admin'
+  })
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -16,14 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref<string | null>(localStorage.getItem('refreshToken'))
 
   const isLoggedIn = computed(() => !!jwt.value)
-  const isAdmin = computed(() => {
-    if (!jwt.value) return false
-    const payload = decodePayload(jwt.value)
-    const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
-    const roles = payload[ROLE_CLAIM]
-    if (Array.isArray(roles)) return roles.includes('Admin')
-    return roles === 'Admin'
-  })
+  const isAdmin = computed(() => hasAdminRole(jwt.value))
 
   function _persist(j: string, rt: string) {
     jwt.value = j
@@ -60,6 +71,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
     _clear()
   }
+
+  window.addEventListener('auth:tokens', ((event: Event) => {
+    const { detail } = event as CustomEvent<{ jwt: string | null; refreshToken: string | null }>
+    jwt.value = detail.jwt
+    refreshToken.value = detail.refreshToken
+  }) as EventListener)
 
   // Listen for the logout event dispatched by the API client on 401 + failed refresh
   window.addEventListener('auth:logout', () => _clear())

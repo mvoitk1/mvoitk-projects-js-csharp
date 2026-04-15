@@ -31,7 +31,7 @@ public static class MiddlewareExtensions
 
         app.UseRouting();
 
-        app.UseCors("VueFrontend");
+        app.UseCors("CorsAllowAll");
 
         app.UseAuthorization();
 

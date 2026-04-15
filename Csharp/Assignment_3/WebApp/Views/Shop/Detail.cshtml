@@ -144,6 +144,12 @@
                 primaryImage: '@(Model.Images.FirstOrDefault()?.Url ?? "")',
                 primaryAlt: '@(Model.Images.FirstOrDefault()?.AltText ?? "")',
 
+                init() {
+                    // Auto-select the first color so size selection works immediately
+                    const firstColor = this.variants[0]?.colorId;
+                    if (firstColor) this.selectedColorId = firstColor;
+                },
+
                 get selectedVariant() {
                     if (!this.selectedColorId || !this.selectedSizeId) return null;
                     return this.variants.find(v =>

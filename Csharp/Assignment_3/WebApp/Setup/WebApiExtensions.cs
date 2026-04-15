@@ -59,6 +59,16 @@ public static class WebApiExtensions
                     .AllowAnyMethod()
                     .WithExposedHeaders("X-Version", "X-Version-Created-At");
             });
+
+            options.AddPolicy("VueFrontend", policy =>
+                policy
+                    .WithOrigins(
+                        "http://mvoitk-PPfront.proxy.itcollege.ee",
+                        "http://localhost:5173"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
         });
 
         return services;

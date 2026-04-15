@@ -576,21 +576,23 @@ a {
 /* ============================================================
    Forms
    ============================================================ */
-.form-control {
-    border-color: var(--c-border);
+.form-control,
+.form-select {
+    border-color: #c8c3bc;
     border-radius: var(--radius-sm);
     font-size: 0.9rem;
     padding: 0.65rem 0.9rem;
-    background: var(--c-surface);
+    background: #fafaf8;
     color: var(--c-text);
     transition: border-color var(--transition), box-shadow var(--transition);
     font-family: var(--ff-sans);
 }
 
-.form-control:focus {
+.form-control:focus,
+.form-select:focus {
     border-color: var(--c-text);
     box-shadow: 0 0 0 2px rgba(14, 13, 12, 0.08);
-    background: var(--c-surface);
+    background: #fff;
 }
 
 .form-label {
@@ -776,9 +778,18 @@ a {
 
 .admin-form-panel {
     background: #fff;
-    border: 1px solid #e9ecef;
+    border: 1px solid #e2e5ea;
     border-radius: 8px;
     padding: 1.75rem;
+}
+
+/* Make inputs clearly visible on white panels */
+.admin-form-panel .form-control,
+.admin-form-panel .form-select,
+.checkout-panel .form-control,
+.checkout-panel .form-select {
+    background: #f5f5f3;
+    border-color: #bbb5ae;
 }
 
 .admin-form-aside {

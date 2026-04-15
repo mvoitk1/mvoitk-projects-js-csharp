@@ -6,6 +6,17 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 let isRefreshing = false
 
+function isJwtExpired(jwt: string): boolean {
+  try {
+    const payload = JSON.parse(atob(jwt.split('.')[1] ?? ''))
+    const exp = payload.exp as number
+    if (typeof exp !== 'number') return false
+    return Date.now() / 1000 > exp - 30 // refresh 30 s before actual expiry
+  } catch {
+    return false
+  }
+}
+
 function getJwt(): string | null {
   return localStorage.getItem('jwt')
 }
@@ -51,6 +62,24 @@ export async function apiFetch<T>(
   body?: unknown,
   retry = true,
 ): Promise<T> {
+  // Proactively refresh the token if it is expired (or about to expire) so
+  // we never send a stale JWT. The server returns 500 HTML instead of 401
+  // for expired tokens, which prevents the reactive 401-based refresh below
+  // from ever triggering.
+  if (retry && !isRefreshing) {
+    const jwt = getJwt()
+    if (jwt && isJwtExpired(jwt)) {
+      isRefreshing = true
+      const ok = await renewToken()
+      isRefreshing = false
+      if (!ok) {
+        clearTokens()
+        window.dispatchEvent(new CustomEvent('auth:logout'))
+        throw new Error('Session expired')
+      }
+    }
+  }
+
   const headers: Record<string, string> = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   const jwt = getJwt()
@@ -75,9 +104,13 @@ export async function apiFetch<T>(
   if (!res.ok) {
     let message = `HTTP ${res.status}`
     try {
-      const err = await res.json()
-      if (err?.title) message = err.title
-      else if (err?.messages?.[0]) message = err.messages[0]
+      const contentType = res.headers.get('content-type') ?? ''
+      if (contentType.includes('application/json')) {
+        const err = await res.json()
+        if (err?.title) message = err.title
+        else if (err?.messages?.[0]) message = err.messages[0]
+        else if (err?.detail) message = err.detail
+      }
     } catch {
       // ignore parse errors
     }

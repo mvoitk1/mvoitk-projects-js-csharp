@@ -33,6 +33,7 @@ public static class MiddlewareExtensions
 
         app.UseCors("CorsAllowAll");
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         return app;
@@ -61,6 +62,7 @@ public static class MiddlewareExtensions
     public static WebApplication MapAppEndpoints(this WebApplication app)
     {
         app.MapStaticAssets();
+        app.MapControllers();
 
         app.MapControllerRoute(
                 name: "area",

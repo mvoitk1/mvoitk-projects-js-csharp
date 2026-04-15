@@ -15,6 +15,25 @@ import type {
   AdminStockUpdateDto,
 } from '@/types'
 
+function normalizeAdminPayload<T>(payload: T): T {
+  if (Array.isArray(payload)) {
+    return payload.map((item) => normalizeAdminPayload(item)) as T
+  }
+
+  if (payload && typeof payload === 'object') {
+    const normalizedEntries = Object.entries(payload as Record<string, unknown>).map(([key, value]) => {
+      if (typeof value === 'string') {
+        const trimmed = value.trim()
+        return [key, trimmed === '' ? null : trimmed]
+      }
+      return [key, normalizeAdminPayload(value)]
+    })
+    return Object.fromEntries(normalizedEntries) as T
+  }
+
+  return payload
+}
+
 // ─── Categories ──────────────────────────────────────────────────────────────
 
 export function adminGetCategories(): Promise<AdminCategoryDto[]> {
@@ -26,14 +45,18 @@ export function adminGetCategory(id: string): Promise<AdminCategoryDto> {
 }
 
 export function adminCreateCategory(payload: AdminCategoryWriteDto): Promise<AdminCategoryDto> {
-  return apiFetch<AdminCategoryDto>('/admin/categories', 'POST', payload)
+  return apiFetch<AdminCategoryDto>('/admin/categories', 'POST', normalizeAdminPayload(payload))
 }
 
 export function adminUpdateCategory(
   id: string,
   payload: AdminCategoryWriteDto,
 ): Promise<AdminCategoryDto> {
-  return apiFetch<AdminCategoryDto>(`/admin/categories/${id}`, 'PUT', payload)
+  return apiFetch<AdminCategoryDto>(
+    `/admin/categories/${id}`,
+    'PUT',
+    normalizeAdminPayload(payload),
+  )
 }
 
 export function adminDeleteCategory(id: string): Promise<void> {
@@ -53,14 +76,22 @@ export function adminGetCollection(id: string): Promise<AdminCollectionDto> {
 export function adminCreateCollection(
   payload: AdminCollectionWriteDto,
 ): Promise<AdminCollectionDto> {
-  return apiFetch<AdminCollectionDto>('/admin/collections', 'POST', payload)
+  return apiFetch<AdminCollectionDto>(
+    '/admin/collections',
+    'POST',
+    normalizeAdminPayload(payload),
+  )
 }
 
 export function adminUpdateCollection(
   id: string,
   payload: AdminCollectionWriteDto,
 ): Promise<AdminCollectionDto> {
-  return apiFetch<AdminCollectionDto>(`/admin/collections/${id}`, 'PUT', payload)
+  return apiFetch<AdminCollectionDto>(
+    `/admin/collections/${id}`,
+    'PUT',
+    normalizeAdminPayload(payload),
+  )
 }
 
 export function adminDeleteCollection(id: string): Promise<void> {
@@ -78,14 +109,18 @@ export function adminGetProduct(id: string): Promise<AdminProductDto> {
 }
 
 export function adminCreateProduct(payload: AdminProductWriteDto): Promise<AdminProductDto> {
-  return apiFetch<AdminProductDto>('/admin/products', 'POST', payload)
+  return apiFetch<AdminProductDto>('/admin/products', 'POST', normalizeAdminPayload(payload))
 }
 
 export function adminUpdateProduct(
   id: string,
   payload: AdminProductWriteDto,
 ): Promise<AdminProductDto> {
-  return apiFetch<AdminProductDto>(`/admin/products/${id}`, 'PUT', payload)
+  return apiFetch<AdminProductDto>(
+    `/admin/products/${id}`,
+    'PUT',
+    normalizeAdminPayload(payload),
+  )
 }
 
 export function adminDeleteProduct(id: string): Promise<void> {
@@ -98,7 +133,11 @@ export function adminAddVariant(
   productId: string,
   payload: AdminVariantWriteDto,
 ): Promise<AdminVariantDto> {
-  return apiFetch<AdminVariantDto>(`/admin/products/${productId}/variants`, 'POST', payload)
+  return apiFetch<AdminVariantDto>(
+    `/admin/products/${productId}/variants`,
+    'POST',
+    normalizeAdminPayload(payload),
+  )
 }
 
 export function adminUpdateVariant(
@@ -109,7 +148,7 @@ export function adminUpdateVariant(
   return apiFetch<AdminVariantDto>(
     `/admin/products/${productId}/variants/${variantId}`,
     'PUT',
-    payload,
+    normalizeAdminPayload(payload),
   )
 }
 
@@ -123,7 +162,11 @@ export function adminAddImage(
   productId: string,
   payload: AdminProductImageWriteDto,
 ): Promise<AdminProductImageDto> {
-  return apiFetch<AdminProductImageDto>(`/admin/products/${productId}/images`, 'POST', payload)
+  return apiFetch<AdminProductImageDto>(
+    `/admin/products/${productId}/images`,
+    'POST',
+    normalizeAdminPayload(payload),
+  )
 }
 
 export function adminDeleteImage(productId: string, imageId: string): Promise<void> {

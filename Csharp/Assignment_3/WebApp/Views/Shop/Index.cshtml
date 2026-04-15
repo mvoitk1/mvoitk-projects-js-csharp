@@ -3,9 +3,9 @@
     ViewData["Title"] = "Shop";
 }
 
-<div class="row">
-    <!-- Sidebar -->
-    <div class="col-md-3">
+<div class="row g-0 mt-4">
+    <!-- Filter Sidebar -->
+    <div class="col-md-3 col-lg-2 pe-md-4 mb-4 mb-md-0">
         <div class="filter-sidebar">
             <h6>Category</h6>
             <a asp-controller="Shop" asp-action="Index"
@@ -62,42 +62,42 @@
     </div>
 
     <!-- Product grid -->
-    <div class="col-md-9">
-        <p class="text-muted small mb-3">@Model.Products.Count() products</p>
+    <div class="col-md-9 col-lg-10">
+        <div class="shop-page-header">
+            <h1 class="section-heading">Shop</h1>
+            <span class="shop-count">@Model.Products.Count() products</span>
+        </div>
+
         @if (!Model.Products.Any())
         {
-            <p class="text-muted">No products found.</p>
+            <div class="py-5 text-center">
+                <p style="color:var(--c-text-muted);font-size:0.95rem;">No products found for your selection.</p>
+                <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-dark btn-sm mt-2">Clear filters</a>
+            </div>
         }
         else
         {
-            <div class="row g-4">
+            <div class="row g-3 row-cols-2 row-cols-md-3">
                 @foreach (var product in Model.Products)
                 {
-                    <div class="col-6 col-md-4">
-                        <a asp-controller="Shop" asp-action="Detail" asp-route-id="@product.Id"
-                           class="text-decoration-none text-dark">
-                            <div class="card h-100 border-0 shadow-sm">
+                    <div class="col">
+                        <a asp-controller="Shop" asp-action="Detail" asp-route-id="@product.Id" class="product-card">
+                            <div class="product-card-img-wrap">
                                 @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
                                 {
-                                    <img src="@product.PrimaryImageUrl" class="card-img-top" alt="@product.Name"
-                                         style="height:260px;object-fit:cover;">
+                                    <img src="@product.PrimaryImageUrl" alt="@product.Name">
                                 }
                                 else
                                 {
-                                    <div class="bg-light d-flex align-items-center justify-content-center"
-                                         style="height:260px;">
-                                        <span class="text-muted">No image</span>
-                                    </div>
+                                    <div class="product-card-img-placeholder">No image</div>
                                 }
-                                <div class="card-body">
-                                    <h6 class="card-title mb-1">@product.Name</h6>
-                                    <small class="text-muted">@product.Gender</small>
-                                    @if (product.LowestPrice.HasValue)
-                                    {
-                                        <p class="mt-1 fw-semibold mb-0">From @product.LowestPrice.Value.ToString("C")</p>
-                                    }
-                                </div>
                             </div>
+                            <p class="product-card-name">@product.Name</p>
+                            <p class="product-card-meta">@product.Gender</p>
+                            @if (product.LowestPrice.HasValue)
+                            {
+                                <p class="product-card-price">From @product.LowestPrice.Value.ToString("C")</p>
+                            }
                         </a>
                     </div>
                 }

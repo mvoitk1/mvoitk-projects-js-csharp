@@ -6,15 +6,24 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] — Admin — @AppNameService.AppName</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
 </head>
 <body>
 <div class="admin-shell d-lg-flex">
-    <nav class="admin-sidebar bg-dark text-white p-3">
+    <nav class="admin-sidebar p-3 d-flex flex-column">
         <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
-           class="text-white text-decoration-none fs-5 fw-bold d-block mb-4">
-            @AppNameService.AppName Admin
+           class="text-white text-decoration-none d-block mb-1"
+           style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.45;font-weight:600;">
+            Admin
+        </a>
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+           class="text-white text-decoration-none d-block mb-4"
+           style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.4rem;font-weight:500;letter-spacing:0.06em;">
+            @AppNameService.AppName
         </a>
         @{
             var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
@@ -45,28 +54,33 @@
                    asp-area="Admin" asp-controller="Stock" asp-action="Index">Stock</a>
             </li>
         </ul>
+
         <div class="admin-create-panel mt-4">
-            <p class="admin-create-label mb-2">Create</p>
+            <p class="admin-create-label mb-2">Quick Create</p>
             <div class="d-grid gap-2">
                 <a class="btn btn-sm btn-light" asp-area="Admin" asp-controller="Products" asp-action="Create">New Product</a>
                 <a class="btn btn-sm btn-outline-light" asp-area="Admin" asp-controller="Categories" asp-action="Create">New Category</a>
                 <a class="btn btn-sm btn-outline-light" asp-area="Admin" asp-controller="Collections" asp-action="Create">New Collection</a>
             </div>
         </div>
-        <hr class="border-secondary mt-4">
-        <a class="nav-link text-white-50 small" asp-area="" asp-controller="Home" asp-action="Index">← Back to Shop</a>
+
+        <div class="mt-auto pt-4">
+            <hr style="border-color:rgba(255,255,255,0.1);margin-bottom:0.75rem;">
+            <a class="nav-link" style="color:rgba(255,255,255,0.4);font-size:0.8rem;"
+               asp-area="" asp-controller="Home" asp-action="Index">← Back to Shop</a>
+        </div>
     </nav>
 
     <div class="admin-main flex-grow-1">
-        <header class="admin-topbar border-bottom">
+        <header class="admin-topbar">
             <div>
                 <p class="admin-eyebrow mb-1">Admin workspace</p>
                 <h1 class="admin-page-title mb-0">@ViewData["Title"]</h1>
             </div>
-            <div class="admin-topbar-actions d-flex flex-wrap gap-2">
-                <a class="btn btn-dark" asp-area="Admin" asp-controller="Products" asp-action="Create">New Product</a>
-                <a class="btn btn-outline-dark" asp-area="Admin" asp-controller="Categories" asp-action="Create">New Category</a>
-                <a class="btn btn-outline-dark" asp-area="Admin" asp-controller="Collections" asp-action="Create">New Collection</a>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-dark btn-sm" asp-area="Admin" asp-controller="Products" asp-action="Create">New Product</a>
+                <a class="btn btn-outline-secondary btn-sm" asp-area="Admin" asp-controller="Categories" asp-action="Create">New Category</a>
+                <a class="btn btn-outline-secondary btn-sm" asp-area="Admin" asp-controller="Collections" asp-action="Create">New Collection</a>
             </div>
         </header>
 

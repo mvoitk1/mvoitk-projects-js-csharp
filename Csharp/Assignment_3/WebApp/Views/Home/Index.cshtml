@@ -4,29 +4,34 @@
 }
 
 <!-- Hero -->
-<div class="border-bottom py-4 mb-4">
-    <h1 class="mb-2">New Season, New Style</h1>
-    <p class="text-muted mb-3">Explore our latest collections crafted for the modern wardrobe.</p>
-    <a asp-controller="Shop" asp-action="Index" class="btn btn-dark">Shop Now</a>
+<div class="home-hero mt-4">
+    <span class="section-eyebrow">New Season</span>
+    <h1>Style for the<br>modern wardrobe</h1>
+    <p>Explore our latest collections — thoughtfully crafted, endlessly wearable.</p>
+    <a asp-controller="Shop" asp-action="Index" class="btn btn-dark btn-lg">Shop Now</a>
 </div>
 
 <!-- Collections -->
 @if (Model.Collections.Any())
 {
     <section class="mb-5">
-        <h2 class="page-heading">Collections</h2>
+        <div class="section-header">
+            <h2 class="section-heading">Collections</h2>
+        </div>
         <div class="row g-3">
             @foreach (var collection in Model.Collections.Take(3))
             {
                 <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">@collection.Name</h5>
-                            <p class="card-text text-muted small">@collection.Description</p>
-                            <a asp-controller="Shop" asp-action="Index" asp-route-collectionId="@collection.Id"
-                               class="btn btn-outline-dark btn-sm">View Collection</a>
-                        </div>
-                    </div>
+                    <a asp-controller="Shop" asp-action="Index" asp-route-collectionId="@collection.Id"
+                       class="collection-card">
+                        <p class="section-eyebrow">Collection</p>
+                        <h3 class="collection-card-title">@collection.Name</h3>
+                        @if (!string.IsNullOrEmpty(collection.Description))
+                        {
+                            <p class="collection-card-desc">@collection.Description</p>
+                        }
+                        <span class="btn btn-dark btn-sm">View Collection</span>
+                    </a>
                 </div>
             }
         </div>
@@ -35,35 +40,30 @@
 
 <!-- Featured Products -->
 <section class="mb-5">
-    <div class="d-flex justify-content-between align-items-center page-heading">
-        <h2 class="mb-0">Featured Products</h2>
-        <a asp-controller="Shop" asp-action="Index" class="text-decoration-none small">View all →</a>
+    <div class="section-header">
+        <h2 class="section-heading">Featured Products</h2>
+        <a asp-controller="Shop" asp-action="Index" class="text-decoration-none" style="font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--c-text-muted);">View all →</a>
     </div>
-    <div class="row g-4">
+    <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-4">
         @foreach (var product in Model.FeaturedProducts)
         {
-            <div class="col-6 col-md-4 col-lg-2">
-                <a asp-controller="Shop" asp-action="Detail" asp-route-id="@product.Id" class="text-decoration-none text-dark">
-                    <div class="card h-100 border-0 shadow-sm">
+            <div class="col">
+                <a asp-controller="Shop" asp-action="Detail" asp-route-id="@product.Id" class="product-card">
+                    <div class="product-card-img-wrap">
                         @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
                         {
-                            <img src="@product.PrimaryImageUrl" class="card-img-top" alt="@product.Name"
-                                 style="height:220px;object-fit:cover;">
+                            <img src="@product.PrimaryImageUrl" alt="@product.Name">
                         }
                         else
                         {
-                            <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px;">
-                                <span class="text-muted">No image</span>
-                            </div>
+                            <div class="product-card-img-placeholder">No image</div>
                         }
-                        <div class="card-body p-2">
-                            <p class="mb-1 fw-semibold small">@product.Name</p>
-                            @if (product.LowestPrice.HasValue)
-                            {
-                                <p class="text-muted small mb-0">From @product.LowestPrice.Value.ToString("C")</p>
-                            }
-                        </div>
                     </div>
+                    <p class="product-card-name">@product.Name</p>
+                    @if (product.LowestPrice.HasValue)
+                    {
+                        <p class="product-card-price">From @product.LowestPrice.Value.ToString("C")</p>
+                    }
                 </a>
             </div>
         }
@@ -74,18 +74,16 @@
 @if (Model.Categories.Any())
 {
     <section class="mb-5">
-        <h2 class="page-heading">Shop by Category</h2>
+        <div class="section-header">
+            <h2 class="section-heading">Shop by Category</h2>
+        </div>
         <div class="row g-3">
             @foreach (var category in Model.Categories.Take(4))
             {
                 <div class="col-6 col-md-3">
                     <a asp-controller="Shop" asp-action="Index" asp-route-categoryId="@category.Id"
-                       class="text-decoration-none">
-                        <div class="card text-center border-0 shadow-sm py-4">
-                            <div class="card-body">
-                                <h5 class="card-title">@category.Name</h5>
-                            </div>
-                        </div>
+                       class="category-card">
+                        <span class="category-card-name">@category.Name</span>
                     </a>
                 </div>
             }

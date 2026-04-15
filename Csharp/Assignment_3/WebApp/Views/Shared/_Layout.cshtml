@@ -1,4 +1,4 @@
-﻿@using System.Threading
+@using System.Threading
 @using WebApp.Helpers
 @inject AppNameService AppNameService;
 <!DOCTYPE html>
@@ -7,6 +7,9 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] — @AppNameService.AppName</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
@@ -15,60 +18,65 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">@AppNameService.AppName</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+    <nav class="navbar navbar-expand-md site-nav">
+        <div class="container-xl">
+            <a class="nav-brand" asp-area="" asp-controller="Home" asp-action="Index">@AppNameService.AppName</a>
+            <button class="navbar-toggler border-0 ms-auto" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#mainNavCollapse"
+                    aria-controls="mainNavCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
+            <div class="collapse navbar-collapse" id="mainNavCollapse">
+                <ul class="navbar-nav nav-links ms-4 me-auto">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Shop" asp-action="Index">Shop</a>
+                        <a class="nav-link" asp-controller="Shop" asp-action="Index">Shop</a>
                     </li>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Orders" asp-action="Index">My Orders</a>
+                            <a class="nav-link" asp-controller="Orders" asp-action="Index">My Orders</a>
                         </li>
                     }
                     @if (User.IsInRole("Admin"))
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
+                            <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
                         </li>
                     }
                 </ul>
-                <ul class="navbar-nav align-items-center gap-1">
+                <div class="nav-actions">
                     <partial name="_LanguageSelection"/>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         @await Component.InvokeAsync("CartBadge")
                     }
                     <partial name="_LoginPartial"/>
-                </ul>
+                </div>
             </div>
         </div>
     </nav>
 </header>
-<div class="container">
+
+<div class="container-xl px-3 px-md-4">
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
 </div>
 
-<footer class="border-top footer text-muted">
-    <div class="container">
-        @AppNameService.AppName - <a asp-area="" asp-controller="Home" asp-action="Privacy">@App.Resources.Views.Shared._Layout.Privacy</a> | 
-        <a href="/swagger">Api</a> | 
-        @Thread.CurrentThread.CurrentCulture.Name
+<footer class="site-footer">
+    <div class="container-xl px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span>© @DateTime.Now.Year @AppNameService.AppName</span>
+        <div class="d-flex gap-3">
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <a href="/swagger">API</a>
+            <span>@Thread.CurrentThread.CurrentCulture.Name</span>
+        </div>
     </div>
 </footer>
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/lib/htmx.org/dist/htmx.min.js"></script>

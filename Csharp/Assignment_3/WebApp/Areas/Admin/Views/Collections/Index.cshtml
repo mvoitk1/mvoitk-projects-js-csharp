@@ -26,6 +26,8 @@ else
             <thead>
                 <tr>
                     <th>Name (EN)</th>
+                    <th>Name (ET)</th>
+                    <th>Description (EN)</th>
                     <th>Launch Date</th>
                     <th>Active</th>
                     <th></th>
@@ -36,6 +38,8 @@ else
                 {
                     <tr>
                         <td>@col.NameEn</td>
+                        <td>@(string.IsNullOrWhiteSpace(col.NameEt) ? "—" : col.NameEt)</td>
+                        <td>@(string.IsNullOrWhiteSpace(col.DescriptionEn) ? "—" : col.DescriptionEn)</td>
                         <td>@(col.LaunchDate?.ToString("dd MMM yyyy") ?? "—")</td>
                         <td>
                             <span class="badge @(col.IsActive ? "bg-success" : "bg-secondary")">

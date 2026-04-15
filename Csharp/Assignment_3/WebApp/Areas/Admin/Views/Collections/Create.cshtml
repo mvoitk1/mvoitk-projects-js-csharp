@@ -10,6 +10,7 @@
     <div class="admin-form-panel">
         <form asp-action="Create" method="post" style="max-width:680px;">
             @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <partial name="_CollectionForm" model="Model"/>
             <button type="submit" class="btn btn-dark mt-3">Create Collection</button>
         </form>
@@ -19,3 +20,5 @@
         <p class="text-muted small mb-0">Once the collection exists, you can select it when creating or editing a product.</p>
     </aside>
 </div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial"/> }

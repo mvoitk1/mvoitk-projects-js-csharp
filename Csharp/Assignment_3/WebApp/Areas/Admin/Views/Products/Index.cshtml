@@ -26,8 +26,10 @@ else
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Name (ET)</th>
                     <th>Gender</th>
                     <th>Collection</th>
+                    <th>Images</th>
                     <th>Variants</th>
                     <th>Active</th>
                     <th>Created</th>
@@ -39,8 +41,10 @@ else
                 {
                     <tr>
                         <td>@p.NameEn</td>
+                        <td>@(string.IsNullOrWhiteSpace(p.NameEt) ? "—" : p.NameEt)</td>
                         <td>@p.Gender</td>
                         <td>@(p.CollectionName ?? "—")</td>
+                        <td>@p.Images.Count</td>
                         <td>@p.Variants.Count</td>
                         <td>
                             @if (p.IsActive)

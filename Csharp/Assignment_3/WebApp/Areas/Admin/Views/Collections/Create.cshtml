@@ -3,11 +3,19 @@
     ViewData["Title"] = "New Collection";
 }
 
-<h2>New Collection</h2>
-<a asp-action="Index" class="text-decoration-none text-muted mb-3 d-block">← Back</a>
+<p class="text-muted mb-3">Create collections for campaigns, seasons, or special drops before linking products to them.</p>
+<a asp-action="Index" class="text-decoration-none text-muted mb-4 d-inline-block">← Back to Collections</a>
 
-<form asp-action="Create" method="post" style="max-width:600px;">
-    @Html.AntiForgeryToken()
-    <partial name="_CollectionForm" model="Model"/>
-    <button type="submit" class="btn btn-dark mt-3">Create</button>
-</form>
+<div class="admin-form-grid">
+    <div class="admin-form-panel">
+        <form asp-action="Create" method="post" style="max-width:680px;">
+            @Html.AntiForgeryToken()
+            <partial name="_CollectionForm" model="Model"/>
+            <button type="submit" class="btn btn-dark mt-3">Create Collection</button>
+        </form>
+    </div>
+    <aside class="admin-form-aside">
+        <h3 class="h6">Next step</h3>
+        <p class="text-muted small mb-0">Once the collection exists, you can select it when creating or editing a product.</p>
+    </aside>
+</div>

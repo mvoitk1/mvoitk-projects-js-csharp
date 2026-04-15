@@ -3,14 +3,30 @@
     ViewData["Title"] = "Create Product";
 }
 
-<h2>Create Product</h2>
-<a asp-action="Index" class="text-decoration-none text-muted mb-3 d-block">← Back to Products</a>
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <p class="text-muted mb-1">Add the main product details here. After saving, you can add variants and images.</p>
+        <a asp-action="Index" class="text-decoration-none text-muted">← Back to Products</a>
+    </div>
+</div>
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-    <partial name="_ProductForm" model="Model"/>
-    <button type="submit" class="btn btn-dark mt-3">Create Product</button>
-</form>
+<div class="admin-form-grid">
+    <div class="admin-form-panel">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <partial name="_ProductForm" model="Model"/>
+            <button type="submit" class="btn btn-dark mt-3">Create Product</button>
+        </form>
+    </div>
+    <aside class="admin-form-aside">
+        <h3 class="h6">Need supporting data first?</h3>
+        <p class="text-muted small">Products can link to categories and collections. Create those first if the lists are empty.</p>
+        <div class="d-grid gap-2">
+            <a asp-controller="Categories" asp-action="Create" class="btn btn-sm btn-outline-dark">Create Category</a>
+            <a asp-controller="Collections" asp-action="Create" class="btn btn-sm btn-outline-dark">Create Collection</a>
+        </div>
+    </aside>
+</div>
 
 @section Scripts { <partial name="_ValidationScriptsPartial"/> }

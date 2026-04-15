@@ -647,6 +647,8 @@ a {
 .admin-shell {
     min-height: 100vh;
     background: #f5f6f8;
+    display: flex;
+    align-items: stretch;
 }
 
 .admin-sidebar {
@@ -806,7 +808,11 @@ a {
     }
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 767.98px) {
+    .admin-shell {
+        flex-direction: column;
+    }
+
     .admin-sidebar {
         width: 100%;
         min-height: auto;

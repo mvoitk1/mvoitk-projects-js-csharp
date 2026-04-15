@@ -8,6 +8,11 @@
 <p class="text-muted mb-3">Edit the product basics here. Variants and images stay below so you can test the full product setup in one place.</p>
 <a asp-action="Index" class="text-decoration-none text-muted mb-4 d-inline-block">← Back to Products</a>
 
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
 <div class="admin-form-grid mb-4">
     <div class="admin-form-panel">
         <form asp-action="Edit" asp-route-id="@product?.Id" method="post">
@@ -159,12 +164,17 @@
         }
 
         <h6>Add Image</h6>
-        <form asp-action="AddImage" method="post" class="row g-3 align-items-end">
+        <form asp-action="AddImage" method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
             @Html.AntiForgeryToken()
             <input type="hidden" name="productId" value="@product.Id">
             <div class="col-md-4">
+                <label class="form-label small">Image File</label>
+                <input name="imageFile" type="file" accept=".jpg,.jpeg,.png,.webp,.gif" class="form-control form-control-sm">
+                <div class="form-text">Upload a file, or leave it empty and use an image URL instead.</div>
+            </div>
+            <div class="col-md-4">
                 <label class="form-label small">Image URL</label>
-                <input name="Url" class="form-control form-control-sm" placeholder="https://..." required>
+                <input name="Url" class="form-control form-control-sm" placeholder="https://...">
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Alt text (EN)</label>

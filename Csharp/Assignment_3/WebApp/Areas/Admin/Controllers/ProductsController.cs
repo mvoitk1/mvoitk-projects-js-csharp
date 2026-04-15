@@ -8,8 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace WebApp.Areas.Admin.Controllers;
 
-public class ProductsController(IAdminProductService productService, AppDbContext db) : AdminBaseController
+public class ProductsController(IAdminProductService productService, AppDbContext db, IWebHostEnvironment env) : AdminBaseController
 {
+    private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".webp", ".gif"
+    };
+
     public async Task<IActionResult> Index()
     {
         return View(await productService.GetAllAsync());
@@ -103,8 +108,27 @@ public class ProductsController(IAdminProductService productService, AppDbContex
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddImage(Guid productId, AdminProductImageDto dto)
+    public async Task<IActionResult> AddImage(Guid productId, AdminProductImageDto dto, IFormFile? imageFile)
     {
+        try
+        {
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                dto.Url = await SaveProductImageAsync(imageFile);
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(Edit), new { id = productId });
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.Url))
+        {
+            TempData["Error"] = "Please provide an image file or URL.";
+            return RedirectToAction(nameof(Edit), new { id = productId });
+        }
+
         await productService.AddImageAsync(productId, dto);
         return RedirectToAction(nameof(Edit), new { id = productId });
     }
@@ -113,8 +137,52 @@ public class ProductsController(IAdminProductService productService, AppDbContex
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteImage(Guid productId, Guid imageId)
     {
+        var product = await productService.GetByIdAsync(productId);
+        var image = product?.Images.FirstOrDefault(i => i.Id == imageId);
+
+        if (image != null)
+        {
+            DeleteLocalProductImage(image.Url);
+        }
+
         await productService.DeleteImageAsync(productId, imageId);
         return RedirectToAction(nameof(Edit), new { id = productId });
+    }
+
+    private async Task<string> SaveProductImageAsync(IFormFile imageFile)
+    {
+        var extension = Path.GetExtension(imageFile.FileName);
+        if (string.IsNullOrWhiteSpace(extension) || !AllowedImageExtensions.Contains(extension))
+        {
+            throw new InvalidOperationException("Unsupported image file type.");
+        }
+
+        var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "products");
+        Directory.CreateDirectory(uploadsFolder);
+
+        var fileName = $"{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        await using var stream = System.IO.File.Create(filePath);
+        await imageFile.CopyToAsync(stream);
+
+        return $"/uploads/products/{fileName}";
+    }
+
+    private void DeleteLocalProductImage(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || !imageUrl.StartsWith("/uploads/products/", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var relativePath = imageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+        var filePath = Path.Combine(env.WebRootPath, relativePath);
+
+        if (System.IO.File.Exists(filePath))
+        {
+            System.IO.File.Delete(filePath);
+        }
     }
 
     private async Task PopulateSelectListsAsync()

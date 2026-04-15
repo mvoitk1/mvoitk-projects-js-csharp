@@ -19,7 +19,10 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => {
     if (!jwt.value) return false
     const payload = decodePayload(jwt.value)
-    return payload['role'] === 'Admin'
+    const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+    const roles = payload[ROLE_CLAIM]
+    if (Array.isArray(roles)) return roles.includes('Admin')
+    return roles === 'Admin'
   })
 
   function _persist(j: string, rt: string) {

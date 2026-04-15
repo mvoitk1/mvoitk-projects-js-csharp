@@ -23,7 +23,7 @@ async function submit() {
   loading.value = true
   try {
     await auth.login({ email: email.value, password: password.value })
-    await cart.fetchCart()
+    try { await cart.fetchCart() } catch { /* cart unavailable for some roles */ }
     const redirect = (route.query.redirect as string) || '/'
     router.push(redirect)
   } catch (e) {

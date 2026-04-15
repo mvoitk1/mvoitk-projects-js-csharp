@@ -34,7 +34,17 @@ public class StockController(IAdminCatalogueService catalogueService, AppDbConte
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStock(Guid variantId, int stockQty)
     {
-        await catalogueService.UpdateStockAsync(variantId, stockQty);
+        try
+        {
+            var found = await catalogueService.UpdateStockAsync(variantId, stockQty);
+            TempData[found ? "StockSuccess" : "StockError"] = found
+                ? $"Stock updated to {stockQty}."
+                : "Variant not found.";
+        }
+        catch (Exception ex)
+        {
+            TempData["StockError"] = ex.Message;
+        }
         return RedirectToAction(nameof(Index));
     }
 }

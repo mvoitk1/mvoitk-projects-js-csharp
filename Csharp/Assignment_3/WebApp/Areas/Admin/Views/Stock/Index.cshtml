@@ -6,6 +6,15 @@
 <h2>Stock Management</h2>
 <p class="text-muted">Sorted by stock level (lowest first). Variants with &lt;5 units are highlighted.</p>
 
+@if (TempData["StockSuccess"] != null)
+{
+    <div class="alert alert-success py-2 small">@TempData["StockSuccess"]</div>
+}
+@if (TempData["StockError"] != null)
+{
+    <div class="alert alert-danger py-2 small">@TempData["StockError"]</div>
+}
+
 <div class="table-responsive">
     <table class="table align-middle">
         <thead>

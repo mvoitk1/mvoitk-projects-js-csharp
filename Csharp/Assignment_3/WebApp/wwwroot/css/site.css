@@ -510,9 +510,18 @@ a {
     color: #fff;
 }
 
-.size-btn:disabled {
-    opacity: 0.32;
-    cursor: not-allowed;
+.size-btn:disabled,
+.size-btn.out-of-stock {
+    opacity: 0.38;
+    cursor: pointer;
+    text-decoration: line-through;
+}
+
+.size-btn.out-of-stock.selected {
+    background: #c62828;
+    border-color: #c62828;
+    color: #fff;
+    opacity: 1;
     text-decoration: line-through;
 }
 

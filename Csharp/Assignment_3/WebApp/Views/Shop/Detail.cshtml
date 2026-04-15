@@ -92,10 +92,12 @@
                 @foreach (var size in Model.Variants.GroupBy(v => v.SizeId).Select(g => g.First()))
                 {
                     <button type="button"
-                            class="size-btn"
                             @@click="selectSize('@size.SizeId')"
-                            :disabled="!isSizeAvailable('@size.SizeId')"
-                            :class="selectedSizeId === '@size.SizeId' ? 'selected' : ''">
+                            :class="[
+                                'size-btn',
+                                selectedSizeId === '@size.SizeId' ? 'selected' : '',
+                                !isSizeAvailable('@size.SizeId') ? 'out-of-stock' : ''
+                            ]">
                         @size.SizeCode
                     </button>
                 }
@@ -103,13 +105,13 @@
         </div>
 
         <!-- Stock indicator -->
-        <p class="mb-4" style="font-size:0.82rem;" x-show="selectedVariant">
-            <span x-show="selectedVariant?.stockQty > 0" style="color:#2d6a4f;">
-                ✓ In stock (<span x-text="selectedVariant?.stockQty"></span> available)
-            </span>
-            <span x-show="selectedVariant?.stockQty === 0" style="color:#c62828;">
-                Out of stock
-            </span>
+        <p class="mb-3" style="font-size:0.82rem;" x-show="selectedSizeId">
+            <template x-if="selectedVariant && selectedVariant.stockQty > 0">
+                <span style="color:#2d6a4f;">&#10003; In stock (<span x-text="selectedVariant.stockQty"></span> available)</span>
+            </template>
+            <template x-if="!selectedVariant || selectedVariant.stockQty === 0">
+                <span style="color:#c62828;">&#10007; Out of stock — select a different size or colour</span>
+            </template>
         </p>
 
         <!-- Add to cart -->
@@ -174,6 +176,13 @@
 
                 selectColor(colorId) {
                     this.selectedColorId = colorId;
+                    // Clear size selection if chosen size doesn't exist for the new colour
+                    if (this.selectedSizeId) {
+                        const still = this.variants.some(v =>
+                            v.colorId === colorId && v.sizeId === this.selectedSizeId
+                        );
+                        if (!still) this.selectedSizeId = null;
+                    }
                 },
 
                 selectSize(sizeId) {

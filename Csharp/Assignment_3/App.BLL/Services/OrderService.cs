@@ -8,6 +8,12 @@ namespace App.BLL.Services;
 
 public class OrderService(AppDbContext db) : IOrderService
 {
+    private static readonly TimeZoneInfo _tz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Tallinn");
+
+    private static DateTime ToLocal(DateTime utc) =>
+        TimeZoneInfo.ConvertTimeFromUtc(utc, _tz);
+
     public async Task<OrderDto> PlaceOrderAsync(Guid userId, CreateOrderDto dto)
     {
         var cart = await db.Carts
@@ -83,7 +89,7 @@ public class OrderService(AppDbContext db) : IOrderService
             OrderNumber = o.OrderNumber,
             Status = o.Status.ToString(),
             TotalAmount = o.TotalAmount,
-            CreatedAt = o.CreatedAt,
+            CreatedAt = ToLocal(o.CreatedAt),
             ItemCount = o.Items?.Sum(i => i.Quantity) ?? 0
         });
     }
@@ -110,7 +116,7 @@ public class OrderService(AppDbContext db) : IOrderService
             OrderNumber = order.OrderNumber,
             Status = order.Status.ToString(),
             TotalAmount = order.TotalAmount,
-            CreatedAt = order.CreatedAt,
+            CreatedAt = ToLocal(order.CreatedAt),
             ShippingFirstName = order.ShippingFirstName,
             ShippingLastName = order.ShippingLastName,
             ShippingEmail = order.ShippingEmail,

@@ -8,6 +8,12 @@ namespace App.BLL.Services;
 
 public class AdminOrderService(AppDbContext db) : IAdminOrderService
 {
+    private static readonly TimeZoneInfo _tz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Tallinn");
+
+    private static DateTime ToLocal(DateTime utc) =>
+        TimeZoneInfo.ConvertTimeFromUtc(utc, _tz);
+
     public async Task<IEnumerable<AdminOrderDto>> GetAllAsync(string? statusFilter = null)
     {
         var query = db.Orders
@@ -37,7 +43,7 @@ public class AdminOrderService(AppDbContext db) : IAdminOrderService
             OrderNumber = o.OrderNumber,
             Status = o.Status.ToString(),
             TotalAmount = o.TotalAmount,
-            CreatedAt = o.CreatedAt,
+            CreatedAt = ToLocal(o.CreatedAt),
             CustomerFirstName = o.AppUser?.FirstName ?? string.Empty,
             CustomerLastName = o.AppUser?.LastName ?? string.Empty,
             CustomerEmail = o.AppUser?.Email ?? string.Empty,

@@ -50,7 +50,25 @@ namespace App.Resources.Views.Shared {
                 return ResourceManager.GetString("Home", resourceCulture);
             }
         }
-        
+
+        public static string Shop {
+            get {
+                return ResourceManager.GetString("Shop", resourceCulture);
+            }
+        }
+
+        public static string MyOrders {
+            get {
+                return ResourceManager.GetString("MyOrders", resourceCulture);
+            }
+        }
+
+        public static string Admin {
+            get {
+                return ResourceManager.GetString("Admin", resourceCulture);
+            }
+        }
+
         public static string Lang {
             get {
                 return ResourceManager.GetString("Lang", resourceCulture);

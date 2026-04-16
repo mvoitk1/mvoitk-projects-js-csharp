@@ -81,5 +81,17 @@ export const useAuthStore = defineStore('auth', () => {
   // Listen for the logout event dispatched by the API client on 401 + failed refresh
   window.addEventListener('auth:logout', () => _clear())
 
+  // Proactively renew tokens every 4 minutes while logged in, so idle users
+  // are not logged out (mirrors MVC cookie sliding-expiration behaviour).
+  setInterval(async () => {
+    if (!jwt.value || !refreshToken.value) return
+    try {
+      const res = await authApi.renewToken({ jwt: jwt.value, refreshToken: refreshToken.value })
+      if (res.jwt && res.refreshToken) _persist(res.jwt, res.refreshToken)
+    } catch {
+      // silent — the next real API call will handle expiry if it comes to that
+    }
+  }, 4 * 60 * 1000)
+
   return { jwt, refreshToken, isLoggedIn, isAdmin, login, register, logout }
 })

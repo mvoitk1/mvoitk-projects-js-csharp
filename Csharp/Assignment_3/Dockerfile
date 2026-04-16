@@ -21,6 +21,11 @@ COPY . .
 # literal backslashes in their names. These break Linux container builds.
 RUN find . -type d \( -name 'bin\\*' -o -name 'obj\\*' \) -prune -exec rm -rf '{}' +
 
+# Restore client-side libraries (Bootstrap, jQuery, Alpine.js, htmx, etc.)
+RUN dotnet tool install --global Microsoft.Web.LibraryManager.Cli
+ENV PATH="${PATH}:/root/.dotnet/tools"
+RUN cd WebApp && libman restore
+
 RUN dotnet publish "WebApp/WebApp.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final

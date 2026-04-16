@@ -3,6 +3,36 @@
   "defaultProvider": "jsdelivr",
   "libraries": [
     {
+      "library": "bootstrap@5.3.3",
+      "destination": "wwwroot/lib/bootstrap",
+      "files": [
+        "dist/css/bootstrap.min.css",
+        "dist/js/bootstrap.bundle.min.js"
+      ]
+    },
+    {
+      "library": "jquery@3.7.1",
+      "destination": "wwwroot/lib/jquery",
+      "files": [
+        "dist/jquery.min.js"
+      ]
+    },
+    {
+      "library": "jquery-validation@1.21.0",
+      "destination": "wwwroot/lib/jquery-validation",
+      "files": [
+        "dist/jquery.validate.min.js",
+        "dist/additional-methods.min.js"
+      ]
+    },
+    {
+      "library": "jquery-validation-unobtrusive@4.0.0",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive",
+      "files": [
+        "dist/jquery.validate.unobtrusive.min.js"
+      ]
+    },
+    {
       "library": "htmx.org@2.0.8",
       "destination": "wwwroot/lib/htmx.org",
       "files": [

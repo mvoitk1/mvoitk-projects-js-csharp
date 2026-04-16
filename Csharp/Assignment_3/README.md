@@ -137,3 +137,11 @@ For interactive API docs, open `/swagger`.
 - The project includes both MVC pages and JSON API endpoints.
 - Supported UI cultures are English (`en`) and Estonian (`et`).
 - Additional technical and planning notes are available in `README-TECH.md` and `DOCUMENTATION.md`.
+
+
+admin two factor auth codes:
+75KDJ-WNHCG 3NP6W-HXN5F
+NP2CD-WW844 RRQQB-X3KYM
+5K7WX-V7JMF GJ28F-3HQ45
+47T8W-J4GPM 7WRTP-8Q5HG
+67P95-QCB6Y 3JDH5-PMX7N

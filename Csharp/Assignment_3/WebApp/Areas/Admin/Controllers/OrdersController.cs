@@ -30,7 +30,10 @@ public class OrdersController(IAdminOrderService orderService) : AdminBaseContro
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStatus(Guid id, string status)
     {
-        await orderService.UpdateStatusAsync(id, status);
-        return RedirectToAction(nameof(Detail), new { area = "Admin", id });
+        var ok = await orderService.UpdateStatusAsync(id, status);
+        TempData[ok ? "Success" : "Error"] = ok
+            ? $"Status updated to {status}."
+            : "Failed to update status — invalid status value or order not found.";
+        return RedirectToAction(nameof(Detail), "Orders", new { area = "Admin", id });
     }
 }

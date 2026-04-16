@@ -13,7 +13,6 @@
     </ol>
 </nav>
 
-<script>var __variants = @Html.Raw(variantsJson);</script>
 <div class="row g-5" x-data="variantSelector(__variants)">
     <!-- Images -->
     <div class="col-md-6">
@@ -137,8 +136,9 @@
     </div>
 </div>
 
-@section Scripts {
+@section HeaderScripts {
     <script>
+        var __variants = @Html.Raw(variantsJson);
         function variantSelector(variants) {
             return {
                 variants,
@@ -148,7 +148,6 @@
                 primaryAlt: '@(Model.Images.FirstOrDefault()?.AltText ?? "")',
 
                 init() {
-                    // Auto-select the first color so size selection works immediately
                     const firstColor = this.variants[0]?.colorId;
                     if (firstColor) this.selectedColorId = firstColor;
                 },
@@ -177,7 +176,6 @@
 
                 selectColor(colorId) {
                     this.selectedColorId = colorId;
-                    // Clear size selection if chosen size doesn't exist for the new colour
                     if (this.selectedSizeId) {
                         const still = this.variants.some(v =>
                             v.colorId === colorId && v.sizeId === this.selectedSizeId

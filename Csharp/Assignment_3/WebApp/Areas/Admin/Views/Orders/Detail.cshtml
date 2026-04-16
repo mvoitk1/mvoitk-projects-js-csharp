@@ -10,7 +10,7 @@
         <h2>@Model.OrderNumber</h2>
         <p class="text-muted mb-0">@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</p>
     </div>
-    <form asp-action="UpdateStatus" method="post" class="d-flex gap-2 align-items-center">
+    <form asp-area="Admin" asp-controller="Orders" asp-action="UpdateStatus" method="post" class="d-flex gap-2 align-items-center">
         @Html.AntiForgeryToken()
         <input type="hidden" name="id" value="@Model.Id">
         <select name="status" asp-items="@(ViewData["Statuses"] as SelectList)"

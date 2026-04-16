@@ -57,7 +57,8 @@ public class OrderService(AppDbContext db) : IOrderService
             item.ProductVariant!.StockQty -= item.Quantity;
         }
 
-        // Mark cart as checked out
+        // Clear cart items and mark as checked out
+        db.CartItems.RemoveRange(cart.Items);
         cart.Status = CartStatus.CheckedOut;
         cart.UpdatedAt = DateTime.UtcNow;
 

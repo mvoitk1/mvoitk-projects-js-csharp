@@ -31,6 +31,6 @@ public class OrdersController(IAdminOrderService orderService) : AdminBaseContro
     public async Task<IActionResult> UpdateStatus(Guid id, string status)
     {
         await orderService.UpdateStatusAsync(id, status);
-        return RedirectToAction(nameof(Detail), new { id });
+        return RedirectToAction(nameof(Detail), new { area = "Admin", id });
     }
 }

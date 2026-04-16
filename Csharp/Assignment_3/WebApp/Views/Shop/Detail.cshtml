@@ -119,10 +119,11 @@
         {
             <form asp-controller="Cart" asp-action="AddItem" method="post">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="productVariantId" :value="selectedVariantId">
+                <input type="hidden" name="productVariantId" x-ref="variantInput">
                 <input type="hidden" name="quantity" value="1">
                 <button type="submit" class="btn btn-dark btn-lg w-100"
-                        :disabled="!selectedVariantId || selectedVariant?.stockQty === 0">
+                        :disabled="!selectedVariantId || selectedVariant?.stockQty === 0"
+                        @@click="$refs.variantInput.value = selectedVariantId ?? ''">
                     Add to Cart
                 </button>
             </form>

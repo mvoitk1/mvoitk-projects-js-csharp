@@ -29,21 +29,21 @@
             <div class="collapse navbar-collapse" id="mainNavCollapse">
                 <ul class="navbar-nav nav-links ms-4 me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">@App.Resources.Views.Shared._Layout.Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Shop" asp-action="Index">Shop</a>
+                        <a class="nav-link" asp-area="" asp-controller="Shop" asp-action="Index">@App.Resources.Views.Shared._Layout.Shop</a>
                     </li>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Orders" asp-action="Index">My Orders</a>
+                            <a class="nav-link" asp-area="" asp-controller="Orders" asp-action="Index">@App.Resources.Views.Shared._Layout.MyOrders</a>
                         </li>
                     }
                     @if (User.IsInRole("Admin"))
                     {
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
+                            <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">@App.Resources.Views.Shared._Layout.Admin</a>
                         </li>
                     }
                 </ul>
@@ -70,7 +70,7 @@
     <div class="container-xl px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span>© @DateTime.Now.Year @AppNameService.AppName</span>
         <div class="d-flex gap-3">
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">@App.Resources.Views.Shared._Layout.Privacy</a>
             <a href="/swagger">API</a>
             <span>@Thread.CurrentThread.CurrentCulture.Name</span>
         </div>

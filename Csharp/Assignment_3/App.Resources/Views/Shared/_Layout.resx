@@ -21,6 +21,15 @@
     <data name="Home" xml:space="preserve">
         <value>Home</value>
     </data>
+    <data name="Shop" xml:space="preserve">
+        <value>Shop</value>
+    </data>
+    <data name="MyOrders" xml:space="preserve">
+        <value>My Orders</value>
+    </data>
+    <data name="Admin" xml:space="preserve">
+        <value>Admin</value>
+    </data>
     <data name="Lang" xml:space="preserve">
         <value>Lang</value>
     </data>

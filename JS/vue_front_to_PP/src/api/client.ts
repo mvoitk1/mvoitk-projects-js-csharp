@@ -4,7 +4,9 @@ const BASE_URL = import.meta.env.VITE_API_BASE as string
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
-let isRefreshing = false
+// Shared renewal promise — all concurrent callers await the same inflight
+// renewal instead of each racing to refresh (or worse, skipping the wait).
+let refreshPromise: Promise<boolean> | null = null
 
 function dispatchAuthTokens(jwt: string | null, refreshToken: string | null): void {
   window.dispatchEvent(new CustomEvent('auth:tokens', { detail: { jwt, refreshToken } }))
@@ -69,6 +71,20 @@ async function renewToken(): Promise<boolean> {
   return false
 }
 
+// All concurrent callers await the same inflight renewal promise instead of
+// each firing their own request. .catch keeps the promise from rejecting so
+// every awaiter receives a boolean. .finally clears it for the next cycle.
+function ensureRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = renewToken()
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null
+      })
+  }
+  return refreshPromise
+}
+
 export async function apiFetch<T>(
   path: string,
   method: HttpMethod = 'GET',
@@ -79,12 +95,10 @@ export async function apiFetch<T>(
   // we never send a stale JWT. The server returns 500 HTML instead of 401
   // for expired tokens, which prevents the reactive 401-based refresh below
   // from ever triggering.
-  if (retry && !isRefreshing) {
+  if (retry) {
     const jwt = getJwt()
     if (jwt && isJwtExpired(jwt)) {
-      isRefreshing = true
-      const ok = await renewToken()
-      isRefreshing = false
+      const ok = await ensureRefresh()
       if (!ok) {
         clearTokens()
         window.dispatchEvent(new CustomEvent('auth:logout'))
@@ -104,10 +118,8 @@ export async function apiFetch<T>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
-  if (res.status === 401 && retry && !isRefreshing) {
-    isRefreshing = true
-    const ok = await renewToken()
-    isRefreshing = false
+  if (res.status === 401 && retry) {
+    const ok = await ensureRefresh()
     if (ok) return apiFetch<T>(path, method, body, false)
     clearTokens()
     window.dispatchEvent(new CustomEvent('auth:logout'))

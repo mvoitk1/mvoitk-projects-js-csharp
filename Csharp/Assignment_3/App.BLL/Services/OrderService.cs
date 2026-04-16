@@ -11,6 +11,7 @@ public class OrderService(AppDbContext db) : IOrderService
     public async Task<OrderDto> PlaceOrderAsync(Guid userId, CreateOrderDto dto)
     {
         var cart = await db.Carts
+            .AsTracking()
             .Include(c => c.Items)!
                 .ThenInclude(i => i.ProductVariant)
             .FirstOrDefaultAsync(c => c.AppUserId == userId && c.Status == CartStatus.Active);

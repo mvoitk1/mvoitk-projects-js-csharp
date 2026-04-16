@@ -117,12 +117,10 @@ public class AdminCatalogueService(AppDbContext db) : IAdminCatalogueService
 
     public async Task<bool> UpdateStockAsync(Guid variantId, int stockQty)
     {
-        var variant = await db.ProductVariants.FindAsync(variantId);
-        if (variant == null) return false;
-
-        variant.StockQty = stockQty;
-        await db.SaveChangesAsync();
-        return true;
+        var affected = await db.ProductVariants
+            .Where(v => v.Id == variantId)
+            .ExecuteUpdateAsync(s => s.SetProperty(v => v.StockQty, stockQty));
+        return affected > 0;
     }
 
     // ─── Mappers ─────────────────────────────────────────────────────────────

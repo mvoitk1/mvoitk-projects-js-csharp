@@ -13,7 +13,8 @@
     </ol>
 </nav>
 
-<div class="row g-5" x-data="variantSelector(@Html.Raw(variantsJson))">
+<script>var __variants = @Html.Raw(variantsJson);</script>
+<div class="row g-5" x-data="variantSelector(__variants)">
     <!-- Images -->
     <div class="col-md-6">
         @if (Model.Images.Any())

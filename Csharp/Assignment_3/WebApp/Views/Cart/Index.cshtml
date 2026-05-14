@@ -4,7 +4,7 @@
 }
 
 <div class="mt-4 mb-2 d-flex align-items-baseline gap-3">
-    <h1 class="section-heading">Your Cart</h1>
+    <h1 class="section-heading">@App.Resources.Views.Cart.Index.YourCart</h1>
     @if (Model.Items.Any())
     {
         <span style="font-size:0.82rem;color:var(--c-text-muted);">@Model.ItemCount items</span>
@@ -19,8 +19,8 @@
 @if (!Model.Items.Any())
 {
     <div class="text-center py-5 mt-3">
-        <p style="color:var(--c-text-muted);font-size:1.05rem;margin-bottom:1.5rem;">Your cart is empty.</p>
-        <a asp-controller="Shop" asp-action="Index" class="btn btn-dark">Continue Shopping</a>
+        <p style="color:var(--c-text-muted);font-size:1.05rem;margin-bottom:1.5rem;">@App.Resources.Views.Cart.Index.CartEmpty</p>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-dark">@App.Resources.Views.Cart.Index.ContinueShopping</a>
     </div>
 }
 else
@@ -30,11 +30,11 @@ else
             <table class="table cart-table">
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th>Variant</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Total</th>
+                        <th>@App.Resources.Views.Cart.Index.Product</th>
+                        <th>@App.Resources.Views.Cart.Index.Variant</th>
+                        <th>@App.Resources.Views.Cart.Index.Price</th>
+                        <th>@App.Resources.Views.Cart.Index.Qty</th>
+                        <th>@App.Resources.Views.Cart.Index.Total</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -62,7 +62,7 @@ else
                                     <input type="hidden" name="cartItemId" value="@item.Id">
                                     <input type="number" name="quantity" value="@item.Quantity" min="1" max="100"
                                            class="form-control form-control-sm" style="width:68px;">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">@App.Resources.Views.Cart.Index.Update</button>
                                 </form>
                             </td>
                             <td style="font-size:0.9rem;font-weight:500;">@item.LineTotal.ToString("C")</td>
@@ -81,9 +81,9 @@ else
 
         <div class="col-md-4">
             <div class="cart-summary">
-                <h5 style="font-family:var(--ff-serif);font-size:1.25rem;font-weight:500;margin-bottom:1.25rem;">Order Summary</h5>
+                <h5 style="font-family:var(--ff-serif);font-size:1.25rem;font-weight:500;margin-bottom:1.25rem;">@App.Resources.Views.Cart.Index.OrderSummary</h5>
                 <div class="d-flex justify-content-between mb-2" style="font-size:0.9rem;">
-                    <span style="color:var(--c-text-muted);">Subtotal (@Model.ItemCount items)</span>
+                    <span style="color:var(--c-text-muted);">Subtotal (@Model.ItemCount @App.Resources.Views.Cart.Index.Items)</span>
                     <span>@Model.Total.ToString("C")</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2" style="font-size:0.9rem;">
@@ -96,10 +96,10 @@ else
                     <span style="font-family:var(--ff-serif);font-size:1.2rem;font-weight:500;">@Model.Total.ToString("C")</span>
                 </div>
                 <a asp-controller="Checkout" asp-action="Index" class="btn btn-dark w-100 mb-2">
-                    Proceed to Checkout
+                    @App.Resources.Views.Cart.Index.ProceedToCheckout
                 </a>
                 <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-dark w-100">
-                    Continue Shopping
+                    @App.Resources.Views.Cart.Index.ContinueShopping
                 </a>
             </div>
         </div>

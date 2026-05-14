@@ -8,7 +8,7 @@
 
 <nav aria-label="breadcrumb" class="mt-3 mb-4">
     <ol class="breadcrumb" style="font-size:0.78rem;letter-spacing:0.04em;">
-        <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index" style="color:var(--c-text-muted);text-decoration:none;">Shop</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index" style="color:var(--c-text-muted);text-decoration:none;">@App.Resources.Views.Shop.Detail.Shop</a></li>
         <li class="breadcrumb-item active" style="color:var(--c-text-muted);">@Model.Name</li>
     </ol>
 </nav>
@@ -37,7 +37,7 @@
         else
         {
             <div style="aspect-ratio:3/4;border-radius:var(--radius-md);background:var(--c-accent-bg);display:flex;align-items:center;justify-content:center;">
-                <span style="color:var(--c-text-placeholder);font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase;">No image</span>
+                <span style="color:var(--c-text-placeholder);font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase;">@App.Resources.Views.Shop.Detail.NoImage</span>
             </div>
         }
     </div>
@@ -58,7 +58,7 @@
         @if (!string.IsNullOrEmpty(Model.Material))
         {
             <p style="font-size:0.8rem;color:var(--c-text-muted);margin-bottom:1.5rem;">
-                <span style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;font-size:0.7rem;">Material</span><br>
+                <span style="font-weight:600;text-transform:uppercase;letter-spacing:0.06em;font-size:0.7rem;">@App.Resources.Views.Shop.Detail.Material</span><br>
                 @Model.Material
             </p>
         }
@@ -69,7 +69,7 @@
         @if (Model.Variants.Select(v => v.ColorId).Distinct().Count() > 1)
         {
             <div class="mb-4">
-                <p class="detail-section-label">Color — <span x-text="selectedColorName" style="font-weight:400;text-transform:none;letter-spacing:0;"></span></p>
+                <p class="detail-section-label">@App.Resources.Views.Shop.Detail.Color — <span x-text="selectedColorName" style="font-weight:400;text-transform:none;letter-spacing:0;"></span></p>
                 <div class="d-flex gap-2 flex-wrap">
                     @foreach (var color in Model.Variants.GroupBy(v => v.ColorId).Select(g => g.First()))
                     {
@@ -87,7 +87,7 @@
 
         <!-- Size selector -->
         <div class="mb-4">
-            <p class="detail-section-label">Size</p>
+            <p class="detail-section-label">@App.Resources.Views.Shop.Detail.Size</p>
             <div class="d-flex gap-2 flex-wrap">
                 @foreach (var size in Model.Variants.GroupBy(v => v.SizeId).Select(g => g.First()))
                 {
@@ -107,10 +107,10 @@
         <!-- Stock indicator -->
         <p class="mb-3" style="font-size:0.82rem;" x-show="selectedSizeId">
             <template x-if="selectedVariant && selectedVariant.stockQty > 0">
-                <span style="color:#2d6a4f;">&#10003; In stock (<span x-text="selectedVariant.stockQty"></span> available)</span>
+                <span style="color:#2d6a4f;">&#10003; @App.Resources.Views.Shop.Detail.InStock (<span x-text="selectedVariant.stockQty"></span> @App.Resources.Views.Shop.Detail.Left)</span>
             </template>
             <template x-if="!selectedVariant || selectedVariant.stockQty === 0">
-                <span style="color:#c62828;">&#10007; Out of stock — select a different size or colour</span>
+                <span style="color:#c62828;">&#10007; @App.Resources.Views.Shop.Detail.OutOfStock</span>
             </template>
         </p>
 
@@ -123,14 +123,14 @@
                 <input type="hidden" name="quantity" value="1">
                 <button type="submit" class="btn btn-dark btn-lg w-100"
                         :disabled="!selectedVariantId || selectedVariant?.stockQty === 0">
-                    Add to Cart
+                    @App.Resources.Views.Shop.Detail.AddToCart
                 </button>
             </form>
         }
         else
         {
             <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-dark btn-lg w-100">
-                Login to purchase
+                @App.Resources.Views.Shop.Detail.LoginToPurchase
             </a>
         }
     </div>

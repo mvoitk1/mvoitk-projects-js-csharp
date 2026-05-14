@@ -100,6 +100,9 @@ public class AccountController : ControllerBase
             return NotFound(new App.Dto.v1.Message(UserPassProblem));
         }
 
+        appUser.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(appUser);
+
         var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(appUser);
         if (!_context.Database.ProviderName!.Contains("InMemory"))
         {
@@ -180,6 +183,7 @@ public class AccountController : ControllerBase
             UserName = registerModel.Email,
             FirstName = registerModel.FirstName,
             LastName = registerModel.LastName,
+            CreatedAt = DateTime.UtcNow,
             RefreshTokens = new List<AppRefreshToken>()
             {
                 refreshToken

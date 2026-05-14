@@ -8,5 +8,8 @@ public class AppUser : IdentityUser<Guid>, IBaseEntity
     public string LastName { get; set; } = string.Empty;
     public string? Phone { get; set; }
 
+    public DateTime CreatedAt { get; set; }
+    public DateTime? LastLoginAt { get; set; }
+
     public ICollection<AppRefreshToken>? RefreshTokens { get; set; }
 }

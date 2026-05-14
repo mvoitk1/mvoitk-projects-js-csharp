@@ -1,8 +1,7 @@
-@using App.DTO.v1.Admin
-@model App.DTO.v1.Admin.AdminProductWriteDto
+@model WebApp.Areas.Admin.ViewModels.ProductEditViewModel
 @{
     ViewData["Title"] = "Edit Product";
-    var product = ViewData["Product"] as AdminProductDto;
+    var product = Model.Product;
 }
 
 <p class="text-muted mb-3">Edit the product basics here. Variants and images stay below so you can test the full product setup in one place.</p>
@@ -109,13 +108,13 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label small">Color</label>
-                <select name="ColorId" asp-items="@(ViewData["Colors"] as SelectList)" class="form-select form-select-sm" required>
+                <select name="ColorId" asp-items="Model.Colors" class="form-select form-select-sm" required>
                     <option value="">-- color --</option>
                 </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label small">Size</label>
-                <select name="SizeId" asp-items="@(ViewData["Sizes"] as SelectList)" class="form-select form-select-sm" required>
+                <select name="SizeId" asp-items="Model.Sizes" class="form-select form-select-sm" required>
                     <option value="">-- size --</option>
                 </select>
             </div>

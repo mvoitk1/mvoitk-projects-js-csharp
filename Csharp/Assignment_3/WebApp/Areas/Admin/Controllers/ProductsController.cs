@@ -1,14 +1,16 @@
 using App.BLL.Services;
-using App.DAL.EF;
 using App.Domain.Enums;
 using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using WebApp.Areas.Admin.ViewModels;
 
 namespace WebApp.Areas.Admin.Controllers;
 
-public class ProductsController(IAdminProductService productService, AppDbContext db, IWebHostEnvironment env) : AdminBaseController
+public class ProductsController(
+    IAdminProductService productService,
+    IAdminCatalogueService catalogueService,
+    IWebHostEnvironment env) : AdminBaseController
 {
     private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -22,20 +24,17 @@ public class ProductsController(IAdminProductService productService, AppDbContex
 
     public async Task<IActionResult> Create()
     {
-        await PopulateSelectListsAsync();
-        return View(new AdminProductWriteDto());
+        return View(await BuildViewModelAsync());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(AdminProductWriteDto dto)
+    public async Task<IActionResult> Create(ProductEditViewModel vm)
     {
         if (!ModelState.IsValid)
-        {
-            await PopulateSelectListsAsync();
-            return View(dto);
-        }
-        var created = await productService.CreateAsync(dto);
+            return View(await BuildViewModelAsync(vm.Form));
+
+        var created = await productService.CreateAsync(vm.Form);
         return RedirectToAction(nameof(Edit), new { id = created.Id });
     }
 
@@ -44,10 +43,7 @@ public class ProductsController(IAdminProductService productService, AppDbContex
         var product = await productService.GetByIdAsync(id);
         if (product == null) return NotFound();
 
-        await PopulateSelectListsAsync();
-        ViewData["Product"] = product;
-
-        var writeDto = new AdminProductWriteDto
+        var form = new AdminProductWriteDto
         {
             NameEn = product.NameEn,
             NameEt = product.NameEt,
@@ -60,20 +56,19 @@ public class ProductsController(IAdminProductService productService, AppDbContex
             CollectionId = product.CollectionId,
             CategoryIds = product.CategoryIds
         };
-        return View(writeDto);
+        return View(await BuildViewModelAsync(form, product));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, AdminProductWriteDto dto)
+    public async Task<IActionResult> Edit(Guid id, ProductEditViewModel vm)
     {
         if (!ModelState.IsValid)
         {
-            await PopulateSelectListsAsync();
-            ViewData["Product"] = await productService.GetByIdAsync(id);
-            return View(dto);
+            var product = await productService.GetByIdAsync(id);
+            return View(await BuildViewModelAsync(vm.Form, product));
         }
-        var updated = await productService.UpdateAsync(id, dto);
+        var updated = await productService.UpdateAsync(id, vm.Form);
         if (updated == null) return NotFound();
         return RedirectToAction(nameof(Index));
     }
@@ -113,9 +108,7 @@ public class ProductsController(IAdminProductService productService, AppDbContex
         try
         {
             if (imageFile != null && imageFile.Length > 0)
-            {
                 dto.Url = await SaveProductImageAsync(imageFile);
-            }
         }
         catch (InvalidOperationException ex)
         {
@@ -139,23 +132,49 @@ public class ProductsController(IAdminProductService productService, AppDbContex
     {
         var product = await productService.GetByIdAsync(productId);
         var image = product?.Images.FirstOrDefault(i => i.Id == imageId);
-
         if (image != null)
-        {
             DeleteLocalProductImage(image.Url);
-        }
 
         await productService.DeleteImageAsync(productId, imageId);
         return RedirectToAction(nameof(Edit), new { id = productId });
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private async Task<ProductEditViewModel> BuildViewModelAsync(
+        AdminProductWriteDto? form = null,
+        AdminProductDto? product = null)
+    {
+        var collections = await catalogueService.GetAllCollectionsAsync();
+        var categories = await catalogueService.GetAllCategoriesAsync();
+        var colors = await catalogueService.GetAllColorsAsync();
+        var sizes = await catalogueService.GetAllSizesAsync();
+
+        return new ProductEditViewModel
+        {
+            Form = form ?? new AdminProductWriteDto(),
+            Product = product,
+            Collections = new SelectList(
+                collections.Select(c => new { c.Id, Name = c.NameEn }),
+                "Id", "Name"),
+            Categories = new MultiSelectList(
+                categories.Select(c => new { c.Id, Name = c.NameEn }),
+                "Id", "Name"),
+            Colors = new SelectList(
+                colors.Select(c => new { c.Id, c.Name }),
+                "Id", "Name"),
+            Sizes = new SelectList(
+                sizes.Select(s => new { s.Id, s.SizeCode }),
+                "Id", "SizeCode"),
+            Genders = new SelectList(Enum.GetNames<Gender>()),
+        };
     }
 
     private async Task<string> SaveProductImageAsync(IFormFile imageFile)
     {
         var extension = Path.GetExtension(imageFile.FileName);
         if (string.IsNullOrWhiteSpace(extension) || !AllowedImageExtensions.Contains(extension))
-        {
             throw new InvalidOperationException("Unsupported image file type.");
-        }
 
         var uploadsFolder = Path.Combine(env.WebRootPath, "uploads", "products");
         Directory.CreateDirectory(uploadsFolder);
@@ -171,42 +190,13 @@ public class ProductsController(IAdminProductService productService, AppDbContex
 
     private void DeleteLocalProductImage(string? imageUrl)
     {
-        if (string.IsNullOrWhiteSpace(imageUrl) || !imageUrl.StartsWith("/uploads/products/", StringComparison.OrdinalIgnoreCase))
-        {
+        if (string.IsNullOrWhiteSpace(imageUrl) ||
+            !imageUrl.StartsWith("/uploads/products/", StringComparison.OrdinalIgnoreCase))
             return;
-        }
 
         var relativePath = imageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
         var filePath = Path.Combine(env.WebRootPath, relativePath);
-
         if (System.IO.File.Exists(filePath))
-        {
             System.IO.File.Delete(filePath);
-        }
-    }
-
-    private async Task PopulateSelectListsAsync()
-    {
-        var collections = await db.Collections.ToListAsync();
-        ViewData["Collections"] = new SelectList(
-            collections.Select(c => new { c.Id, Name = c.Name.Translate() ?? c.Id.ToString() }),
-            "Id", "Name");
-
-        var categories = await db.Categories.ToListAsync();
-        ViewData["Categories"] = new MultiSelectList(
-            categories.Select(c => new { c.Id, Name = c.Name.Translate() ?? c.Id.ToString() }),
-            "Id", "Name");
-
-        var colors = await db.Colors.ToListAsync();
-        ViewData["Colors"] = new SelectList(
-            colors.Select(c => new { c.Id, Name = c.Name.Translate() ?? c.Id.ToString() }),
-            "Id", "Name");
-
-        var sizes = await db.Sizes.ToListAsync();
-        ViewData["Sizes"] = new SelectList(
-            sizes.Select(s => new { s.Id, Name = s.SizeCode }),
-            "Id", "Name");
-
-        ViewData["Genders"] = new SelectList(Enum.GetNames<Gender>());
     }
 }

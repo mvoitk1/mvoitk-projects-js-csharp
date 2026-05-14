@@ -35,4 +35,15 @@ public class ProductVariantRepository : BaseRepository<ProductVariant>, IProduct
         return await RepoDbSet
             .FirstOrDefaultAsync(v => v.Id == variantId && v.ProductId == productId);
     }
+
+    public async Task<IEnumerable<ProductVariant>> GetAllActiveWithDetailsAsync()
+    {
+        return await RepoDbSet
+            .Include(v => v.Product)
+            .Include(v => v.Color)
+            .Include(v => v.Size)
+            .Where(v => v.IsActive)
+            .OrderBy(v => v.StockQty)
+            .ToListAsync();
+    }
 }

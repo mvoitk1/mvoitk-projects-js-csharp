@@ -1,30 +1,38 @@
 using App.BLL.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using WebApp.Areas.Admin.ViewModels;
 
 namespace WebApp.Areas.Admin.Controllers;
 
 public class OrdersController(IAdminOrderService orderService) : AdminBaseController
 {
+    private static readonly string[] StatusValues =
+        ["", "Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"];
+
+    private static readonly string[] EditableStatuses =
+        ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"];
+
     public async Task<IActionResult> Index(string? status)
     {
-        ViewData["StatusFilter"] = status;
-        ViewData["Statuses"] = new SelectList(new[]
+        return View(new OrderIndexViewModel
         {
-            "", "Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"
+            Orders = await orderService.GetAllAsync(status),
+            Statuses = new SelectList(StatusValues),
+            StatusFilter = status
         });
-        return View(await orderService.GetAllAsync(status));
     }
 
     public async Task<IActionResult> Detail(Guid id)
     {
         var order = await orderService.GetByIdAsync(id);
         if (order == null) return NotFound();
-        ViewData["Statuses"] = new SelectList(new[]
+
+        return View(new OrderDetailViewModel
         {
-            "Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"
-        }, order.Status);
-        return View(order);
+            Order = order,
+            Statuses = new SelectList(EditableStatuses, order.Status)
+        });
     }
 
     [HttpPost, ValidateAntiForgeryToken]

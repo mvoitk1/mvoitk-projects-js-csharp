@@ -2,6 +2,7 @@ using App.BLL.Services;
 using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using WebApp.Areas.Admin.ViewModels;
 
 namespace WebApp.Areas.Admin.Controllers;
 
@@ -11,16 +12,15 @@ public class CategoriesController(IAdminCatalogueService catalogueService) : Adm
         => View(await catalogueService.GetAllCategoriesAsync());
 
     public async Task<IActionResult> Create()
-    {
-        await PopulateParentSelectAsync();
-        return View(new AdminCategoryWriteDto());
-    }
+        => View(await BuildViewModelAsync());
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(AdminCategoryWriteDto dto)
+    public async Task<IActionResult> Create(CategoryFormViewModel vm)
     {
-        if (!ModelState.IsValid) { await PopulateParentSelectAsync(); return View(dto); }
-        await catalogueService.CreateCategoryAsync(dto);
+        if (!ModelState.IsValid)
+            return View(await BuildViewModelAsync(vm.Form));
+
+        await catalogueService.CreateCategoryAsync(vm.Form);
         return RedirectToAction(nameof(Index));
     }
 
@@ -28,15 +28,23 @@ public class CategoriesController(IAdminCatalogueService catalogueService) : Adm
     {
         var cat = await catalogueService.GetCategoryByIdAsync(id);
         if (cat == null) return NotFound();
-        await PopulateParentSelectAsync(id);
-        return View(new AdminCategoryWriteDto { NameEn = cat.NameEn, NameEt = cat.NameEt, ParentCategoryId = cat.ParentCategoryId });
+
+        var form = new AdminCategoryWriteDto
+        {
+            NameEn = cat.NameEn,
+            NameEt = cat.NameEt,
+            ParentCategoryId = cat.ParentCategoryId
+        };
+        return View(await BuildViewModelAsync(form, id));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, AdminCategoryWriteDto dto)
+    public async Task<IActionResult> Edit(Guid id, CategoryFormViewModel vm)
     {
-        if (!ModelState.IsValid) { await PopulateParentSelectAsync(id); return View(dto); }
-        await catalogueService.UpdateCategoryAsync(id, dto);
+        if (!ModelState.IsValid)
+            return View(await BuildViewModelAsync(vm.Form, id));
+
+        await catalogueService.UpdateCategoryAsync(id, vm.Form);
         return RedirectToAction(nameof(Index));
     }
 
@@ -47,12 +55,18 @@ public class CategoriesController(IAdminCatalogueService catalogueService) : Adm
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task PopulateParentSelectAsync(Guid? excludeId = null)
+    private async Task<CategoryFormViewModel> BuildViewModelAsync(
+        AdminCategoryWriteDto? form = null,
+        Guid? excludeId = null)
     {
         var all = await catalogueService.GetAllCategoriesAsync();
         var items = all
             .Where(c => c.Id != excludeId)
             .Select(c => new { c.Id, Name = c.NameEn });
-        ViewData["Parents"] = new SelectList(items, "Id", "Name");
+        return new CategoryFormViewModel
+        {
+            Form = form ?? new AdminCategoryWriteDto(),
+            ParentOptions = new SelectList(items, "Id", "Name")
+        };
     }
 }

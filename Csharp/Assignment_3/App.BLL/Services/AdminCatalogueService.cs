@@ -106,4 +106,45 @@ public class AdminCatalogueService(IAppUnitOfWork uow) : IAdminCatalogueService
         await uow.SaveChangesAsync();
         return true;
     }
+
+    // ─── Supporting catalogue data ────────────────────────────────────────────
+
+    public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+    {
+        var products = await uow.Products.AllAsync();
+        var orders = await uow.Orders.AllAsync();
+        var variants = await uow.ProductVariants.AllAsync();
+        var cutoff = DateTime.UtcNow.AddDays(-1);
+        return new DashboardStatsDto(
+            products.Count(),
+            orders.Count(),
+            variants.Count(v => v.StockQty < 5 && v.IsActive),
+            orders.Count(o => o.CreatedAt >= cutoff));
+    }
+
+    public async Task<IEnumerable<AdminColorDto>> GetAllColorsAsync()
+    {
+        var colors = await uow.Colors.AllAsync();
+        return colors.Select(c => new AdminColorDto(c.Id, c.Name.Translate() ?? c.Id.ToString()));
+    }
+
+    public async Task<IEnumerable<AdminSizeDto>> GetAllSizesAsync()
+    {
+        var sizes = await uow.Sizes.AllAsync();
+        return sizes.Select(s => new AdminSizeDto(s.Id, s.SizeCode));
+    }
+
+    public async Task<IEnumerable<AdminStockItemDto>> GetAllStockItemsAsync()
+    {
+        var variants = await uow.ProductVariants.GetAllActiveWithDetailsAsync();
+        return variants.Select(v => new AdminStockItemDto
+        {
+            VariantId = v.Id,
+            ProductName = v.Product?.Name.Translate() ?? string.Empty,
+            Sku = v.Sku,
+            ColorName = v.Color?.Name.Translate() ?? string.Empty,
+            SizeCode = v.Size?.SizeCode ?? string.Empty,
+            StockQty = v.StockQty
+        });
+    }
 }

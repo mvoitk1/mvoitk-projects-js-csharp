@@ -15,4 +15,7 @@ public interface IProductVariantRepository : IBaseRepository<ProductVariant>
 
     /// <summary>A variant scoped to its owning product, without includes.</summary>
     Task<ProductVariant?> FindForProductAsync(Guid productId, Guid variantId);
+
+    /// <summary>All active variants with product, colour and size loaded, ordered by stock ascending.</summary>
+    Task<IEnumerable<ProductVariant>> GetAllActiveWithDetailsAsync();
 }

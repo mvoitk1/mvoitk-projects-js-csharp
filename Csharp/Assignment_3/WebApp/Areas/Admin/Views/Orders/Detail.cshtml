@@ -1,6 +1,6 @@
-@model App.DTO.v1.Admin.AdminOrderDto
+@model WebApp.Areas.Admin.ViewModels.OrderDetailViewModel
 @{
-    ViewData["Title"] = $"Order {Model.OrderNumber}";
+    ViewData["Title"] = $"Order {Model.Order.OrderNumber}";
 }
 
 <a asp-action="Index" class="text-decoration-none text-muted mb-3 d-block">← Back to Orders</a>
@@ -22,12 +22,12 @@
 
 <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
-        <h2>@Model.OrderNumber</h2>
-        <p class="text-muted mb-0">@Model.CreatedAt.ToString("dd MMM yyyy HH:mm")</p>
+        <h2>@Model.Order.OrderNumber</h2>
+        <p class="text-muted mb-0">@Model.Order.CreatedAt.ToString("dd MMM yyyy HH:mm")</p>
     </div>
     <form asp-area="Admin" asp-controller="Orders" asp-action="UpdateStatus" method="post" class="d-flex gap-2 align-items-center">
-        <input type="hidden" name="id" value="@Model.Id">
-        <select name="status" asp-items="@(ViewData["Statuses"] as SelectList)"
+        <input type="hidden" name="id" value="@Model.Order.Id">
+        <select name="status" asp-items="Model.Statuses"
                 class="form-select form-select-sm" style="width:160px;"></select>
         <button type="submit" class="btn btn-dark btn-sm">Update Status</button>
     </form>
@@ -43,7 +43,7 @@
                         <tr><th>Product</th><th>Variant</th><th>Qty</th><th>Unit</th><th>Total</th></tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.Items)
+                        @foreach (var item in Model.Order.Items)
                         {
                             <tr>
                                 <td>@item.ProductName</td>
@@ -57,7 +57,7 @@
                     <tfoot>
                         <tr>
                             <td colspan="4" class="text-end fw-bold">Total</td>
-                            <td class="fw-bold">@Model.TotalAmount.ToString("C")</td>
+                            <td class="fw-bold">@Model.Order.TotalAmount.ToString("C")</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -69,19 +69,19 @@
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
                 <h6>Customer</h6>
-                <p class="mb-1">@Model.CustomerFirstName @Model.CustomerLastName</p>
-                <p class="text-muted small mb-0">@Model.CustomerEmail</p>
+                <p class="mb-1">@Model.Order.CustomerFirstName @Model.Order.CustomerLastName</p>
+                <p class="text-muted small mb-0">@Model.Order.CustomerEmail</p>
             </div>
         </div>
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h6>Shipping Address</h6>
                 <address class="mb-0 small">
-                    <strong>@Model.ShippingFirstName @Model.ShippingLastName</strong><br>
-                    @Model.ShippingStreet<br>
-                    @Model.ShippingPostalCode @Model.ShippingCity<br>
-                    @Model.ShippingCountry<br>
-                    @Model.ShippingEmail | @Model.ShippingPhone
+                    <strong>@Model.Order.ShippingFirstName @Model.Order.ShippingLastName</strong><br>
+                    @Model.Order.ShippingStreet<br>
+                    @Model.Order.ShippingPostalCode @Model.Order.ShippingCity<br>
+                    @Model.Order.ShippingCountry<br>
+                    @Model.Order.ShippingEmail | @Model.Order.ShippingPhone
                 </address>
             </div>
         </div>

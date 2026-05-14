@@ -1,4 +1,4 @@
-@model IEnumerable<App.DTO.v1.Admin.AdminOrderDto>
+@model WebApp.Areas.Admin.ViewModels.OrderIndexViewModel
 @{
     ViewData["Title"] = "Orders";
 }
@@ -7,7 +7,7 @@
     <h2>Orders</h2>
     <form method="get" class="d-flex gap-2 align-items-center">
         <label class="form-label mb-0">Filter:</label>
-        <select name="status" asp-items="@(ViewData["Statuses"] as SelectList)"
+        <select name="status" asp-items="Model.Statuses"
                 class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="">All Statuses</option>
         </select>
@@ -28,7 +28,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var order in Model)
+            @foreach (var order in Model.Orders)
             {
                 <tr>
                     <td><strong>@order.OrderNumber</strong></td>

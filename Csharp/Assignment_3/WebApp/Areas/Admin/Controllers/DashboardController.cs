@@ -1,18 +1,20 @@
-using App.DAL.EF;
+using App.BLL.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using WebApp.Areas.Admin.ViewModels;
 
 namespace WebApp.Areas.Admin.Controllers;
 
-public class DashboardController(AppDbContext db) : AdminBaseController
+public class DashboardController(IAdminCatalogueService catalogueService) : AdminBaseController
 {
     public async Task<IActionResult> Index()
     {
-        ViewData["ProductCount"] = await db.Products.CountAsync();
-        ViewData["OrderCount"] = await db.Orders.CountAsync();
-        ViewData["LowStockCount"] = await db.ProductVariants.CountAsync(v => v.StockQty < 5 && v.IsActive);
-        ViewData["RecentOrderCount"] = await db.Orders
-            .CountAsync(o => o.CreatedAt >= DateTime.UtcNow.AddDays(-1));
-        return View();
+        var stats = await catalogueService.GetDashboardStatsAsync();
+        return View(new DashboardViewModel
+        {
+            ProductCount = stats.ProductCount,
+            OrderCount = stats.OrderCount,
+            LowStockCount = stats.LowStockCount,
+            RecentOrderCount = stats.RecentOrderCount
+        });
     }
 }

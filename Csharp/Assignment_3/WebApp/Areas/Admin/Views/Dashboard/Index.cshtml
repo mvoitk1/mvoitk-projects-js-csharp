@@ -1,3 +1,4 @@
+@model WebApp.Areas.Admin.ViewModels.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
 }
@@ -6,28 +7,28 @@
     <div class="col-md-3">
         <div class="admin-summary-card">
             <p class="text-muted small mb-1">Products</p>
-            <p class="fs-2 fw-bold mb-2">@ViewData["ProductCount"]</p>
+            <p class="fs-2 fw-bold mb-2">@Model.ProductCount</p>
             <a asp-controller="Products" asp-action="Index" class="btn btn-sm btn-outline-dark">Manage</a>
         </div>
     </div>
     <div class="col-md-3">
         <div class="admin-summary-card">
             <p class="text-muted small mb-1">Total Orders</p>
-            <p class="fs-2 fw-bold mb-2">@ViewData["OrderCount"]</p>
+            <p class="fs-2 fw-bold mb-2">@Model.OrderCount</p>
             <a asp-controller="Orders" asp-action="Index" class="btn btn-sm btn-outline-dark">View</a>
         </div>
     </div>
     <div class="col-md-3">
         <div class="admin-summary-card">
             <p class="text-muted small mb-1">Low Stock (&lt;5)</p>
-            <p class="fs-2 fw-bold mb-2 text-warning">@ViewData["LowStockCount"]</p>
+            <p class="fs-2 fw-bold mb-2 text-warning">@Model.LowStockCount</p>
             <a asp-controller="Stock" asp-action="Index" class="btn btn-sm btn-outline-warning">Fix Stock</a>
         </div>
     </div>
     <div class="col-md-3">
         <div class="admin-summary-card">
             <p class="text-muted small mb-1">Orders (last 24h)</p>
-            <p class="fs-2 fw-bold mb-2 text-success">@ViewData["RecentOrderCount"]</p>
+            <p class="fs-2 fw-bold mb-2 text-success">@Model.RecentOrderCount</p>
             <a asp-controller="Orders" asp-action="Index" class="btn btn-sm btn-outline-success">View</a>
         </div>
     </div>

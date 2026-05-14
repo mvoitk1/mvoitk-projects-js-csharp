@@ -20,4 +20,10 @@ public interface IAdminCatalogueService
 
     // Stock
     Task<bool> UpdateStockAsync(Guid variantId, int stockQty);
+
+    // Supporting catalogue data
+    Task<DashboardStatsDto> GetDashboardStatsAsync();
+    Task<IEnumerable<AdminColorDto>> GetAllColorsAsync();
+    Task<IEnumerable<AdminSizeDto>> GetAllSizesAsync();
+    Task<IEnumerable<AdminStockItemDto>> GetAllStockItemsAsync();
 }

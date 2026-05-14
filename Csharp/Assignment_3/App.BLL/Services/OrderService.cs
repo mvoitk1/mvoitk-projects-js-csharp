@@ -1,26 +1,16 @@
-using App.DAL.EF;
+using App.BLL.Mappers;
+using App.DAL.EF.UnitOfWork;
 using App.Domain;
 using App.Domain.Enums;
 using App.DTO.v1.Orders;
-using Microsoft.EntityFrameworkCore;
 
 namespace App.BLL.Services;
 
-public class OrderService(AppDbContext db) : IOrderService
+public class OrderService(IAppUnitOfWork uow) : IOrderService
 {
-    private static readonly TimeZoneInfo _tz =
-        TimeZoneInfo.FindSystemTimeZoneById("Europe/Tallinn");
-
-    private static DateTime ToLocal(DateTime utc) =>
-        TimeZoneInfo.ConvertTimeFromUtc(utc, _tz);
-
     public async Task<OrderDto> PlaceOrderAsync(Guid userId, CreateOrderDto dto)
     {
-        var cart = await db.Carts
-            .AsTracking()
-            .Include(c => c.Items)!
-                .ThenInclude(i => i.ProductVariant)
-            .FirstOrDefaultAsync(c => c.AppUserId == userId && c.Status == CartStatus.Active);
+        var cart = await uow.Carts.GetActiveCartForCheckoutAsync(userId);
 
         if (cart == null || cart.Items == null || !cart.Items.Any())
             throw new InvalidOperationException("No active cart with items found.");
@@ -33,11 +23,10 @@ public class OrderService(AppDbContext db) : IOrderService
         }
 
         var totalAmount = cart.Items.Sum(i => i.UnitPrice * i.Quantity);
-        var orderNumber = GenerateOrderNumber();
 
         var order = new Order
         {
-            OrderNumber = orderNumber,
+            OrderNumber = GenerateOrderNumber(),
             Status = OrderStatus.Confirmed,
             TotalAmount = totalAmount,
             AppUserId = userId,
@@ -65,79 +54,26 @@ public class OrderService(AppDbContext db) : IOrderService
         }
 
         // Clear cart items and mark as checked out
-        db.CartItems.RemoveRange(cart.Items);
+        uow.CartItems.RemoveRange(cart.Items);
         cart.Status = CartStatus.CheckedOut;
         cart.UpdatedAt = DateTime.UtcNow;
 
-        db.Orders.Add(order);
-        await db.SaveChangesAsync();
+        uow.Orders.Add(order);
+        await uow.SaveChangesAsync();
 
         return (await GetUserOrderByIdAsync(userId, order.Id))!;
     }
 
     public async Task<IEnumerable<OrderListItemDto>> GetUserOrdersAsync(Guid userId)
     {
-        var orders = await db.Orders
-            .Include(o => o.Items)
-            .Where(o => o.AppUserId == userId)
-            .OrderByDescending(o => o.CreatedAt)
-            .ToListAsync();
-
-        return orders.Select(o => new OrderListItemDto
-        {
-            Id = o.Id,
-            OrderNumber = o.OrderNumber,
-            Status = o.Status.ToString(),
-            TotalAmount = o.TotalAmount,
-            CreatedAt = ToLocal(o.CreatedAt),
-            ItemCount = o.Items?.Sum(i => i.Quantity) ?? 0
-        });
+        var orders = await uow.Orders.GetUserOrdersAsync(userId);
+        return orders.Select(OrderMapper.ToListItem);
     }
 
     public async Task<OrderDto?> GetUserOrderByIdAsync(Guid userId, Guid orderId)
     {
-        var order = await db.Orders
-            .Include(o => o.Items)!
-                .ThenInclude(i => i.ProductVariant)
-                    .ThenInclude(v => v!.Color)
-            .Include(o => o.Items)!
-                .ThenInclude(i => i.ProductVariant)
-                    .ThenInclude(v => v!.Size)
-            .Include(o => o.Items)!
-                .ThenInclude(i => i.ProductVariant)
-                    .ThenInclude(v => v!.Product)
-            .FirstOrDefaultAsync(o => o.Id == orderId && o.AppUserId == userId);
-
-        if (order == null) return null;
-
-        return new OrderDto
-        {
-            Id = order.Id,
-            OrderNumber = order.OrderNumber,
-            Status = order.Status.ToString(),
-            TotalAmount = order.TotalAmount,
-            CreatedAt = ToLocal(order.CreatedAt),
-            ShippingFirstName = order.ShippingFirstName,
-            ShippingLastName = order.ShippingLastName,
-            ShippingEmail = order.ShippingEmail,
-            ShippingPhone = order.ShippingPhone,
-            ShippingCountry = order.ShippingCountry,
-            ShippingCity = order.ShippingCity,
-            ShippingStreet = order.ShippingStreet,
-            ShippingPostalCode = order.ShippingPostalCode,
-            Items = order.Items?.Select(i => new OrderItemDto
-            {
-                Id = i.Id,
-                Quantity = i.Quantity,
-                UnitPrice = i.UnitPrice,
-                LineTotal = i.LineTotal,
-                ProductVariantId = i.ProductVariantId,
-                ProductName = i.ProductVariant?.Product?.Name.Translate() ?? string.Empty,
-                Sku = i.ProductVariant?.Sku ?? string.Empty,
-                ColorName = i.ProductVariant?.Color?.Name.Translate() ?? string.Empty,
-                SizeCode = i.ProductVariant?.Size?.SizeCode ?? string.Empty
-            }).ToList() ?? []
-        };
+        var order = await uow.Orders.GetUserOrderByIdAsync(userId, orderId);
+        return order == null ? null : OrderMapper.ToDto(order);
     }
 
     private static string GenerateOrderNumber()

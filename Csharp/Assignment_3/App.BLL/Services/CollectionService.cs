@@ -1,25 +1,14 @@
-using App.DAL.EF;
+using App.BLL.Mappers;
+using App.DAL.EF.UnitOfWork;
 using App.DTO.v1.Collections;
-using Microsoft.EntityFrameworkCore;
 
 namespace App.BLL.Services;
 
-public class CollectionService(AppDbContext db) : ICollectionService
+public class CollectionService(IAppUnitOfWork uow) : ICollectionService
 {
     public async Task<IEnumerable<CollectionDto>> GetActiveAsync()
     {
-        var collections = await db.Collections
-            .Where(c => c.IsActive)
-            .OrderBy(c => c.LaunchDate)
-            .ToListAsync();
-
-        return collections.Select(c => new CollectionDto
-        {
-            Id = c.Id,
-            Name = c.Name.Translate() ?? string.Empty,
-            Description = c.Description.Translate() ?? string.Empty,
-            LaunchDate = c.LaunchDate,
-            IsActive = c.IsActive
-        });
+        var collections = await uow.Collections.GetActiveAsync();
+        return collections.Select(CollectionMapper.ToDto);
     }
 }

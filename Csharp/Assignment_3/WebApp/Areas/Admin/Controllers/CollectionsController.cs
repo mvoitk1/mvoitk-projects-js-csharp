@@ -9,7 +9,10 @@ namespace WebApp.Areas.Admin.Controllers;
 public class CollectionsController(IAdminCatalogueService catalogueService) : AdminBaseController
 {
     public async Task<IActionResult> Index()
-        => View(await catalogueService.GetAllCollectionsAsync());
+    {
+        var collections = await catalogueService.GetAllCollectionsAsync();
+        return View(collections.MapList<AdminCollectionDto>());
+    }
 
     public IActionResult Create() => View(new AdminCollectionWriteDto());
 

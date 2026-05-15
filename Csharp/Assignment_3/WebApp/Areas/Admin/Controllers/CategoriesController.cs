@@ -11,7 +11,10 @@ namespace WebApp.Areas.Admin.Controllers;
 public class CategoriesController(IAdminCatalogueService catalogueService) : AdminBaseController
 {
     public async Task<IActionResult> Index()
-        => View(await catalogueService.GetAllCategoriesAsync());
+    {
+        var categories = await catalogueService.GetAllCategoriesAsync();
+        return View(categories.MapList<AdminCategoryDto>());
+    }
 
     public async Task<IActionResult> Create()
         => View(await BuildViewModelAsync());

@@ -21,7 +21,8 @@ public class ProductsController(
 
     public async Task<IActionResult> Index()
     {
-        return View(await productService.GetAllAsync());
+        var products = await productService.GetAllAsync();
+        return View(products.MapList<AdminProductDto>());
     }
 
     public async Task<IActionResult> Create()

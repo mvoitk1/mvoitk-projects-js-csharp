@@ -1,4 +1,6 @@
 using App.BLL.Contracts;
+using App.DTO.Mappers;
+using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp.Areas.Admin.Controllers;
@@ -7,7 +9,8 @@ public class StockController(IAdminCatalogueService catalogueService) : AdminBas
 {
     public async Task<IActionResult> Index()
     {
-        return View(await catalogueService.GetAllStockItemsAsync());
+        var items = await catalogueService.GetAllStockItemsAsync();
+        return View(items.MapList<AdminStockItemDto>());
     }
 
     [HttpPost, ValidateAntiForgeryToken]

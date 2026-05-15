@@ -1,6 +1,6 @@
-using App.DTO.v1.Orders;
+using App.BLL.DTO.Orders;
 
-namespace App.BLL.Services;
+namespace App.BLL.Contracts;
 
 public interface IOrderService
 {

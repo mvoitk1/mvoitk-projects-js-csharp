@@ -1,6 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
+using BllAdmin = App.BLL.DTO.Admin;
 
 namespace WebApp.Areas.Admin.Controllers;
 
@@ -15,7 +17,7 @@ public class CollectionsController(IAdminCatalogueService catalogueService) : Ad
     public async Task<IActionResult> Create(AdminCollectionWriteDto dto)
     {
         if (!ModelState.IsValid) return View(dto);
-        await catalogueService.CreateCollectionAsync(dto);
+        await catalogueService.CreateCollectionAsync(dto.MapTo<BllAdmin.AdminCollectionWriteDto>());
         return RedirectToAction(nameof(Index));
     }
 
@@ -35,7 +37,7 @@ public class CollectionsController(IAdminCatalogueService catalogueService) : Ad
     public async Task<IActionResult> Edit(Guid id, AdminCollectionWriteDto dto)
     {
         if (!ModelState.IsValid) return View(dto);
-        await catalogueService.UpdateCollectionAsync(id, dto);
+        await catalogueService.UpdateCollectionAsync(id, dto.MapTo<BllAdmin.AdminCollectionWriteDto>());
         return RedirectToAction(nameof(Index));
     }
 

@@ -1,8 +1,10 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Cart;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Helpers;
+using BllCart = App.BLL.DTO.Cart;
 
 namespace WebApp.Controllers;
 
@@ -12,7 +14,7 @@ public class CartController(ICartService cartService) : Controller
     public async Task<IActionResult> Index()
     {
         var cart = await cartService.GetOrCreateCartAsync(User.UserId());
-        return View(cart);
+        return View(cart.MapTo<CartDto>());
     }
 
     [HttpPost]
@@ -21,7 +23,7 @@ public class CartController(ICartService cartService) : Controller
     {
         try
         {
-            await cartService.AddItemAsync(User.UserId(), new AddToCartDto
+            await cartService.AddItemAsync(User.UserId(), new BllCart.AddToCartDto
             {
                 ProductVariantId = productVariantId,
                 Quantity = quantity
@@ -40,7 +42,7 @@ public class CartController(ICartService cartService) : Controller
     {
         try
         {
-            await cartService.UpdateItemAsync(User.UserId(), cartItemId, new UpdateCartItemDto { Quantity = quantity });
+            await cartService.UpdateItemAsync(User.UserId(), cartItemId, new BllCart.UpdateCartItemDto { Quantity = quantity });
         }
         catch (InvalidOperationException ex)
         {

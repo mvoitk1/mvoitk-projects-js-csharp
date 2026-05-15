@@ -1,6 +1,6 @@
-using App.DTO.v1.Categories;
+using App.BLL.DTO.Categories;
 
-namespace App.BLL.Services;
+namespace App.BLL.Contracts;
 
 public interface ICategoryService
 {

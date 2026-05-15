@@ -1,5 +1,6 @@
 using App.BLL.Services;
-using App.DTO.v1.Admin;
+using App.BLL.Contracts;
+using App.BLL.DTO.Admin;
 using WebApp.Tests.Helpers;
 using Xunit;
 

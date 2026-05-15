@@ -1,9 +1,11 @@
+using App.DAL.Contracts.Repositories;
+using Base.DAL.EF;
 using App.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.DAL.EF.Repositories;
 
-public class CollectionRepository : BaseRepository<Collection>, ICollectionRepository
+public class CollectionRepository : BaseRepository<Collection, AppDbContext>, ICollectionRepository
 {
     public CollectionRepository(AppDbContext dbContext) : base(dbContext)
     {

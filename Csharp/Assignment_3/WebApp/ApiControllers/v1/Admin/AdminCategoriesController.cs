@@ -1,6 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Asp.Versioning;
+using BllAdmin = App.BLL.DTO.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +39,7 @@ public class AdminCategoriesController(IAdminCatalogueService catalogueService) 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AdminCategoryDto>> Create([FromBody] AdminCategoryWriteDto dto)
     {
-        var created = await catalogueService.CreateCategoryAsync(dto);
+        var created = await catalogueService.CreateCategoryAsync(dto.MapTo<BllAdmin.AdminCategoryWriteDto>());
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -48,7 +50,7 @@ public class AdminCategoriesController(IAdminCatalogueService catalogueService) 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminCategoryDto>> Update(Guid id, [FromBody] AdminCategoryWriteDto dto)
     {
-        var updated = await catalogueService.UpdateCategoryAsync(id, dto);
+        var updated = await catalogueService.UpdateCategoryAsync(id, dto.MapTo<BllAdmin.AdminCategoryWriteDto>());
         return updated == null ? NotFound() : Ok(updated);
     }
 

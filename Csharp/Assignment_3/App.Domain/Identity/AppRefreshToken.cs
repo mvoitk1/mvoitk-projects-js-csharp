@@ -1,6 +1,8 @@
+using Base.Domain;
+
 namespace App.Domain.Identity;
 
-public class AppRefreshToken: BaseEntity
+public class AppRefreshToken: DomainEntityId
 {
     
     public string RefreshToken { get; set; } = Guid.NewGuid().ToString();

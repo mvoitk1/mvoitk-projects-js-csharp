@@ -1,7 +1,9 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
 using App.Domain.Enums;
+using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
+using BllAdmin = App.BLL.DTO.Admin;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApp.Areas.Admin.ViewModels;
 
@@ -34,14 +36,15 @@ public class ProductsController(
         if (!ModelState.IsValid)
             return View(await BuildViewModelAsync(vm.Form));
 
-        var created = await productService.CreateAsync(vm.Form);
+        var created = await productService.CreateAsync(vm.Form.MapTo<BllAdmin.AdminProductWriteDto>());
         return RedirectToAction(nameof(Edit), new { id = created.Id });
     }
 
     public async Task<IActionResult> Edit(Guid id)
     {
-        var product = await productService.GetByIdAsync(id);
-        if (product == null) return NotFound();
+        var bllProduct = await productService.GetByIdAsync(id);
+        if (bllProduct == null) return NotFound();
+        var product = bllProduct.MapTo<AdminProductDto>();
 
         var form = new AdminProductWriteDto
         {
@@ -65,10 +68,10 @@ public class ProductsController(
     {
         if (!ModelState.IsValid)
         {
-            var product = await productService.GetByIdAsync(id);
+            var product = (await productService.GetByIdAsync(id))?.MapTo<AdminProductDto>();
             return View(await BuildViewModelAsync(vm.Form, product));
         }
-        var updated = await productService.UpdateAsync(id, vm.Form);
+        var updated = await productService.UpdateAsync(id, vm.Form.MapTo<BllAdmin.AdminProductWriteDto>());
         if (updated == null) return NotFound();
         return RedirectToAction(nameof(Index));
     }
@@ -87,7 +90,7 @@ public class ProductsController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddVariant(Guid productId, AdminVariantWriteDto dto)
     {
-        await productService.AddVariantAsync(productId, dto);
+        await productService.AddVariantAsync(productId, dto.MapTo<BllAdmin.AdminVariantWriteDto>());
         return RedirectToAction(nameof(Edit), new { id = productId });
     }
 
@@ -122,7 +125,7 @@ public class ProductsController(
             return RedirectToAction(nameof(Edit), new { id = productId });
         }
 
-        await productService.AddImageAsync(productId, dto);
+        await productService.AddImageAsync(productId, dto.MapTo<BllAdmin.AdminProductImageDto>());
         return RedirectToAction(nameof(Edit), new { id = productId });
     }
 
@@ -130,7 +133,7 @@ public class ProductsController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteImage(Guid productId, Guid imageId)
     {
-        var product = await productService.GetByIdAsync(productId);
+        var product = (await productService.GetByIdAsync(productId))?.MapTo<AdminProductDto>();
         var image = product?.Images.FirstOrDefault(i => i.Id == imageId);
         if (image != null)
             DeleteLocalProductImage(image.Url);

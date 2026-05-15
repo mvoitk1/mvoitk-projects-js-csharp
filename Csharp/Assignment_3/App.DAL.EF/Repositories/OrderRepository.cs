@@ -1,10 +1,12 @@
+using App.DAL.Contracts.Repositories;
+using Base.DAL.EF;
 using App.Domain;
 using App.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.DAL.EF.Repositories;
 
-public class OrderRepository : BaseRepository<Order>, IOrderRepository
+public class OrderRepository : BaseRepository<Order, AppDbContext>, IOrderRepository
 {
     public OrderRepository(AppDbContext dbContext) : base(dbContext)
     {

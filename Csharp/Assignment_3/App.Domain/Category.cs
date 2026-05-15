@@ -1,8 +1,9 @@
+using Base.Domain;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace App.Domain;
 
-public class Category : BaseEntity
+public class Category : DomainEntityId
 {
     [Column(TypeName = "jsonb")]
     public LangStr Name { get; set; } = new LangStr();

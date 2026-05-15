@@ -1,7 +1,8 @@
+using App.BLL.Contracts;
 using App.BLL.Mappers;
-using App.DAL.EF.UnitOfWork;
+using App.DAL.Contracts.UnitOfWork;
 using App.Domain.Enums;
-using App.DTO.v1.Products;
+using App.BLL.DTO.Products;
 
 namespace App.BLL.Services;
 

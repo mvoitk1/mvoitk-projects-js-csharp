@@ -1,6 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Cart;
 using Asp.Versioning;
+using BllCart = App.BLL.DTO.Cart;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +23,8 @@ public class CartController(ICartService cartService) : ControllerBase
     public async Task<ActionResult<CartDto>> GetCart()
     {
         var userId = User.UserId();
-        return Ok(await cartService.GetOrCreateCartAsync(userId));
+        var cart = await cartService.GetOrCreateCartAsync(userId);
+        return Ok(cart.MapTo<CartDto>());
     }
 
     /// <summary>Add a product variant to the cart.</summary>
@@ -33,7 +36,8 @@ public class CartController(ICartService cartService) : ControllerBase
         try
         {
             var userId = User.UserId();
-            return Ok(await cartService.AddItemAsync(userId, dto));
+            var cart = await cartService.AddItemAsync(userId, dto.MapTo<BllCart.AddToCartDto>());
+            return Ok(cart.MapTo<CartDto>());
         }
         catch (InvalidOperationException ex)
         {
@@ -51,7 +55,8 @@ public class CartController(ICartService cartService) : ControllerBase
         try
         {
             var userId = User.UserId();
-            return Ok(await cartService.UpdateItemAsync(userId, cartItemId, dto));
+            var cart = await cartService.UpdateItemAsync(userId, cartItemId, dto.MapTo<BllCart.UpdateCartItemDto>());
+            return Ok(cart.MapTo<CartDto>());
         }
         catch (InvalidOperationException ex)
         {

@@ -1,6 +1,6 @@
-using App.DTO.v1.Cart;
+using App.BLL.DTO.Cart;
 
-namespace App.BLL.Services;
+namespace App.BLL.Contracts;
 
 public interface ICartService
 {

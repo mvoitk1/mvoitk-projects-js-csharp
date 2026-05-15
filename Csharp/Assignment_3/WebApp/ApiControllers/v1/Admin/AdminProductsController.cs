@@ -1,6 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Asp.Versioning;
+using BllAdmin = App.BLL.DTO.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +39,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AdminProductDto>> Create([FromBody] AdminProductWriteDto dto)
     {
-        var created = await productService.CreateAsync(dto);
+        var created = await productService.CreateAsync(dto.MapTo<BllAdmin.AdminProductWriteDto>());
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -48,7 +50,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminProductDto>> Update(Guid id, [FromBody] AdminProductWriteDto dto)
     {
-        var updated = await productService.UpdateAsync(id, dto);
+        var updated = await productService.UpdateAsync(id, dto.MapTo<BllAdmin.AdminProductWriteDto>());
         return updated == null ? NotFound() : Ok(updated);
     }
 
@@ -68,7 +70,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
     [ProducesResponseType(typeof(AdminVariantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminVariantDto>> AddVariant(Guid productId, [FromBody] AdminVariantWriteDto dto)
-        => Ok(await productService.AddVariantAsync(productId, dto));
+        => Ok(await productService.AddVariantAsync(productId, dto.MapTo<BllAdmin.AdminVariantWriteDto>()));
 
     /// <summary>Update a product variant.</summary>
     /// <param name="productId">Product ID.</param>
@@ -78,7 +80,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminVariantDto>> UpdateVariant(Guid productId, Guid variantId, [FromBody] AdminVariantWriteDto dto)
     {
-        var updated = await productService.UpdateVariantAsync(productId, variantId, dto);
+        var updated = await productService.UpdateVariantAsync(productId, variantId, dto.MapTo<BllAdmin.AdminVariantWriteDto>());
         return updated == null ? NotFound() : Ok(updated);
     }
 
@@ -99,7 +101,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
     [ProducesResponseType(typeof(AdminProductImageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminProductImageDto>> AddImage(Guid productId, [FromBody] AdminProductImageDto dto)
-        => Ok(await productService.AddImageAsync(productId, dto));
+        => Ok(await productService.AddImageAsync(productId, dto.MapTo<BllAdmin.AdminProductImageDto>()));
 
     /// <summary>Remove a product image.</summary>
     /// <param name="productId">Product ID.</param>

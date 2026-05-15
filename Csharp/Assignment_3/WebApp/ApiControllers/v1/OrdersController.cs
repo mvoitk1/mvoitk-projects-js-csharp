@@ -1,6 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Orders;
 using Asp.Versioning;
+using BllOrders = App.BLL.DTO.Orders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,7 +48,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         try
         {
             var userId = User.UserId();
-            var order = await orderService.PlaceOrderAsync(userId, dto);
+            var order = await orderService.PlaceOrderAsync(userId, dto.MapTo<BllOrders.CreateOrderDto>());
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }
         catch (InvalidOperationException ex)

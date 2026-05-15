@@ -1,7 +1,8 @@
 using App.BLL.Services;
+using App.BLL.Contracts;
 using App.Domain;
 using App.Domain.Enums;
-using App.DTO.v1.Orders;
+using App.BLL.DTO.Orders;
 using WebApp.Tests.Helpers;
 using Xunit;
 

@@ -1,6 +1,6 @@
 using App.Domain;
 
-namespace App.DAL.EF.Repositories;
+namespace App.DAL.Contracts.Repositories;
 
 /// <summary>
 /// ProductCategory is a join entity with a composite key (no Guid Id), so it does not

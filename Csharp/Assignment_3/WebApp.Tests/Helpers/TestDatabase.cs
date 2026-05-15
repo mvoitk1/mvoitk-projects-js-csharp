@@ -1,3 +1,4 @@
+using App.DAL.Contracts.UnitOfWork;
 using App.DAL.EF;
 using App.DAL.EF.UnitOfWork;
 using Microsoft.EntityFrameworkCore;

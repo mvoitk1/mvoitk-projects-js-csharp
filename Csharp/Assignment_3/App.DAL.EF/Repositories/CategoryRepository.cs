@@ -1,9 +1,11 @@
+using App.DAL.Contracts.Repositories;
+using Base.DAL.EF;
 using App.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.DAL.EF.Repositories;
 
-public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
+public class CategoryRepository : BaseRepository<Category, AppDbContext>, ICategoryRepository
 {
     public CategoryRepository(AppDbContext dbContext) : base(dbContext)
     {

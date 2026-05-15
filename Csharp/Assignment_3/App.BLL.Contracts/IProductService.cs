@@ -1,6 +1,6 @@
-using App.DTO.v1.Products;
+using App.BLL.DTO.Products;
 
-namespace App.BLL.Services;
+namespace App.BLL.Contracts;
 
 public interface IProductService
 {

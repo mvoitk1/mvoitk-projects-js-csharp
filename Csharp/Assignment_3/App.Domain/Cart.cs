@@ -1,9 +1,10 @@
+using Base.Domain;
 using App.Domain.Enums;
 using App.Domain.Identity;
 
 namespace App.Domain;
 
-public class Cart : BaseEntity
+public class Cart : DomainEntityId
 {
     public CartStatus Status { get; set; } = CartStatus.Active;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

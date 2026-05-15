@@ -1,6 +1,6 @@
 using App.Domain;
 using App.Domain.Enums;
-using App.DTO.v1.Admin;
+using App.BLL.DTO.Admin;
 
 namespace App.BLL.Mappers;
 

@@ -1,5 +1,5 @@
 using App.Domain;
-using App.DTO.v1.Admin;
+using App.BLL.DTO.Admin;
 
 namespace App.BLL.Mappers;
 

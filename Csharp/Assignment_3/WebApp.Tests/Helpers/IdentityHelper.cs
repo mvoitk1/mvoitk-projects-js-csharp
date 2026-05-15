@@ -2,7 +2,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using App.DTO.v1.Identity;
-using App.Helpers;
+using Base.Helpers;
 using Xunit;
 
 namespace WebApp.Tests.Helpers;

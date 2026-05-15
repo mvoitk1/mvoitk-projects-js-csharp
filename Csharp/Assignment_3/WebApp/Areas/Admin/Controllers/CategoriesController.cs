@@ -1,6 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
+using BllAdmin = App.BLL.DTO.Admin;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApp.Areas.Admin.ViewModels;
 
@@ -20,7 +22,7 @@ public class CategoriesController(IAdminCatalogueService catalogueService) : Adm
         if (!ModelState.IsValid)
             return View(await BuildViewModelAsync(vm.Form));
 
-        await catalogueService.CreateCategoryAsync(vm.Form);
+        await catalogueService.CreateCategoryAsync(vm.Form.MapTo<BllAdmin.AdminCategoryWriteDto>());
         return RedirectToAction(nameof(Index));
     }
 
@@ -44,7 +46,7 @@ public class CategoriesController(IAdminCatalogueService catalogueService) : Adm
         if (!ModelState.IsValid)
             return View(await BuildViewModelAsync(vm.Form, id));
 
-        await catalogueService.UpdateCategoryAsync(id, vm.Form);
+        await catalogueService.UpdateCategoryAsync(id, vm.Form.MapTo<BllAdmin.AdminCategoryWriteDto>());
         return RedirectToAction(nameof(Index));
     }
 

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace App.Helpers;
+namespace Base.Helpers;
 
 public static class JsonHelpers
 {
@@ -11,7 +11,7 @@ public static class JsonHelpers
         AllowTrailingCommas = true,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
-    
+
     public static readonly JsonSerializerOptions JsonSerializerOptionsSnakeCasePrint = new JsonSerializerOptions
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -26,7 +26,7 @@ public static class JsonHelpers
         AllowTrailingCommas = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-    
+
     public static readonly JsonSerializerOptions JsonSerializerOptionsCamelCasePrint = new JsonSerializerOptions
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

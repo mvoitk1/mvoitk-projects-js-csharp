@@ -1,4 +1,6 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
+using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApp.Areas.Admin.ViewModels;
@@ -17,7 +19,7 @@ public class OrdersController(IAdminOrderService orderService) : AdminBaseContro
     {
         return View(new OrderIndexViewModel
         {
-            Orders = await orderService.GetAllAsync(status),
+            Orders = (await orderService.GetAllAsync(status)).Cast<object>().MapList<AdminOrderDto>(),
             Statuses = new SelectList(StatusValues),
             StatusFilter = status
         });
@@ -30,7 +32,7 @@ public class OrdersController(IAdminOrderService orderService) : AdminBaseContro
 
         return View(new OrderDetailViewModel
         {
-            Order = order,
+            Order = order.MapTo<AdminOrderDto>(),
             Statuses = new SelectList(EditableStatuses, order.Status)
         });
     }

@@ -1,4 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
+using App.DTO.v1.Categories;
+using App.DTO.v1.Collections;
+using App.DTO.v1.Products;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.ViewModels;
 
@@ -14,9 +18,9 @@ public class ShopController(
     {
         var vm = new ShopIndexViewModel
         {
-            Products = await productService.GetListAsync(categoryId, collectionId, gender),
-            Categories = await categoryService.GetAllAsync(),
-            Collections = await collectionService.GetActiveAsync(),
+            Products = (await productService.GetListAsync(categoryId, collectionId, gender)).Cast<object>().MapList<ProductListItemDto>(),
+            Categories = (await categoryService.GetAllAsync()).Cast<object>().MapList<CategoryDto>(),
+            Collections = (await collectionService.GetActiveAsync()).Cast<object>().MapList<CollectionDto>(),
             SelectedCategoryId = categoryId,
             SelectedCollectionId = collectionId,
             SelectedGender = gender
@@ -28,6 +32,6 @@ public class ShopController(
     {
         var product = await productService.GetByIdAsync(id);
         if (product == null) return NotFound();
-        return View(product);
+        return View(product.MapTo<ProductDto>());
     }
 }

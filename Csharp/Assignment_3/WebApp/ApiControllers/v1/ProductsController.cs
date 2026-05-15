@@ -1,4 +1,5 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Products;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,7 @@ public class ProductsController(IProductService productService) : ControllerBase
         [FromQuery] string? gender)
     {
         var products = await productService.GetListAsync(categoryId, collectionId, gender);
-        return Ok(products);
+        return Ok(products.Cast<object>().MapList<ProductListItemDto>());
     }
 
     /// <summary>Get full product details including variants and images.</summary>
@@ -35,6 +36,6 @@ public class ProductsController(IProductService productService) : ControllerBase
     {
         var product = await productService.GetByIdAsync(id);
         if (product == null) return NotFound();
-        return Ok(product);
+        return Ok(product.MapTo<ProductDto>());
     }
 }

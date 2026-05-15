@@ -1,6 +1,8 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Asp.Versioning;
+using BllAdmin = App.BLL.DTO.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +39,7 @@ public class AdminCollectionsController(IAdminCatalogueService catalogueService)
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AdminCollectionDto>> Create([FromBody] AdminCollectionWriteDto dto)
     {
-        var created = await catalogueService.CreateCollectionAsync(dto);
+        var created = await catalogueService.CreateCollectionAsync(dto.MapTo<BllAdmin.AdminCollectionWriteDto>());
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -48,7 +50,7 @@ public class AdminCollectionsController(IAdminCatalogueService catalogueService)
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdminCollectionDto>> Update(Guid id, [FromBody] AdminCollectionWriteDto dto)
     {
-        var updated = await catalogueService.UpdateCollectionAsync(id, dto);
+        var updated = await catalogueService.UpdateCollectionAsync(id, dto.MapTo<BllAdmin.AdminCollectionWriteDto>());
         return updated == null ? NotFound() : Ok(updated);
     }
 

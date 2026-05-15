@@ -1,6 +1,7 @@
+using Base.Domain;
 namespace App.Domain;
 
-public class CartItem : BaseEntity
+public class CartItem : DomainEntityId
 {
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }

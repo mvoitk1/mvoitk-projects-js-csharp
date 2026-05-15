@@ -1,6 +1,7 @@
+using App.BLL.Contracts;
 using App.BLL.Mappers;
-using App.DAL.EF.UnitOfWork;
-using App.DTO.v1.Collections;
+using App.DAL.Contracts.UnitOfWork;
+using App.BLL.DTO.Collections;
 
 namespace App.BLL.Services;
 

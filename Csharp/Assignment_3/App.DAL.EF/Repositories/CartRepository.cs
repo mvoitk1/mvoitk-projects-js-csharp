@@ -1,10 +1,12 @@
+using App.DAL.Contracts.Repositories;
+using Base.DAL.EF;
 using App.Domain;
 using App.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.DAL.EF.Repositories;
 
-public class CartRepository : BaseRepository<Cart>, ICartRepository
+public class CartRepository : BaseRepository<Cart, AppDbContext>, ICartRepository
 {
     public CartRepository(AppDbContext dbContext) : base(dbContext)
     {

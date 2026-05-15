@@ -1,3 +1,5 @@
+using App.DAL.Contracts.Repositories;
+using App.DAL.Contracts.UnitOfWork;
 using App.DAL.EF.Repositories;
 
 namespace App.DAL.EF.UnitOfWork;

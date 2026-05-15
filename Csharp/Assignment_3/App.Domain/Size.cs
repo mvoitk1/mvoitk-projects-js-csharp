@@ -1,8 +1,9 @@
+using Base.Domain;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace App.Domain;
 
-public class Size : BaseEntity
+public class Size : DomainEntityId
 {
     public string SizeCode { get; set; } = string.Empty;
 

@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using App.DTO.v1.Cart;
 using App.DTO.v1.Orders;
-using App.Helpers;
+using Base.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using WebApp.Tests.Helpers;
 using Xunit;

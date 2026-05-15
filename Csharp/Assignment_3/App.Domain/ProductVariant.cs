@@ -1,6 +1,7 @@
+using Base.Domain;
 namespace App.Domain;
 
-public class ProductVariant : BaseEntity
+public class ProductVariant : DomainEntityId
 {
     public string Sku { get; set; } = string.Empty;
     public decimal Price { get; set; }

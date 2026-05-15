@@ -1,9 +1,11 @@
+using App.DAL.Contracts.Repositories;
+using Base.DAL.EF;
 using App.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.DAL.EF.Repositories;
 
-public class ProductImageRepository : BaseRepository<ProductImage>, IProductImageRepository
+public class ProductImageRepository : BaseRepository<ProductImage, AppDbContext>, IProductImageRepository
 {
     public ProductImageRepository(AppDbContext dbContext) : base(dbContext)
     {

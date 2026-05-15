@@ -1,6 +1,6 @@
 using App.Domain;
-using App.DTO.v1.Admin;
-using App.DTO.v1.Collections;
+using App.BLL.DTO.Admin;
+using App.BLL.DTO.Collections;
 
 namespace App.BLL.Mappers;
 

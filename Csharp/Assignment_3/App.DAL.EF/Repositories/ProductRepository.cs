@@ -1,10 +1,12 @@
+using App.DAL.Contracts.Repositories;
+using Base.DAL.EF;
 using App.Domain;
 using App.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.DAL.EF.Repositories;
 
-public class ProductRepository : BaseRepository<Product>, IProductRepository
+public class ProductRepository : BaseRepository<Product, AppDbContext>, IProductRepository
 {
     public ProductRepository(AppDbContext dbContext) : base(dbContext)
     {

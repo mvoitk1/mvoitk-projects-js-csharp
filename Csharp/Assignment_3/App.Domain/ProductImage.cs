@@ -1,8 +1,9 @@
+using Base.Domain;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace App.Domain;
 
-public class ProductImage : BaseEntity
+public class ProductImage : DomainEntityId
 {
     public string Url { get; set; } = string.Empty;
 

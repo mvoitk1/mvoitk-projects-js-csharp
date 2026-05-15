@@ -1,4 +1,5 @@
 using App.BLL.Services;
+using App.BLL.Contracts;
 using WebApp.Tests.Helpers;
 using Xunit;
 

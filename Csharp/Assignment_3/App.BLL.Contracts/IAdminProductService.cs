@@ -1,6 +1,6 @@
-using App.DTO.v1.Admin;
+using App.BLL.DTO.Admin;
 
-namespace App.BLL.Services;
+namespace App.BLL.Contracts;
 
 public interface IAdminProductService
 {

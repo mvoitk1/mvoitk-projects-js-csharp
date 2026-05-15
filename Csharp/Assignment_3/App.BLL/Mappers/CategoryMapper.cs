@@ -1,6 +1,6 @@
 using App.Domain;
-using App.DTO.v1.Admin;
-using App.DTO.v1.Categories;
+using App.BLL.DTO.Admin;
+using App.BLL.DTO.Categories;
 
 namespace App.BLL.Mappers;
 

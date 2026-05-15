@@ -1,9 +1,12 @@
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
+using App.DTO.v1.Cart;
 using App.DTO.v1.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Helpers;
 using WebApp.ViewModels;
+using BllOrders = App.BLL.DTO.Orders;
 
 namespace WebApp.Controllers;
 
@@ -18,7 +21,7 @@ public class CheckoutController(
         if (!cart.Items.Any())
             return RedirectToAction("Index", "Cart");
 
-        var vm = new CheckoutViewModel { Cart = cart };
+        var vm = new CheckoutViewModel { Cart = cart.MapTo<CartDto>() };
         return View(vm);
     }
 
@@ -27,14 +30,14 @@ public class CheckoutController(
     public async Task<IActionResult> Confirm(CheckoutViewModel vm)
     {
         // Reload cart for display even if validation fails
-        vm.Cart = await cartService.GetOrCreateCartAsync(User.UserId());
+        vm.Cart = (await cartService.GetOrCreateCartAsync(User.UserId())).MapTo<CartDto>();
 
         if (!ModelState.IsValid)
             return View("Index", vm);
 
         try
         {
-            var order = await orderService.PlaceOrderAsync(User.UserId(), new CreateOrderDto
+            var order = await orderService.PlaceOrderAsync(User.UserId(), new BllOrders.CreateOrderDto
             {
                 ShippingFirstName = vm.ShippingFirstName,
                 ShippingLastName = vm.ShippingLastName,

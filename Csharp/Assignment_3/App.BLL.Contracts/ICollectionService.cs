@@ -1,6 +1,6 @@
-using App.DTO.v1.Collections;
+using App.BLL.DTO.Collections;
 
-namespace App.BLL.Services;
+namespace App.BLL.Contracts;
 
 public interface ICollectionService
 {

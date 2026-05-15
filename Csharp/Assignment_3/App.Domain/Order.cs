@@ -1,9 +1,10 @@
+using Base.Domain;
 using App.Domain.Enums;
 using App.Domain.Identity;
 
 namespace App.Domain;
 
-public class Order : BaseEntity
+public class Order : DomainEntityId
 {
     public string OrderNumber { get; set; } = string.Empty;
     public OrderStatus Status { get; set; } = OrderStatus.Pending;

@@ -1,6 +1,6 @@
-using App.DAL.EF.Repositories;
+using App.DAL.Contracts.Repositories;
 
-namespace App.DAL.EF.UnitOfWork;
+namespace App.DAL.Contracts.UnitOfWork;
 
 /// <summary>
 /// Single seam between the BLL and the database. Services depend on this interface

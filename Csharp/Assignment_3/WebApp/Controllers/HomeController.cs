@@ -2,7 +2,11 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using App.BLL.Services;
+using App.BLL.Contracts;
+using App.DTO.Mappers;
+using App.DTO.v1.Categories;
+using App.DTO.v1.Collections;
+using App.DTO.v1.Products;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,9 +36,9 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var collections = (await _collectionService.GetActiveAsync()).Take(3).ToList();
-        var categories = (await _categoryService.GetAllAsync()).Take(4).ToList();
-        var featuredProducts = (await _productService.GetListAsync()).Take(6).ToList();
+        var collections = (await _collectionService.GetActiveAsync()).Take(3).Cast<object>().MapList<CollectionDto>();
+        var categories = (await _categoryService.GetAllAsync()).Take(4).Cast<object>().MapList<CategoryDto>();
+        var featuredProducts = (await _productService.GetListAsync()).Take(6).Cast<object>().MapList<ProductListItemDto>();
 
         return View(new HomeViewModel
         {

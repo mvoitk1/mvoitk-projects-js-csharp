@@ -1,0 +1,43 @@
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+}
+
+.links {
+  display: flex;
+  gap: 1rem;
+}
+
+.link {
+  font-weight: 500;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.logout {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--foreground) 30%, transparent);
+  color: inherit;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.logout:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}

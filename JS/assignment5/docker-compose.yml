@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    image: mvoitk-react:latest
+    container_name: mvoitk-react
+    restart: unless-stopped
+    ports:
+      - "74:3000"
+    environment:
+      NODE_ENV: production
+      BACKEND_BASE_URL: https://taltech.akaver.com

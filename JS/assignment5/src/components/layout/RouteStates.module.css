@@ -1,0 +1,72 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.skeletonRow {
+  height: 2.25rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonRow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--foreground) 6%, transparent),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.title {
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+.errorTitle {
+  color: #c0392b;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.errorMessage {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  white-space: pre-wrap;
+}
+
+.errorDigest {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.button {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--foreground) 30%, transparent);
+  color: inherit;
+  padding: 0.35rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.button:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}

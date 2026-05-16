@@ -79,6 +79,18 @@ deploy_javascript_a4_1:
     - cd JS/assignment4.1
     - docker compose -p jsassignment4_1 up --build --remove-orphans --detach
 
+deploy_javascript_a5:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - JS/assignment5/**/*
+  tags:
+    - shared
+  script:
+    - cd JS/assignment5
+    - docker compose -p jsassignment5 up --build --remove-orphans --detach
+
 deploy_vue_listitems:
   stage: deploy
   rules:

@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Assignment 5 — Next.js + React + TalTech ToDo API
 
-## Getting Started
+A Next.js 16 / React 19 client for the TalTech `ToDo*` backend
+(<https://taltech.akaver.com/swagger/index.html>). Covers JWT login/register
+with httpOnly cookies and silent refresh, plus full CRUD over tasks,
+categories, and priorities. Cross-cutting state is managed with React
+Context + `useReducer`; mutations use `useOptimistic` on top of server
+actions.
 
-First, run the development server:
+## Public URL
+
+<https://mvoitk-react.proxy.itcollege.ee>
+
+(Proxied to `192.168.181.91:74` on the VPS.)
+
+## Stack
+
+- Next.js **16.2.6** (App Router; in Next 16 middleware is renamed to
+  **Proxy** — see [`src/proxy.ts`](src/proxy.ts)).
+- React **19.2.4** (`useActionState`, `useOptimistic`, `use()`).
+- TypeScript strict mode, `zod` for schema validation.
+
+## Environment variables
+
+| Name               | Default                       | Notes                          |
+| ------------------ | ----------------------------- | ------------------------------ |
+| `BACKEND_BASE_URL` | `https://taltech.akaver.com`  | Server-only; not exposed to JS |
+| `NODE_ENV`         | `development` / `production`  | Controls `Secure` cookie flag  |
+
+Tokens are stored in `httpOnly`, `SameSite=Lax` cookies (`at`, `rt`). In
+production they are also marked `Secure`, so the app must be served over
+HTTPS end-to-end — the reverse proxy in front of it provides that.
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run build` — production build (uses `output: "standalone"`).
+- `npm run start` — runs the built app.
+- `npm run lint` — ESLint.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Docker
 
-## Learn More
+Build and run locally:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker compose up --build
+# http://localhost:74
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Image only:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+docker build -t mvoitk-react:latest .
+docker run --rm -p 3000:3000 -e NODE_ENV=production mvoitk-react:latest
+```
 
-## Deploy on Vercel
+The Dockerfile is multi-stage (`deps` → `build` → `runner`) and relies on
+Next's standalone output, so the final image only ships `server.js`,
+`.next/static`, and `public/`. It runs as a non-root user on port 3000.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## VPS deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The container listens on `3000` inside Docker and is published on `74` on
+the host. The existing IT College reverse proxy
+(`mvoitk-react.proxy.itcollege.ee`) terminates TLS and forwards to
+`192.168.181.91:74`.
+
+Deploy steps on the VPS:
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+## Smoke checklist
+
+- [x] `npm run build` succeeds, no type errors.
+- [x] `npm run lint` clean.
+- [ ] Login → todos → create → edit → delete → logout end-to-end.
+- [ ] Deleting the `at` cookie triggers a silent refresh on the next request.
+- [ ] Deleting both cookies bounces to `/login`.
+- [ ] Hitting `/todos` unauthenticated redirects to `/login`.
+- [ ] Docker image runs locally on port 74 and behaves the same.

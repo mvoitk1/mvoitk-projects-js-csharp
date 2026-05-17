@@ -1,10 +1,11 @@
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
-import { db, now } from "./db.js";
+import { refreshTokenModel } from "./models/refreshToken.js";
+import { userModel } from "./models/user.js";
 
 const ACCESS_TTL_SEC = 60 * 30;
 const REFRESH_TTL_SEC = 60 * 60 * 24 * 30;
@@ -58,17 +59,12 @@ export function issueTokens(user: UserLite): TokenPair {
   });
   const refreshToken = randomBytes(32).toString("base64url");
 
-  db.prepare(
-    `INSERT INTO refresh_tokens (id, userId, tokenHash, jwtHash, expiresAt, createdDt)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run(
-    randomUUID(),
-    user.id,
-    sha256(refreshToken),
-    sha256(token),
-    new Date(Date.now() + REFRESH_TTL_SEC * 1000).toISOString(),
-    now(),
-  );
+  refreshTokenModel.create({
+    userId: user.id,
+    tokenHash: sha256(refreshToken),
+    jwtHash: sha256(token),
+    expiresAt: new Date(Date.now() + REFRESH_TTL_SEC * 1000).toISOString(),
+  });
 
   return {
     token,
@@ -78,31 +74,18 @@ export function issueTokens(user: UserLite): TokenPair {
   };
 }
 
-interface RefreshRow {
-  id: string;
-  userId: string;
-  jwtHash: string;
-  expiresAt: string;
-}
-
 export function rotateRefresh(jwtString: string, refreshToken: string): TokenPair | null {
-  const row = db
-    .prepare(
-      `SELECT id, userId, jwtHash, expiresAt FROM refresh_tokens WHERE tokenHash = ?`,
-    )
-    .get(sha256(refreshToken)) as RefreshRow | undefined;
+  const row = refreshTokenModel.findByTokenHash(sha256(refreshToken));
   if (!row) return null;
   if (row.jwtHash !== sha256(jwtString)) return null;
   if (new Date(row.expiresAt).getTime() < Date.now()) {
-    db.prepare(`DELETE FROM refresh_tokens WHERE id = ?`).run(row.id);
+    refreshTokenModel.deleteById(row.id);
     return null;
   }
-  const user = db
-    .prepare(`SELECT id, email, firstName, lastName FROM users WHERE id = ?`)
-    .get(row.userId) as UserLite | undefined;
+  const user = userModel.findById(row.userId);
   if (!user) return null;
 
-  db.prepare(`DELETE FROM refresh_tokens WHERE id = ?`).run(row.id);
+  refreshTokenModel.deleteById(row.id);
   return issueTokens(user);
 }
 

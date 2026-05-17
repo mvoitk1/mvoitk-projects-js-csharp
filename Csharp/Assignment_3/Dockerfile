@@ -22,6 +22,7 @@ COPY ["Base.Contracts/Base.Contracts.csproj", "Base.Contracts/"]
 COPY ["Base.Helpers/Base.Helpers.csproj", "Base.Helpers/"]
 COPY ["Base.Resources/Base.Resources.csproj", "Base.Resources/"]
 COPY ["WebApp.Tests/WebApp.Tests.csproj", "WebApp.Tests/"]
+COPY ["WebApp.Tests.Postgres/WebApp.Tests.Postgres.csproj", "WebApp.Tests.Postgres/"]
 
 RUN dotnet restore "webapp2025s.sln"
 

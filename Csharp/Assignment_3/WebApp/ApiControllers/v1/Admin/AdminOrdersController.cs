@@ -34,6 +34,7 @@ public class AdminOrdersController(IAdminOrderService orderService) : Controller
 
     /// <summary>Update the fulfillment status of an order.</summary>
     /// <param name="id">Order ID.</param>
+    /// <param name="dto">New order status.</param>
     [HttpPut("{id:guid}/status")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

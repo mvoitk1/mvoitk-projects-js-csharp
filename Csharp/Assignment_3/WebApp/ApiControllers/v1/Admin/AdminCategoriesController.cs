@@ -45,6 +45,7 @@ public class AdminCategoriesController(IAdminCatalogueService catalogueService) 
 
     /// <summary>Update a category.</summary>
     /// <param name="id">Category ID.</param>
+    /// <param name="dto">Updated category data.</param>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(AdminCategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

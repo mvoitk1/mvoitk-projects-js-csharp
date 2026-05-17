@@ -45,6 +45,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
 
     /// <summary>Update an existing product.</summary>
     /// <param name="id">Product ID.</param>
+    /// <param name="dto">Updated product data.</param>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(AdminProductDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -66,6 +67,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
 
     /// <summary>Add a size/colour variant to a product.</summary>
     /// <param name="productId">Product ID.</param>
+    /// <param name="dto">Variant data.</param>
     [HttpPost("{productId:guid}/variants")]
     [ProducesResponseType(typeof(AdminVariantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -75,6 +77,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
     /// <summary>Update a product variant.</summary>
     /// <param name="productId">Product ID.</param>
     /// <param name="variantId">Variant ID.</param>
+    /// <param name="dto">Updated variant data.</param>
     [HttpPut("{productId:guid}/variants/{variantId:guid}")]
     [ProducesResponseType(typeof(AdminVariantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -97,6 +100,7 @@ public class AdminProductsController(IAdminProductService productService) : Cont
 
     /// <summary>Add an image URL to a product.</summary>
     /// <param name="productId">Product ID.</param>
+    /// <param name="dto">Image data.</param>
     [HttpPost("{productId:guid}/images")]
     [ProducesResponseType(typeof(AdminProductImageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

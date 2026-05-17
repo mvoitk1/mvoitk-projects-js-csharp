@@ -45,6 +45,7 @@ public class AdminCollectionsController(IAdminCatalogueService catalogueService)
 
     /// <summary>Update a collection.</summary>
     /// <param name="id">Collection ID.</param>
+    /// <param name="dto">Updated collection data.</param>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(AdminCollectionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

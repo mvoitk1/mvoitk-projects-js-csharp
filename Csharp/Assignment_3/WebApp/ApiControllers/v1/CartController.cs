@@ -47,6 +47,7 @@ public class CartController(ICartService cartService) : ControllerBase
 
     /// <summary>Update the quantity of a cart line item.</summary>
     /// <param name="cartItemId">Cart item ID to update.</param>
+    /// <param name="dto">New cart item data.</param>
     [HttpPut("items/{cartItemId:guid}")]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

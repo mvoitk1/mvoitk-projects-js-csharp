@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.BLL.Contracts", "App.BL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.BLL.DTO", "App.BLL.DTO\App.BLL.DTO.csproj", "{A75B32A7-EC3D-46EC-B425-23D44D719980}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp.Tests.Postgres", "WebApp.Tests.Postgres\WebApp.Tests.Postgres.csproj", "{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -284,6 +286,18 @@ Global
 		{A75B32A7-EC3D-46EC-B425-23D44D719980}.Release|x64.Build.0 = Release|Any CPU
 		{A75B32A7-EC3D-46EC-B425-23D44D719980}.Release|x86.ActiveCfg = Release|Any CPU
 		{A75B32A7-EC3D-46EC-B425-23D44D719980}.Release|x86.Build.0 = Release|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Debug|x64.Build.0 = Debug|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Debug|x86.Build.0 = Debug|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Release|x64.ActiveCfg = Release|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Release|x64.Build.0 = Release|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Release|x86.ActiveCfg = Release|Any CPU
+		{BE596AB4-2CC9-497C-9681-52C6C9D59A7B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

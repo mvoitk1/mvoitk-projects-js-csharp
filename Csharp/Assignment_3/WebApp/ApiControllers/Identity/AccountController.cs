@@ -33,7 +33,6 @@ public class AccountController : ControllerBase
     private readonly ILogger<AccountController> _logger;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly IIdentityService _identityService;
-    private readonly Random _random = new Random();
 
     private const string UserPassProblem = "User/Password problem";
     private const int RandomDelayMin = 500;
@@ -85,8 +84,8 @@ public class AccountController : ControllerBase
         var appUser = await _userManager.FindByEmailAsync(loginInfo.Email);
         if (appUser == null)
         {
-            _logger.LogWarning("WebApi login failed, email {} not found", loginInfo.Email);
-            await Task.Delay(_random.Next(RandomDelayMin, RandomDelayMax));
+            _logger.LogWarning("WebApi login failed, email {Email} not found", loginInfo.Email);
+            await Task.Delay(Random.Shared.Next(RandomDelayMin, RandomDelayMax));
             return NotFound(new App.Dto.v1.Message(UserPassProblem));
         }
 
@@ -94,9 +93,8 @@ public class AccountController : ControllerBase
         var result = await _signInManager.CheckPasswordSignInAsync(appUser, loginInfo.Password, false);
         if (!result.Succeeded)
         {
-            _logger.LogWarning("WebApi login failed, password {} for email {} was wrong", loginInfo.Password,
-                loginInfo.Email);
-            await Task.Delay(_random.Next(RandomDelayMin, RandomDelayMax));
+            _logger.LogWarning("WebApi login failed, password wrong for email {Email}", loginInfo.Email);
+            await Task.Delay(Random.Shared.Next(RandomDelayMin, RandomDelayMax));
             return NotFound(new App.Dto.v1.Message(UserPassProblem));
         }
 

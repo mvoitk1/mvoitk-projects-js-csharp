@@ -16,6 +16,7 @@ public class AdminStockController(IAdminCatalogueService catalogueService) : Con
 {
     /// <summary>Set the stock quantity for a product variant.</summary>
     /// <param name="variantId">Product variant ID.</param>
+    /// <param name="dto">New stock quantity.</param>
     [HttpPut("{variantId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

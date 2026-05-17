@@ -1,3 +1,5 @@
+using App.DAL.EF;
+using Microsoft.Extensions.DependencyInjection;
 using WebApp.Helpers;
 using WebApp.Setup;
 
@@ -15,6 +17,8 @@ builder.Services.AddAppCors();
 builder.Services.AddAppApiVersioning();
 builder.Services.AddAppSwagger();
 builder.Services.AddAppLocalization(builder.Configuration);
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>();
 
 // Build and configure pipeline
 var app = builder.Build();
@@ -23,6 +27,7 @@ app.SetupAppData();
 app.UseAppMiddleware();
 app.UseAppSwagger();
 app.MapAppEndpoints();
+app.MapHealthChecks("/health");
 
 app.Run();
 

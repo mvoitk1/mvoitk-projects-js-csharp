@@ -59,11 +59,6 @@ public static class AppDataInitExtensions
 
     private static void WaitDbConnection(AppDbContext ctx, ILogger<IApplicationBuilder> logger)
     {
-        // TODO: Login failed for user 'sa'. Reason: Failed to open the explicitly specified database 'XYZ'. [CLIENT: 172.18.0.3]
-        // could actually log in, but db was not there - migrations where not applied yet
-
-        // maybe Database.OpenConnection
-
         while (true)
         {
             try

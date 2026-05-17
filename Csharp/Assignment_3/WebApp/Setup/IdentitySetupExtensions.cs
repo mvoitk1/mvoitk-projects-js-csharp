@@ -32,7 +32,8 @@ public static class IdentitySetupExtensions
                     ValidIssuer = configuration["JWT:Issuer"],
                     ValidateAudience = true,
                     ValidAudience = configuration["JWT:Audience"],
-                    ValidateLifetime = true
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 

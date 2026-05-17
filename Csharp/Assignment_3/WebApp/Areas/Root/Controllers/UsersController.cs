@@ -20,15 +20,12 @@ public class UsersController : Controller
 {
     private readonly ILogger<UsersController> _logger;
     private readonly UserManager<AppUser> _userManager;
-    private readonly RoleManager<AppRole> _roleManager;
 
 
-    public UsersController(ILogger<UsersController> logger, UserManager<AppUser> userManager,
-        RoleManager<AppRole> roleManager)
+    public UsersController(ILogger<UsersController> logger, UserManager<AppUser> userManager)
     {
         _logger = logger;
         _userManager = userManager;
-        _roleManager = roleManager;
     }
 
     public async Task<IActionResult> Index()

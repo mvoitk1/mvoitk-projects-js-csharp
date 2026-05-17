@@ -7,7 +7,7 @@
 <div class="home-hero mt-4">
     <h1>@App.Resources.Views.Home.Index.HeroTitle</h1>
     <p>@App.Resources.Views.Home.Index.HeroSubtitle</p>
-    <a asp-controller="Shop" asp-action="Index" class="btn btn-dark btn-lg">@App.Resources.Views.Home.Index.ShopNow</a>
+    <a asp-area="" asp-controller="Shop" asp-action="Index" class="btn btn-dark btn-lg">@App.Resources.Views.Home.Index.ShopNow</a>
 </div>
 
 <!-- Collections -->
@@ -21,7 +21,7 @@
             @foreach (var collection in Model.Collections)
             {
                 <div class="col-md-4">
-                    <a asp-controller="Shop" asp-action="Index" asp-route-collectionId="@collection.Id"
+                    <a asp-area="" asp-controller="Shop" asp-action="Index" asp-route-collectionId="@collection.Id"
                        class="collection-card">
                         <h3 class="collection-card-title">@collection.Name</h3>
                         @if (!string.IsNullOrEmpty(collection.Description))
@@ -40,13 +40,13 @@
 <section class="mb-5">
     <div class="section-header">
         <h2 class="section-heading">@App.Resources.Views.Home.Index.FeaturedProducts</h2>
-        <a asp-controller="Shop" asp-action="Index" class="text-decoration-none" style="font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--c-text-muted);">@App.Resources.Views.Home.Index.ViewAll →</a>
+        <a asp-area="" asp-controller="Shop" asp-action="Index" class="text-decoration-none" style="font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--c-text-muted);">@App.Resources.Views.Home.Index.ViewAll →</a>
     </div>
     <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-4">
         @foreach (var product in Model.FeaturedProducts)
         {
             <div class="col">
-                <a asp-controller="Shop" asp-action="Detail" asp-route-id="@product.Id" class="product-card">
+                <a asp-area="" asp-controller="Shop" asp-action="Detail" asp-route-id="@product.Id" class="product-card">
                     <div class="product-card-img-wrap">
                         @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
                         {
@@ -79,7 +79,7 @@
             @foreach (var category in Model.Categories)
             {
                 <div class="col-6 col-md-3">
-                    <a asp-controller="Shop" asp-action="Index" asp-route-categoryId="@category.Id"
+                    <a asp-area="" asp-controller="Shop" asp-action="Index" asp-route-categoryId="@category.Id"
                        class="category-card">
                         <span class="category-card-name">@category.Name</span>
                     </a>

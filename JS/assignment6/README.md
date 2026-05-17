@@ -100,3 +100,4 @@ up the new `VITE_API_BASE_URL` (baked in at build time):
 cd ../assignment4.1
 docker compose up -d --build
 ```
+

@@ -4,8 +4,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using App.DAL.EF;
+using App.BLL.Contracts;
 using App.Domain.Identity;
+using RefreshTokenRotationStatus = App.BLL.DTO.Identity.RefreshTokenRotationStatus;
 using App.DTO.v1.Identity;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using WebApp.Helpers;
@@ -32,8 +32,8 @@ public class AccountController : ControllerBase
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<AccountController> _logger;
     private readonly SignInManager<AppUser> _signInManager;
+    private readonly IIdentityService _identityService;
     private readonly Random _random = new Random();
-    private readonly AppDbContext _context;
 
     private const string UserPassProblem = "User/Password problem";
     private const int RandomDelayMin = 500;
@@ -51,13 +51,13 @@ public class AccountController : ControllerBase
     /// Constructor
     /// </summary>
     public AccountController(IConfiguration configuration, UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager, ILogger<AccountController> logger, AppDbContext context)
+        SignInManager<AppUser> signInManager, ILogger<AccountController> logger, IIdentityService identityService)
     {
         _configuration = configuration;
         _userManager = userManager;
         _signInManager = signInManager;
         _logger = logger;
-        _context = context;
+        _identityService = identityService;
     }
 
     /// <summary>
@@ -104,27 +104,10 @@ public class AccountController : ControllerBase
         await _userManager.UpdateAsync(appUser);
 
         var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(appUser);
-        if (!_context.Database.ProviderName!.Contains("InMemory"))
-        {
-            var deletedRows = await _context
-                .RefreshTokens
-                .Where(t => t.UserId == appUser.Id && t.Expiration < DateTime.UtcNow)
-                .ExecuteDeleteAsync();
-            _logger.LogInformation("Deleted {} refresh tokens", deletedRows);
-        }
-        else
-        {
-            //TODO: inMemory delete for testing
-        }
+        await _identityService.PurgeExpiredRefreshTokensAsync(appUser.Id);
 
-        var refreshToken = new AppRefreshToken()
-        {
-            UserId = appUser.Id,
-            Expiration = GetExpirationDateTime(refreshTokenExpiresInSeconds, SettingsJWTRefreshTokenExpiresInSeconds)
-        };
-        _context.RefreshTokens.Add(refreshToken);
-        await _context.SaveChangesAsync();
-
+        var refreshTokenExpiration = GetExpirationDateTime(refreshTokenExpiresInSeconds, SettingsJWTRefreshTokenExpiresInSeconds);
+        var refreshToken = await _identityService.IssueRefreshTokenAsync(appUser.Id, refreshTokenExpiration);
 
         var jwt = IdentityExtensions.GenerateJwt(
             claimsPrincipal.Claims,
@@ -137,7 +120,7 @@ public class AccountController : ControllerBase
         var responseData = new JWTResponse()
         {
             JWT = jwt,
-            RefreshToken = refreshToken.RefreshToken
+            RefreshToken = refreshToken
         };
 
         return Ok(responseData);
@@ -172,11 +155,6 @@ public class AccountController : ControllerBase
             return BadRequest(new App.Dto.v1.Message("User already registered"));
         }
 
-        var refreshToken = new AppRefreshToken()
-        {
-            Expiration = GetExpirationDateTime(refreshTokenExpiresInSeconds, SettingsJWTRefreshTokenExpiresInSeconds)
-        };
-
         appUser = new AppUser()
         {
             Email = registerModel.Email,
@@ -184,16 +162,15 @@ public class AccountController : ControllerBase
             FirstName = registerModel.FirstName,
             LastName = registerModel.LastName,
             CreatedAt = DateTime.UtcNow,
-            RefreshTokens = new List<AppRefreshToken>()
-            {
-                refreshToken
-            }
         };
         var result = await _userManager.CreateAsync(appUser, registerModel.Password);
 
         if (result.Succeeded)
         {
             _logger.LogInformation("User {Email} created a new account with password", appUser.Email);
+
+            var refreshTokenExpiration = GetExpirationDateTime(refreshTokenExpiresInSeconds, SettingsJWTRefreshTokenExpiresInSeconds);
+            var refreshToken = await _identityService.IssueRefreshTokenAsync(appUser.Id, refreshTokenExpiration);
 
             var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(appUser);
             var jwt = IdentityExtensions.GenerateJwt(
@@ -207,7 +184,7 @@ public class AccountController : ControllerBase
             return Ok(new JWTResponse()
             {
                 JWT = jwt,
-                RefreshToken = refreshToken.RefreshToken,
+                RefreshToken = refreshToken,
             });
         }
 
@@ -269,46 +246,27 @@ public class AccountController : ControllerBase
             return BadRequest(new App.Dto.v1.Message("No email in jwt"));
         }
 
-        // get user and tokens
+        // get user
         var appUser = await _userManager.FindByEmailAsync(userEmail);
         if (appUser == null)
         {
             return NotFound($"User with email {userEmail} not found");
         }
 
+        var newRefreshExpiration = GetExpirationDateTime(refreshTokenExpiresInSeconds, SettingsJWTRefreshTokenExpiresInSeconds);
+        var rotation = await _identityService.TryRotateRefreshTokenAsync(
+            appUser.Id, refreshTokenModel.RefreshToken, newRefreshExpiration);
 
-        // load and compare refresh tokens
-
-        await _context.Entry(appUser).Collection(u => u.RefreshTokens!)
-            .Query()
-            .Where(x =>
-                (x.RefreshToken == refreshTokenModel.RefreshToken && x.Expiration > DateTime.UtcNow) ||
-                (x.PreviousRefreshToken == refreshTokenModel.RefreshToken &&
-                 x.PreviousExpiration > DateTime.UtcNow)
-            )
-            .ToListAsync();
-
-        if (appUser.RefreshTokens == null)
+        switch (rotation.Status)
         {
-            return Problem("RefreshTokens collection is null");
-        }
-
-        if (appUser.RefreshTokens.Count == 0)
-        {
-            return Problem("RefreshTokens collection is empty, no valid refresh tokens found");
-        }
-
-        if (appUser.RefreshTokens.Count != 1)
-        {
-            return Problem("More than one valid refresh token found.");
+            case RefreshTokenRotationStatus.NoValidToken:
+                return Problem("RefreshTokens collection is empty, no valid refresh tokens found");
+            case RefreshTokenRotationStatus.AmbiguousToken:
+                return Problem("More than one valid refresh token found.");
         }
 
         // generate new jwt
-
-        // get claims based user
         var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(appUser);
-
-        // generate jwt
         var jwt = IdentityExtensions.GenerateJwt(
             claimsPrincipal.Claims,
             _configuration.GetValue<string>(SettingsJWTKey)!,
@@ -317,24 +275,10 @@ public class AccountController : ControllerBase
             GetExpirationDateTime(jwtExpiresInSeconds, SettingsJWTExpiresInSeconds)
         );
 
-        // make new refresh token, obsolete old ones
-        var refreshToken = appUser.RefreshTokens.First();
-        if (refreshToken.RefreshToken == refreshTokenModel.RefreshToken)
-        {
-            refreshToken.PreviousRefreshToken = refreshToken.RefreshToken;
-            refreshToken.PreviousExpiration = DateTime.UtcNow.AddMinutes(1);
-
-            refreshToken.RefreshToken = Guid.NewGuid().ToString();
-            refreshToken.Expiration =
-                GetExpirationDateTime(refreshTokenExpiresInSeconds, SettingsJWTRefreshTokenExpiresInSeconds);
-
-            await _context.SaveChangesAsync();
-        }
-
         var res = new JWTResponse()
         {
             JWT = jwt,
-            RefreshToken = refreshToken.RefreshToken,
+            RefreshToken = rotation.NewRefreshToken!,
         };
 
         return Ok(res);
@@ -349,36 +293,19 @@ public class AccountController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> Logout([FromBody] LogoutInfo logout)
     {
-        // delete the refresh token - so user is kicked out after jwt expiration
-        // We do not invalidate the jwt on serverside - that would require pipeline modification and checking against db on every request
-        // so client can actually continue to use the jwt until it expires (keep the jwt expiration time short ~1 min)
+        // delete the refresh token - so user is kicked out after jwt expiration.
+        // We do not invalidate the jwt on serverside - that would require pipeline modification
+        // and checking against db on every request. The client can keep using the JWT until it
+        // expires (keep jwt expiration short ~1 min).
 
-        var appUser = await _context.Users
-            .Where(u => u.Id == User.UserId())
-            .SingleOrDefaultAsync();
+        var userId = User.UserId();
+        var appUser = await _userManager.FindByIdAsync(userId.ToString());
         if (appUser == null)
         {
-            return NotFound(
-                new App.Dto.v1.Message(UserPassProblem)
-            );
+            return NotFound(new App.Dto.v1.Message(UserPassProblem));
         }
 
-        await _context.Entry(appUser)
-            .Collection(u => u.RefreshTokens!)
-            .Query()
-            .Where(x =>
-                (x.RefreshToken == logout.RefreshToken) ||
-                (x.PreviousRefreshToken == logout.RefreshToken)
-            )
-            .ToListAsync();
-
-        foreach (var appRefreshToken in appUser.RefreshTokens!)
-        {
-            _context.RefreshTokens.Remove(appRefreshToken);
-        }
-
-        var deleteCount = await _context.SaveChangesAsync();
-
+        var deleteCount = await _identityService.RevokeRefreshTokenAsync(userId, logout.RefreshToken);
         return Ok(new { TokenDeleteCount = deleteCount });
     }
 

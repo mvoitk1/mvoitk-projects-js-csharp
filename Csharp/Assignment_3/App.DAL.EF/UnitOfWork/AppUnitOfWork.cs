@@ -49,6 +49,10 @@ public class AppUnitOfWork : IAppUnitOfWork
     private ISizeRepository? _sizes;
     public ISizeRepository Sizes => _sizes ??= new SizeRepository(_dbContext);
 
+    private IRefreshTokenRepository? _refreshTokens;
+    public IRefreshTokenRepository RefreshTokens =>
+        _refreshTokens ??= new RefreshTokenRepository(_dbContext);
+
     public async Task<int> SaveChangesAsync()
     {
         return await _dbContext.SaveChangesAsync();

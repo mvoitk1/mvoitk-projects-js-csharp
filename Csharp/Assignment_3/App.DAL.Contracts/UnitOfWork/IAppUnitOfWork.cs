@@ -20,6 +20,7 @@ public interface IAppUnitOfWork
     IProductCategoryRepository ProductCategories { get; }
     IColorRepository Colors { get; }
     ISizeRepository Sizes { get; }
+    IRefreshTokenRepository RefreshTokens { get; }
 
     Task<int> SaveChangesAsync();
 }

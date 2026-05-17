@@ -1,4 +1,3 @@
-using App.DAL.EF;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -10,18 +9,16 @@ namespace WebApp.Areas.SysAdmin.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly AppDbContext _context;
 
 
-    public HomeController(ILogger<HomeController> logger, AppDbContext context)
+    public HomeController(ILogger<HomeController> logger)
     {
         _logger = logger;
-        _context = context;
     }
 
     public IActionResult Index()
     {
         return View();
     }
-  
+
 }

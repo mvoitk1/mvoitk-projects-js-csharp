@@ -16,6 +16,7 @@ public static class AppBusinessLogicExtensions
         services.AddScoped<IAdminProductService, AdminProductService>();
         services.AddScoped<IAdminOrderService, AdminOrderService>();
         services.AddScoped<IAdminCatalogueService, AdminCatalogueService>();
+        services.AddScoped<IIdentityService, IdentityService>();
         return services;
     }
 }

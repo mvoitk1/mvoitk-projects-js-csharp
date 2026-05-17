@@ -1,5 +1,5 @@
 using App.BLL.Contracts;
-using App.Domain.Enums;
+using App.BLL.DTO.Products;
 using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -170,7 +170,7 @@ public class ProductsController(
             Sizes = new SelectList(
                 sizes.Select(s => new { s.Id, s.SizeCode }),
                 "Id", "SizeCode"),
-            Genders = new SelectList(Enum.GetNames<Gender>()),
+            Genders = new SelectList(GenderOptions.All),
         };
     }
 

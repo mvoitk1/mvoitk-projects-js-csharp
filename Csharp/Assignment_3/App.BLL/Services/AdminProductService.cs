@@ -44,6 +44,7 @@ public class AdminProductService(IAppUnitOfWork uow) : IAdminProductService
         if (product == null) return null;
 
         AdminProductMapper.ApplyWrite(dto, product);
+        uow.Products.Update(product);
 
         // Replace categories
         if (product.ProductCategories != null)
@@ -87,6 +88,7 @@ public class AdminProductService(IAppUnitOfWork uow) : IAdminProductService
         if (variant == null) return null;
 
         AdminProductMapper.ApplyWrite(dto, variant);
+        uow.ProductVariants.Update(variant);
         await uow.SaveChangesAsync();
         return AdminProductMapper.ToVariantDto(variant);
     }

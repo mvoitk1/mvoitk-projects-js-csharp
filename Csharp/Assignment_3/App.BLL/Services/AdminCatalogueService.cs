@@ -38,6 +38,7 @@ public class AdminCatalogueService(IAppUnitOfWork uow) : IAdminCatalogueService
         if (category == null) return null;
 
         CategoryMapper.ApplyWrite(dto, category);
+        uow.Categories.Update(category);
         await uow.SaveChangesAsync();
         return (await GetCategoryByIdAsync(id))!;
     }
@@ -82,6 +83,7 @@ public class AdminCatalogueService(IAppUnitOfWork uow) : IAdminCatalogueService
         if (collection == null) return null;
 
         CollectionMapper.ApplyWrite(dto, collection);
+        uow.Collections.Update(collection);
         await uow.SaveChangesAsync();
         return CollectionMapper.ToAdminDto(collection);
     }
@@ -104,6 +106,7 @@ public class AdminCatalogueService(IAppUnitOfWork uow) : IAdminCatalogueService
         if (variant == null) return false;
 
         variant.StockQty = stockQty;
+        uow.ProductVariants.Update(variant);
         await uow.SaveChangesAsync();
         return true;
     }

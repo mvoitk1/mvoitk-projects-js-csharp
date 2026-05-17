@@ -43,6 +43,7 @@ public class CartService(IAppUnitOfWork uow) : ICartService
         if (existingItem != null)
         {
             existingItem.Quantity += dto.Quantity;
+            uow.CartItems.Update(existingItem);
         }
         else
         {
@@ -56,6 +57,7 @@ public class CartService(IAppUnitOfWork uow) : ICartService
         }
 
         cart.UpdatedAt = DateTime.UtcNow;
+        uow.Carts.Update(cart);
         await uow.SaveChangesAsync();
 
         return CartMapper.ToDto((await uow.Carts.GetActiveCartForUserAsync(userId))!);
@@ -74,7 +76,9 @@ public class CartService(IAppUnitOfWork uow) : ICartService
             throw new InvalidOperationException("Insufficient stock.");
 
         item.Quantity = dto.Quantity;
+        uow.CartItems.Update(item);
         cart!.UpdatedAt = DateTime.UtcNow;
+        uow.Carts.Update(cart);
         await uow.SaveChangesAsync();
 
         return CartMapper.ToDto((await uow.Carts.GetActiveCartForUserAsync(userId))!);
@@ -90,6 +94,7 @@ public class CartService(IAppUnitOfWork uow) : ICartService
 
         uow.CartItems.Remove(item);
         cart!.UpdatedAt = DateTime.UtcNow;
+        uow.Carts.Update(cart);
         await uow.SaveChangesAsync();
     }
 }

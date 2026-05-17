@@ -34,6 +34,7 @@ public class AdminOrderService(IAppUnitOfWork uow) : IAdminOrderService
         if (order == null) return false;
 
         order.Status = orderStatus;
+        uow.Orders.Update(order);
         await uow.SaveChangesAsync();
         return true;
     }

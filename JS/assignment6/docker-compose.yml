@@ -1,0 +1,25 @@
+services:
+  api:
+    build: .
+    image: mvoitk-express:latest
+    container_name: mvoitk-express
+    restart: unless-stopped
+    ports:
+      - "73:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_PATH: /app/data/app.db
+      JWT_SECRET_PATH: /app/data/.jwt_secret
+    volumes:
+      - mvoitk-express-data:/app/data
+    networks:
+      - infra
+
+volumes:
+  mvoitk-express-data:
+
+networks:
+  infra:
+    name: infra
+    external: true

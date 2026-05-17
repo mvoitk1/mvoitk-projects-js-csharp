@@ -27,6 +27,7 @@ RUN addgroup -S app && adduser -S app -G app && mkdir -p /app/data && chown -R a
 COPY --from=deps  --chown=app:app /app/node_modules ./node_modules
 COPY --from=build --chown=app:app /app/dist         ./dist
 COPY --chown=app:app package.json ./
+COPY --chown=app:app templates    ./templates
 
 USER app
 EXPOSE 3000

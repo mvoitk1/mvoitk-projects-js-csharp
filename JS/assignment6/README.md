@@ -16,6 +16,13 @@ SQLite storage. No Swagger.
 The Vue client is built with `VITE_API_BASE_URL=https://mvoitk-express.proxy.itcollege.ee`
 and its nginx CSP `connect-src` is updated to match.
 
+## Browsable overview
+
+`GET /overview` renders a server-side HTML page (EJS template at
+[`templates/overview.ejs`](templates/overview.ejs)) listing every task,
+category, and priority in the DB with its owner. Unauthenticated — it's
+a debugging/visibility page, not a per-user view.
+
 ## Endpoints
 
 Every route is mounted under both `/api/v1/...` and `/api/v1.0/...` so

@@ -1,10 +1,10 @@
-using Catalog.Application.Contracts;
-using App.DTO.Mappers;
-using App.DTO.v1.Products;
 using Asp.Versioning;
+using Catalog.Application.Contracts;
+using Catalog.Web.Dtos.v1.Products;
 using Microsoft.AspNetCore.Mvc;
+using Modules.SharedKernel.Mapping;
 
-namespace WebApp.ApiControllers.v1;
+namespace Catalog.Web.ApiControllers.v1;
 
 /// <summary>Products available in the shop.</summary>
 [ApiVersion("1.0")]

@@ -1,15 +1,14 @@
-using App.BLL.Contracts;
-using App.DTO.Mappers;
-using App.DTO.v1.Cart;
 using Asp.Versioning;
-using BllCart = App.BLL.DTO.Cart;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Helpers;
 using Modules.SharedKernel;
+using Modules.SharedKernel.Mapping;
+using Sales.Application.Contracts;
+using Sales.Web.Dtos.v1.Cart;
+using AppCart = Sales.Application.Dtos.Cart;
 
-namespace WebApp.ApiControllers.v1;
+namespace Sales.Web.ApiControllers.v1;
 
 /// <summary>Shopping cart for the authenticated customer.</summary>
 [ApiVersion("1.0")]
@@ -37,7 +36,7 @@ public class CartController(ICartService cartService) : ControllerBase
         try
         {
             var userId = User.UserId();
-            var cart = await cartService.AddItemAsync(userId, dto.MapTo<BllCart.AddToCartDto>());
+            var cart = await cartService.AddItemAsync(userId, dto.MapTo<AppCart.AddToCartDto>());
             return Ok(cart.MapTo<CartDto>());
         }
         catch (InvalidOperationException ex)
@@ -57,7 +56,7 @@ public class CartController(ICartService cartService) : ControllerBase
         try
         {
             var userId = User.UserId();
-            var cart = await cartService.UpdateItemAsync(userId, cartItemId, dto.MapTo<BllCart.UpdateCartItemDto>());
+            var cart = await cartService.UpdateItemAsync(userId, cartItemId, dto.MapTo<AppCart.UpdateCartItemDto>());
             return Ok(cart.MapTo<CartDto>());
         }
         catch (InvalidOperationException ex)

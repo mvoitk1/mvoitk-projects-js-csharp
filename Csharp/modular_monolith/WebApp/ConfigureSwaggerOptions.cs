@@ -36,22 +36,44 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             );
         }
 
-        // Strip the "App.DTO.v1." namespace prefix so schema names are readable
+        // Strip well-known DTO namespace prefixes so Swagger schema names stay readable.
         // e.g. "App.DTO.v1.Products.ProductDto" → "Products.ProductDto"
+        //      "Catalog.Web.Dtos.v1.Products.ProductDto" → "Products.ProductDto"
+        string[] dtoPrefixes =
+        [
+            "App.DTO.v1.",
+            "Catalog.Web.Dtos.v1.",
+            "Sales.Web.Dtos.v1.",
+        ];
         options.CustomSchemaIds(t =>
         {
             var name = t.FullName ?? t.Name;
-            const string prefix = "App.DTO.v1.";
-            if (name.StartsWith(prefix))
-                name = name[prefix.Length..];
+            foreach (var prefix in dtoPrefixes)
+            {
+                if (name.StartsWith(prefix))
+                {
+                    name = name[prefix.Length..];
+                    break;
+                }
+            }
             return name.Replace("+", ".");
         });
 
-        // Include XML doc comments from this assembly
-        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        if (File.Exists(xmlPath))
-            options.IncludeXmlComments(xmlPath);
+        // Include XML doc comments from this assembly and the per-module *.Web assemblies
+        // so controller summaries written in the module projects render in Swagger.
+        string[] xmlAssemblies =
+        [
+            Assembly.GetExecutingAssembly().GetName().Name!,
+            "Catalog.Web",
+            "Sales.Web",
+            "Users.Web",
+        ];
+        foreach (var asmName in xmlAssemblies)
+        {
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{asmName}.xml");
+            if (File.Exists(xmlPath))
+                options.IncludeXmlComments(xmlPath);
+        }
 
         // Define the Bearer JWT security scheme
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

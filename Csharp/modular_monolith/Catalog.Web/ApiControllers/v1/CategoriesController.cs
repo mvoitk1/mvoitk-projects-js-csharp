@@ -1,9 +1,10 @@
-using Catalog.Application.Contracts;
-using App.DTO.v1.Categories;
 using Asp.Versioning;
+using Catalog.Application.Contracts;
+using Catalog.Web.Dtos.v1.Categories;
 using Microsoft.AspNetCore.Mvc;
+using Modules.SharedKernel.Mapping;
 
-namespace WebApp.ApiControllers.v1;
+namespace Catalog.Web.ApiControllers.v1;
 
 /// <summary>Product categories used to organise the shop catalogue.</summary>
 [ApiVersion("1.0")]
@@ -16,6 +17,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [ProducesResponseType(typeof(IEnumerable<CategoryDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAll()
     {
-        return Ok(await categoryService.GetAllAsync());
+        var categories = await categoryService.GetAllAsync();
+        return Ok(categories.Cast<object>().MapList<CategoryDto>());
     }
 }

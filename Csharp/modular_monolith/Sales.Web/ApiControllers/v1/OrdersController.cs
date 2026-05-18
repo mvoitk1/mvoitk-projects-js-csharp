@@ -1,15 +1,14 @@
-using App.BLL.Contracts;
-using App.DTO.Mappers;
-using App.DTO.v1.Orders;
 using Asp.Versioning;
-using BllOrders = App.BLL.DTO.Orders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Helpers;
 using Modules.SharedKernel;
+using Modules.SharedKernel.Mapping;
+using Sales.Application.Contracts;
+using Sales.Web.Dtos.v1.Orders;
+using AppOrders = Sales.Application.Dtos.Orders;
 
-namespace WebApp.ApiControllers.v1;
+namespace Sales.Web.ApiControllers.v1;
 
 /// <summary>Order history and checkout for the authenticated customer.</summary>
 [ApiVersion("1.0")]
@@ -24,7 +23,8 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     public async Task<ActionResult<IEnumerable<OrderListItemDto>>> GetOrders()
     {
         var userId = User.UserId();
-        return Ok(await orderService.GetUserOrdersAsync(userId));
+        var orders = await orderService.GetUserOrdersAsync(userId);
+        return Ok(orders.Cast<object>().MapList<OrderListItemDto>());
     }
 
     /// <summary>Get full details of a single order belonging to the current user.</summary>
@@ -37,7 +37,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         var userId = User.UserId();
         var order = await orderService.GetUserOrderByIdAsync(userId, id);
         if (order == null) return NotFound();
-        return Ok(order);
+        return Ok(order.MapTo<OrderDto>());
     }
 
     /// <summary>Place an order from the current cart.</summary>
@@ -49,8 +49,8 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         try
         {
             var userId = User.UserId();
-            var order = await orderService.PlaceOrderAsync(userId, dto.MapTo<BllOrders.CreateOrderDto>());
-            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+            var order = await orderService.PlaceOrderAsync(userId, dto.MapTo<AppOrders.CreateOrderDto>());
+            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order.MapTo<OrderDto>());
         }
         catch (InvalidOperationException ex)
         {

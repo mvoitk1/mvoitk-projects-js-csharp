@@ -1,9 +1,10 @@
-using Catalog.Application.Contracts;
-using App.DTO.v1.Collections;
 using Asp.Versioning;
+using Catalog.Application.Contracts;
+using Catalog.Web.Dtos.v1.Collections;
 using Microsoft.AspNetCore.Mvc;
+using Modules.SharedKernel.Mapping;
 
-namespace WebApp.ApiControllers.v1;
+namespace Catalog.Web.ApiControllers.v1;
 
 /// <summary>Active product collections (curated groupings of products).</summary>
 [ApiVersion("1.0")]
@@ -16,6 +17,7 @@ public class CollectionsController(ICollectionService collectionService) : Contr
     [ProducesResponseType(typeof(IEnumerable<CollectionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<CollectionDto>>> GetActive()
     {
-        return Ok(await collectionService.GetActiveAsync());
+        var collections = await collectionService.GetActiveAsync();
+        return Ok(collections.Cast<object>().MapList<CollectionDto>());
     }
 }

@@ -13,8 +13,11 @@ public sealed class GetVariantPricingQueryHandler(ICatalogUnitOfWork uow)
         var variant = await uow.ProductVariants.GetWithColorAndSizeAsync(request.ProductVariantId);
         if (variant == null) return null;
 
-        var product = await uow.Products.FindAsync(variant.ProductId);
+        var product = await uow.Products.GetWithDetailsAsync(variant.ProductId);
         var productName = product?.Name.Translate() ?? string.Empty;
+        var firstImageUrl = product?.Images?.OrderBy(i => i.SortOrder).FirstOrDefault()?.Url;
+        var colorName = variant.Color?.Name.Translate() ?? string.Empty;
+        var sizeCode = variant.Size?.SizeCode ?? string.Empty;
 
         return new VariantPricingDto(
             variant.Id,
@@ -24,6 +27,9 @@ public sealed class GetVariantPricingQueryHandler(ICatalogUnitOfWork uow)
             variant.StockQty,
             variant.IsActive,
             variant.ProductId,
-            productName);
+            productName,
+            colorName,
+            sizeCode,
+            firstImageUrl);
     }
 }

@@ -16,4 +16,7 @@ public sealed record VariantPricingDto(
     int AvailableQty,
     bool IsActive,
     Guid ProductId,
-    string ProductName);
+    string ProductName,
+    string ColorName,
+    string SizeCode,
+    string? FirstImageUrl);

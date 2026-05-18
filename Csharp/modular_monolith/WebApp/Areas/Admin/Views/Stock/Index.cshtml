@@ -1,0 +1,56 @@
+@model IEnumerable<App.DTO.v1.Admin.AdminStockItemDto>
+@{
+    ViewData["Title"] = "Stock Management";
+}
+
+<h2>Stock Management</h2>
+<p class="text-muted">Sorted by stock level (lowest first). Variants with &lt;5 units are highlighted.</p>
+
+@if (TempData["StockSuccess"] != null)
+{
+    <div class="alert alert-success py-2 small">@TempData["StockSuccess"]</div>
+}
+@if (TempData["StockError"] != null)
+{
+    <div class="alert alert-danger py-2 small">@TempData["StockError"]</div>
+}
+
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Color</th>
+                <th>Size</th>
+                <th>Current Stock</th>
+                <th>Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in Model)
+            {
+                <tr class="@(v.StockQty < 5 ? "table-warning" : "")">
+                    <td>@v.ProductName</td>
+                    <td><code>@v.Sku</code></td>
+                    <td>@v.ColorName</td>
+                    <td>@v.SizeCode</td>
+                    <td>
+                        <span class="fw-semibold @(v.StockQty == 0 ? "text-danger" : v.StockQty < 5 ? "text-warning" : "")">
+                            @v.StockQty
+                        </span>
+                    </td>
+                    <td>
+                        <form asp-action="UpdateStock" method="post" class="d-flex gap-2 align-items-center">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="variantId" value="@v.VariantId">
+                            <input type="number" name="stockQty" value="@v.StockQty" min="0"
+                                   class="form-control form-control-sm" style="width:80px;">
+                            <button type="submit" class="btn btn-sm btn-outline-dark">Save</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

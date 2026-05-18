@@ -1,0 +1,94 @@
+using System.Threading;
+using App.DAL.EF;
+using App.DAL.EF.Seeding;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Users.Domain;
+using Users.Infrastructure;
+using Users.Infrastructure.Seeding;
+
+namespace WebApp.Setup;
+
+public static class AppDataInitExtensions
+{
+    public static async Task SetupAppDataAsync(this WebApplication app)
+    {
+        using var serviceScope = app.Services
+            .GetRequiredService<IServiceScopeFactory>()
+            .CreateScope();
+        var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<IApplicationBuilder>>();
+
+        var appContext = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var usersContext = serviceScope.ServiceProvider.GetRequiredService<UsersDbContext>();
+
+        if (appContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory") return;
+
+        WaitDbConnection(appContext, logger);
+
+        var configuration = app.Configuration;
+
+        if (configuration.GetValue<bool>("DataInitialization:DropDatabase"))
+        {
+            logger.LogWarning("DropDatabase");
+            UsersDataInit.DeleteDatabase(usersContext);
+            AppDataInit.DeleteDatabase(appContext);
+        }
+
+        if (configuration.GetValue<bool>("DataInitialization:MigrateDatabase"))
+        {
+            logger.LogInformation("MigrateDatabase");
+            // Users schema must come first (other modules reference user IDs).
+            UsersDataInit.MigrateDatabase(usersContext);
+            AppDataInit.MigrateDatabase(appContext);
+        }
+
+        if (configuration.GetValue<bool>("DataInitialization:SeedIdentity"))
+        {
+            logger.LogInformation("SeedIdentity");
+            var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
+            await UsersDataInit.SeedIdentityAsync(userManager, roleManager);
+        }
+
+        if (configuration.GetValue<bool>("DataInitialization:SeedData"))
+        {
+            logger.LogInformation("SeedData");
+            AppDataInit.SeedAppData(appContext);
+        }
+    }
+
+    private static void WaitDbConnection(AppDbContext ctx, ILogger<IApplicationBuilder> logger)
+    {
+        while (true)
+        {
+            try
+            {
+                ctx.Database.OpenConnection();
+                ctx.Database.CloseConnection();
+                return;
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                logger.LogWarning("Checked postgres db connection. Got: {Msg}", e.Message);
+
+                if (e.Message.Contains("does not exist"))
+                {
+                    logger.LogWarning("Applying migration, probably db is not there (but server is)");
+                    return;
+                }
+
+                logger.LogWarning("Waiting for db connection. Sleep 1 sec");
+                Thread.Sleep(1000);
+            }
+            catch (Npgsql.NpgsqlException e)
+            {
+                logger.LogWarning("Waiting for db (network error): {Msg}", e.Message);
+                Thread.Sleep(1000);
+            }
+        }
+    }
+}

@@ -1,0 +1,107 @@
+@model App.DTO.v1.Cart.CartDto
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<div class="mt-4 mb-2 d-flex align-items-baseline gap-3">
+    <h1 class="section-heading">@App.Resources.Views.Cart.Index.YourCart</h1>
+    @if (Model.Items.Any())
+    {
+        <span style="font-size:0.82rem;color:var(--c-text-muted);">@Model.ItemCount items</span>
+    }
+</div>
+
+@if (TempData["CartError"] != null)
+{
+    <div class="alert alert-danger py-2 small">@TempData["CartError"]</div>
+}
+
+@if (!Model.Items.Any())
+{
+    <div class="text-center py-5 mt-3">
+        <p style="color:var(--c-text-muted);font-size:1.05rem;margin-bottom:1.5rem;">@App.Resources.Views.Cart.Index.CartEmpty</p>
+        <a asp-area="" asp-controller="Shop" asp-action="Index" class="btn btn-dark">@App.Resources.Views.Cart.Index.ContinueShopping</a>
+    </div>
+}
+else
+{
+    <div class="row g-4 mt-1">
+        <div class="col-md-8">
+            <table class="table cart-table">
+                <thead>
+                    <tr>
+                        <th>@App.Resources.Views.Cart.Index.Product</th>
+                        <th>@App.Resources.Views.Cart.Index.Variant</th>
+                        <th>@App.Resources.Views.Cart.Index.Price</th>
+                        <th>@App.Resources.Views.Cart.Index.Qty</th>
+                        <th>@App.Resources.Views.Cart.Index.Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt=""
+                                             style="width:54px;height:54px;object-fit:cover;border-radius:var(--radius-sm);background:var(--c-accent-bg);">
+                                    }
+                                    <span style="font-size:0.9rem;font-weight:500;">@item.ProductName</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="font-size:0.8rem;color:var(--c-text-muted);">@item.ColorName / @item.SizeCode</span>
+                            </td>
+                            <td style="font-size:0.9rem;">@item.UnitPrice.ToString("C")</td>
+                            <td style="width:140px;">
+                                <form asp-area="" asp-controller="Cart" asp-action="UpdateItem" method="post" class="d-flex gap-1">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.Id">
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1" max="100"
+                                           class="form-control form-control-sm" style="width:68px;">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">@App.Resources.Views.Cart.Index.Update</button>
+                                </form>
+                            </td>
+                            <td style="font-size:0.9rem;font-weight:500;">@item.LineTotal.ToString("C")</td>
+                            <td>
+                                <form asp-area="" asp-controller="Cart" asp-action="RemoveItem" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.Id">
+                                    <button type="submit" class="btn btn-sm" style="color:var(--c-text-muted);padding:0.35rem 0.5rem;" title="Remove">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            <div class="cart-summary">
+                <h5 style="font-family:var(--ff-serif);font-size:1.25rem;font-weight:500;margin-bottom:1.25rem;">@App.Resources.Views.Cart.Index.OrderSummary</h5>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.9rem;">
+                    <span style="color:var(--c-text-muted);">Subtotal (@Model.ItemCount @App.Resources.Views.Cart.Index.Items)</span>
+                    <span>@Model.Total.ToString("C")</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.9rem;">
+                    <span style="color:var(--c-text-muted);">Shipping</span>
+                    <span style="color:var(--c-text-muted);">Calculated at checkout</span>
+                </div>
+                <hr style="border-color:var(--c-border);margin:1rem 0;">
+                <div class="d-flex justify-content-between mb-3">
+                    <span style="font-weight:600;font-size:0.9rem;">Total</span>
+                    <span style="font-family:var(--ff-serif);font-size:1.2rem;font-weight:500;">@Model.Total.ToString("C")</span>
+                </div>
+                <a asp-area="" asp-controller="Checkout" asp-action="Index" class="btn btn-dark w-100 mb-2">
+                    @App.Resources.Views.Cart.Index.ProceedToCheckout
+                </a>
+                <a asp-area="" asp-controller="Shop" asp-action="Index" class="btn btn-outline-dark w-100">
+                    @App.Resources.Views.Cart.Index.ContinueShopping
+                </a>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,835 @@
+/* ============================================================
+   Design Tokens
+   ============================================================ */
+:root {
+    --ff-serif: 'Cormorant Garamond', Georgia, serif;
+    --ff-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    --c-bg: #faf9f7;
+    --c-surface: #ffffff;
+    --c-surface-raised: #f5f3f0;
+    --c-border: #e5e1db;
+    --c-border-strong: #c8c2bb;
+
+    --c-text: #0e0d0c;
+    --c-text-muted: #6d6460;
+    --c-text-placeholder: #a89f99;
+
+    --c-accent-bg: #f0ede9;
+
+    --radius-sm: 3px;
+    --radius-md: 6px;
+    --radius-lg: 12px;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.07);
+
+    --transition: 180ms ease;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+html {
+    font-size: 15px;
+    background: var(--c-bg);
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html { font-size: 16px; }
+}
+
+body {
+    font-family: var(--ff-sans);
+    color: var(--c-text);
+    background: var(--c-bg);
+    margin-bottom: 0;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--ff-serif);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+}
+
+a {
+    color: var(--c-text);
+}
+
+/* ============================================================
+   Navbar
+   ============================================================ */
+.site-nav {
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+    padding: 0;
+}
+
+.site-nav .container-xl {
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-brand {
+    font-family: var(--ff-serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text) !important;
+    text-decoration: none !important;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links .nav-link {
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-text-muted) !important;
+    padding: 0.4rem 0.65rem;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition), background var(--transition);
+}
+
+.nav-links .nav-link:hover {
+    color: var(--c-text) !important;
+    background: var(--c-accent-bg);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+/* Keep Bootstrap dropdown/btn-link colors working */
+.navbar .nav-link.dropdown-toggle,
+.navbar .btn-link.nav-link {
+    color: var(--bs-navbar-color);
+}
+
+.navbar .nav-link.dropdown-toggle:hover,
+.navbar .nav-link.dropdown-toggle:focus,
+.navbar .btn-link.nav-link:hover,
+.navbar .btn-link.nav-link:focus {
+    color: var(--bs-navbar-hover-color);
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+    font-family: var(--ff-sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 1.25rem;
+    transition: all var(--transition);
+}
+
+.btn-lg {
+    font-size: 0.82rem;
+    padding: 0.75rem 1.75rem;
+}
+
+.btn-sm {
+    font-size: 0.72rem;
+    padding: 0.35rem 0.85rem;
+}
+
+.btn-dark {
+    background: var(--c-text);
+    border-color: var(--c-text);
+    color: #fff;
+}
+
+.btn-dark:hover {
+    background: #2a2826;
+    border-color: #2a2826;
+    color: #fff;
+}
+
+.btn-outline-dark {
+    border-color: var(--c-text);
+    color: var(--c-text);
+    background: transparent;
+}
+
+.btn-outline-dark:hover {
+    background: var(--c-text);
+    border-color: var(--c-text);
+    color: #fff;
+}
+
+.btn-outline-secondary {
+    border-color: var(--c-border-strong);
+    color: var(--c-text-muted);
+}
+
+.btn-outline-secondary:hover {
+    background: var(--c-accent-bg);
+    border-color: var(--c-border-strong);
+    color: var(--c-text);
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 2px rgba(14, 13, 12, 0.1);
+}
+
+/* ============================================================
+   Hero (Home page)
+   ============================================================ */
+.home-hero {
+    background: var(--c-accent-bg);
+    border-radius: var(--radius-lg);
+    padding: 5rem 3rem;
+    margin-bottom: 4.5rem;
+    text-align: center;
+}
+
+.home-hero h1 {
+    font-family: var(--ff-serif);
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 1.25rem;
+    color: var(--c-text);
+}
+
+.home-hero p {
+    font-size: 1rem;
+    color: var(--c-text-muted);
+    margin-bottom: 2.25rem;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ============================================================
+   Section headings
+   ============================================================ */
+.section-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+.section-heading {
+    font-family: var(--ff-serif);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+.section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--c-border);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Legacy support */
+.page-heading {
+    font-family: var(--ff-serif);
+    font-size: 1.9rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--c-border);
+    padding-bottom: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+/* ============================================================
+   Product Cards
+   ============================================================ */
+.product-card {
+    display: block;
+    text-decoration: none !important;
+    color: var(--c-text) !important;
+}
+
+.product-card:hover {
+    color: var(--c-text);
+}
+
+.product-card-img-wrap {
+    aspect-ratio: 3 / 4;
+    background: var(--c-accent-bg);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.product-card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 420ms ease;
+}
+
+.product-card:hover .product-card-img-wrap img {
+    transform: scale(1.05);
+}
+
+.product-card-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c-text-placeholder);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.product-card-name {
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.35;
+    margin-bottom: 0.15rem;
+}
+
+.product-card-meta {
+    font-size: 0.78rem;
+    color: var(--c-text-muted);
+}
+
+.product-card-price {
+    font-size: 0.88rem;
+    font-weight: 500;
+    margin-top: 0.15rem;
+}
+
+/* ============================================================
+   Collection Cards
+   ============================================================ */
+.collection-card {
+    display: block;
+    background: var(--c-accent-bg);
+    border-radius: var(--radius-md);
+    padding: 2rem 1.75rem;
+    height: 100%;
+    text-decoration: none !important;
+    color: var(--c-text) !important;
+    transition: background var(--transition);
+}
+
+.collection-card:hover {
+    background: #e8e3dc;
+}
+
+.collection-card-title {
+    font-family: var(--ff-serif);
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.collection-card-desc {
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   Category Cards
+   ============================================================ */
+.category-card {
+    display: block;
+    text-decoration: none !important;
+    color: var(--c-text) !important;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    padding: 2.5rem 1rem;
+    text-align: center;
+    transition: all var(--transition);
+}
+
+.category-card:hover {
+    border-color: var(--c-border-strong);
+    background: var(--c-accent-bg);
+    color: var(--c-text);
+}
+
+.category-card-name {
+    font-family: var(--ff-serif);
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+/* ============================================================
+   Shop filter sidebar
+   ============================================================ */
+.filter-sidebar {
+    border: none;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+.filter-sidebar h6 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    margin-bottom: 0.6rem;
+    margin-top: 1.75rem;
+    font-family: var(--ff-sans);
+}
+
+.filter-sidebar h6:first-child {
+    margin-top: 0;
+}
+
+.filter-sidebar a {
+    display: block;
+    color: var(--c-text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding: 0.28rem 0;
+    transition: color var(--transition);
+}
+
+.filter-sidebar a:hover {
+    color: var(--c-text);
+}
+
+.filter-sidebar a.active-filter {
+    color: var(--c-text);
+    font-weight: 600;
+}
+
+/* ============================================================
+   Shop header row
+   ============================================================ */
+.shop-page-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--c-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.shop-count {
+    font-size: 0.82rem;
+    color: var(--c-text-muted);
+}
+
+/* ============================================================
+   Product detail page
+   ============================================================ */
+.detail-price {
+    font-family: var(--ff-serif);
+    font-size: 1.8rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.detail-section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    margin-bottom: 0.6rem;
+}
+
+.color-swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    padding: 0;
+    transition: border-color var(--transition), transform var(--transition);
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.size-btn {
+    min-width: 52px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.45rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    cursor: pointer;
+    transition: all var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.size-btn:hover:not(:disabled) {
+    border-color: var(--c-text);
+    background: var(--c-text);
+    color: #fff;
+}
+
+.size-btn.selected {
+    background: var(--c-text);
+    border-color: var(--c-text);
+    color: #fff;
+}
+
+.size-btn:disabled,
+.size-btn.out-of-stock {
+    opacity: 0.38;
+    cursor: pointer;
+    text-decoration: line-through;
+}
+
+.size-btn.out-of-stock.selected {
+    background: #c62828;
+    border-color: #c62828;
+    color: #fff;
+    opacity: 1;
+    text-decoration: line-through;
+}
+
+.thumbnail-img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color var(--transition);
+}
+
+.thumbnail-img:hover {
+    border-color: var(--c-border-strong);
+}
+
+/* ============================================================
+   Cart
+   ============================================================ */
+.cart-table thead th {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    border-top: none;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--c-border);
+}
+
+.cart-table td {
+    vertical-align: middle;
+    border-color: var(--c-border);
+    padding: 1rem 0.75rem;
+}
+
+.cart-summary {
+    background: var(--c-accent-bg);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    border: none;
+}
+
+/* ============================================================
+   Checkout
+   ============================================================ */
+.checkout-panel {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    padding: 1.75rem;
+}
+
+.checkout-summary {
+    background: var(--c-accent-bg);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+.form-control,
+.form-select {
+    border-color: #c8c3bc;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    padding: 0.65rem 0.9rem;
+    background: #fafaf8;
+    color: var(--c-text);
+    transition: border-color var(--transition), box-shadow var(--transition);
+    font-family: var(--ff-sans);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--c-text);
+    box-shadow: 0 0 0 2px rgba(14, 13, 12, 0.08);
+    background: #fff;
+}
+
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--c-text);
+    margin-bottom: 0.4rem;
+}
+
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+.form-group {
+    margin-bottom: 1em;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer {
+    border-top: 1px solid var(--c-border);
+    background: var(--c-surface);
+    padding: 1.5rem 0;
+    margin-top: 5rem;
+    color: var(--c-text-muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+}
+
+.site-footer a {
+    color: var(--c-text-muted);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+.site-footer a:hover {
+    color: var(--c-text);
+}
+
+/* ============================================================
+   Admin layout
+   ============================================================ */
+.admin-shell {
+    min-height: 100vh;
+    background: #f5f6f8;
+    display: flex;
+    align-items: stretch;
+}
+
+.admin-sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #111110;
+}
+
+.admin-main {
+    min-width: 0;
+}
+
+.admin-nav .nav-link {
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.45rem 0.75rem;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-family: var(--ff-sans);
+    letter-spacing: 0.01em;
+    transition: all var(--transition);
+}
+
+.admin-nav .nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.admin-nav .nav-link.active-nav {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.admin-create-panel {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.85rem;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.admin-create-label,
+.admin-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--ff-sans);
+}
+
+.admin-topbar {
+    background: #fff;
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.admin-page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #212529;
+    font-family: var(--ff-sans);
+    letter-spacing: -0.02em;
+}
+
+.admin-eyebrow {
+    color: #9ca3af;
+    font-size: 0.7rem;
+}
+
+.admin-summary-card,
+.admin-section-card,
+.admin-empty-state {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.admin-summary-card {
+    padding: 1.35rem;
+    height: 100%;
+}
+
+.admin-section-card {
+    padding: 1.5rem;
+}
+
+.admin-empty-state {
+    padding: 2.5rem;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.admin-table-wrap {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.admin-table-wrap .table {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.admin-table-wrap .table thead th {
+    background: #f9fafb;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #e9ecef;
+    border-top: none;
+}
+
+.admin-table-wrap .table tbody td {
+    padding: 0.85rem 1rem;
+    border-color: #f3f4f6;
+}
+
+.admin-form-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.admin-form-panel {
+    background: #fff;
+    border: 1px solid #e2e5ea;
+    border-radius: 8px;
+    padding: 1.75rem;
+}
+
+/* Make inputs clearly visible on white panels */
+.admin-form-panel .form-control,
+.admin-form-panel .form-select,
+.checkout-panel .form-control,
+.checkout-panel .form-select {
+    background: #f5f5f3;
+    border-color: #bbb5ae;
+}
+
+.admin-form-aside {
+    background: #f9fafb;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+@media (min-width: 992px) {
+    .admin-form-grid {
+        grid-template-columns: minmax(0, 1fr) 280px;
+        align-items: start;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-shell {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        min-height: auto;
+    }
+
+    .admin-topbar {
+        padding: 1rem 1.25rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

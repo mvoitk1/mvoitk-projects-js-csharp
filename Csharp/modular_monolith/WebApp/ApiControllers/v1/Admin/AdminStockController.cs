@@ -1,4 +1,4 @@
-using App.BLL.Contracts;
+using Catalog.Application.Contracts;
 using App.DTO.v1.Admin;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

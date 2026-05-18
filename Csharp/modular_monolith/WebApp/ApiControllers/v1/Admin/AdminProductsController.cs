@@ -1,8 +1,8 @@
-using App.BLL.Contracts;
+using Catalog.Application.Contracts;
 using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Asp.Versioning;
-using BllAdmin = App.BLL.DTO.Admin;
+using BllAdmin = Catalog.Application.Dtos.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

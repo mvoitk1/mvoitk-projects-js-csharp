@@ -1,4 +1,4 @@
-using App.BLL.Contracts;
+using Catalog.Application.Contracts;
 using App.DTO.Mappers;
 using App.DTO.v1.Categories;
 using App.DTO.v1.Collections;

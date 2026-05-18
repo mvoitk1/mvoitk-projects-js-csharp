@@ -1,9 +1,9 @@
-using App.BLL.Contracts;
-using App.BLL.DTO.Products;
+using Catalog.Application.Contracts;
+using Catalog.Application.Dtos.Products;
 using App.DTO.Mappers;
 using App.DTO.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
-using BllAdmin = App.BLL.DTO.Admin;
+using BllAdmin = Catalog.Application.Dtos.Admin;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApp.Areas.Admin.ViewModels;
 

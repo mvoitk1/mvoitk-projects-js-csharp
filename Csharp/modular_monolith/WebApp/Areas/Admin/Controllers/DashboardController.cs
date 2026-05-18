@@ -1,4 +1,4 @@
-using App.BLL.Contracts;
+using Catalog.Application.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Areas.Admin.ViewModels;
 

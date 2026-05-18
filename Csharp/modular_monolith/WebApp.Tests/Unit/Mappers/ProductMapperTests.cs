@@ -1,6 +1,7 @@
-using App.BLL.Mappers;
-using App.Domain;
-using App.Domain.Enums;
+using Catalog.Application.Mappers;
+using Catalog.Domain;
+using Catalog.Domain.Enums;
+using Modules.SharedKernel;
 using Xunit;
 
 namespace WebApp.Tests.Unit.Mappers;

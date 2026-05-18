@@ -26,6 +26,9 @@
 
     <ItemGroup>
       <ProjectReference Include="..\App.BLL\App.BLL.csproj" />
+      <ProjectReference Include="..\Catalog.Application\Catalog.Application.csproj" />
+      <ProjectReference Include="..\Catalog.Domain\Catalog.Domain.csproj" />
+      <ProjectReference Include="..\Modules.SharedKernel\Modules.SharedKernel.csproj" />
       <ProjectReference Include="..\App.DAL.EF\App.DAL.EF.csproj" />
       <ProjectReference Include="..\App.DTO\App.DTO.csproj" />
       <ProjectReference Include="..\App.Resources\App.Resources.csproj" />

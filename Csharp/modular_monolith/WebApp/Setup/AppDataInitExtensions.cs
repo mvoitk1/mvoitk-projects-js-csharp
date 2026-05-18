@@ -1,12 +1,14 @@
 using System.Threading;
 using App.DAL.EF;
 using App.DAL.EF.Seeding;
+using Catalog.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sales.Infrastructure;
 using Users.Domain;
 using Users.Infrastructure;
 using Users.Infrastructure.Seeding;
@@ -24,6 +26,8 @@ public static class AppDataInitExtensions
 
         var appContext = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
         var usersContext = serviceScope.ServiceProvider.GetRequiredService<UsersDbContext>();
+        var catalogContext = serviceScope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+        var salesContext = serviceScope.ServiceProvider.GetRequiredService<SalesDbContext>();
 
         if (appContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory") return;
 
@@ -34,6 +38,8 @@ public static class AppDataInitExtensions
         if (configuration.GetValue<bool>("DataInitialization:DropDatabase"))
         {
             logger.LogWarning("DropDatabase");
+            salesContext.Database.EnsureDeleted();
+            catalogContext.Database.EnsureDeleted();
             UsersDataInit.DeleteDatabase(usersContext);
             AppDataInit.DeleteDatabase(appContext);
         }
@@ -43,6 +49,8 @@ public static class AppDataInitExtensions
             logger.LogInformation("MigrateDatabase");
             // Users schema must come first (other modules reference user IDs).
             UsersDataInit.MigrateDatabase(usersContext);
+            catalogContext.Database.Migrate();
+            salesContext.Database.Migrate();
             AppDataInit.MigrateDatabase(appContext);
         }
 

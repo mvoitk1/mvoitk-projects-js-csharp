@@ -1,10 +1,14 @@
 using App.DAL.EF;
+using Catalog.Infrastructure;
+using Catalog.Module;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Abstractions;
+using Modules.SharedKernel;
+using Sales.Infrastructure;
+using Sales.Module;
 using Users.Infrastructure;
 using Users.Module;
 using WebApp.Helpers;
-using Modules.SharedKernel;
 using WebApp.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 IModule[] modules =
 [
     new UsersModule(),
+    new CatalogModule(),
+    new SalesModule(),
 ];
 
 builder.Services.AddAppDatabase(builder.Configuration, builder.Environment);
@@ -32,7 +38,9 @@ builder.Services.AddAppSwagger();
 builder.Services.AddAppLocalization(builder.Configuration);
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>()
-    .AddDbContextCheck<UsersDbContext>();
+    .AddDbContextCheck<UsersDbContext>()
+    .AddDbContextCheck<CatalogDbContext>()
+    .AddDbContextCheck<SalesDbContext>();
 
 // Build and configure pipeline
 var app = builder.Build();

@@ -1,6 +1,6 @@
-using App.BLL.DTO.Orders;
+using Sales.Application.Dtos.Orders;
 
-namespace App.BLL.DTO.Admin;
+namespace Sales.Application.Dtos.Admin;
 
 public class AdminOrderDto
 {

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace App.BLL.DTO.Admin;
+namespace Sales.Application.Dtos.Admin;
 
 public class AdminOrderStatusDto
 {

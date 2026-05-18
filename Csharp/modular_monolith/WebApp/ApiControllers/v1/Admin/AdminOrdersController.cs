@@ -1,5 +1,5 @@
-using App.BLL.Contracts;
 using App.DTO.v1.Admin;
+using Sales.Application.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

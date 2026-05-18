@@ -1,6 +1,6 @@
-using App.BLL.DTO.Admin;
+using Sales.Application.Dtos.Admin;
 
-namespace App.BLL.Contracts;
+namespace Sales.Application.Contracts;
 
 public interface IAdminOrderService
 {

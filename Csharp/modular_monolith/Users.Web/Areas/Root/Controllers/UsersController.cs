@@ -1,48 +1,34 @@
-using System;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Users.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using WebApp.Areas.Root.ViewModels;
+using Users.Domain;
+using Users.Web.Areas.Root.ViewModels;
 
-namespace WebApp.Areas.Root.Controllers;
+namespace Users.Web.Areas.Root.Controllers;
 
 [Area("Root")]
 [Authorize(Roles = "root")]
-public class UsersController : Controller
+public class UsersController(UserManager<AppUser> userManager) : Controller
 {
-    private readonly ILogger<UsersController> _logger;
-    private readonly UserManager<AppUser> _userManager;
-
-
-    public UsersController(ILogger<UsersController> logger, UserManager<AppUser> userManager)
-    {
-        _logger = logger;
-        _userManager = userManager;
-    }
-
     public async Task<IActionResult> Index()
     {
-        var res = await _userManager.Users.OrderBy(u => u.Email).ToListAsync();
+        var res = await userManager.Users.OrderBy(u => u.Email).ToListAsync();
         return View(res);
     }
 
     public async Task<IActionResult> RoleRemove(Guid userId, string role)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
             return RedirectToAction("Index", new { error = "User Not Found" });
         }
 
-        var result = await _userManager.RemoveFromRoleAsync(user, role);
+        var result = await userManager.RemoveFromRoleAsync(user, role);
         if (result.Succeeded)
         {
             return RedirectToAction("Index");
@@ -53,13 +39,13 @@ public class UsersController : Controller
 
     public async Task<IActionResult> RoleAdd(Guid userId, string role)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
         if (user == null)
         {
             return RedirectToAction("Index", new { error = "User Not Found" });
         }
 
-        var result = await _userManager.AddToRoleAsync(user, role);
+        var result = await userManager.AddToRoleAsync(user, role);
         if (result.Succeeded)
         {
             return RedirectToAction("Index");
@@ -70,14 +56,14 @@ public class UsersController : Controller
 
     public async Task<IActionResult> PasswordLink(Guid id)
     {
-        var user = await _userManager.FindByIdAsync(id.ToString());
+        var user = await userManager.FindByIdAsync(id.ToString());
         if (user == null)
         {
             return RedirectToAction("Index", new { error = "User Not Found" });
         }
-        
-        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-        
+
+        var code = await userManager.GeneratePasswordResetTokenAsync(user);
+
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = Url.Page(
             "/Account/ResetPassword",
@@ -88,7 +74,7 @@ public class UsersController : Controller
 
         var url = HtmlEncoder.Default.Encode(callbackUrl!);
 
-        var vm = new PasswordLinkViewModel()
+        var vm = new PasswordLinkViewModel
         {
             UserId = user.Id,
             UserEmail = user.Email ?? string.Empty,
@@ -97,5 +83,4 @@ public class UsersController : Controller
 
         return View(vm);
     }
-
 }

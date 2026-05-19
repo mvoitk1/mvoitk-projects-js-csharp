@@ -2,7 +2,7 @@ using Catalog.Web.Dtos.v1.Categories;
 using Catalog.Web.Dtos.v1.Collections;
 using Catalog.Web.Dtos.v1.Products;
 
-namespace WebApp.ViewModels;
+namespace Catalog.Web.ViewModels;
 
 public class HomeViewModel
 {

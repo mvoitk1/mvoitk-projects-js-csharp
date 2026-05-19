@@ -1,11 +1,43 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Users.Domain;
 
 namespace Users.Infrastructure.Seeding;
 
 public static class UsersDataInit
 {
+    public static void WaitDbConnection(DbContext ctx, ILogger logger)
+    {
+        while (true)
+        {
+            try
+            {
+                ctx.Database.OpenConnection();
+                ctx.Database.CloseConnection();
+                return;
+            }
+            catch (Npgsql.PostgresException e)
+            {
+                logger.LogWarning("Checked postgres db connection. Got: {Msg}", e.Message);
+
+                if (e.Message.Contains("does not exist"))
+                {
+                    logger.LogWarning("Applying migration, probably db is not there (but server is)");
+                    return;
+                }
+
+                logger.LogWarning("Waiting for db connection. Sleep 1 sec");
+                Thread.Sleep(1000);
+            }
+            catch (Npgsql.NpgsqlException e)
+            {
+                logger.LogWarning("Waiting for db (network error): {Msg}", e.Message);
+                Thread.Sleep(1000);
+            }
+        }
+    }
+
     public static readonly (string roleName, Guid? id)[] Roles =
     [
         ("Admin", null),

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Modules.Abstractions;
 
@@ -17,4 +18,9 @@ public interface IModule
     void Register(IServiceCollection services, IConfiguration configuration);
 
     void MapEndpoints(IEndpointRouteBuilder endpoints) { }
+
+    void RegisterHealthChecks(IHealthChecksBuilder builder) { }
+
+    Task SeedAsync(IServiceProvider services, IConfiguration configuration, CancellationToken ct)
+        => Task.CompletedTask;
 }

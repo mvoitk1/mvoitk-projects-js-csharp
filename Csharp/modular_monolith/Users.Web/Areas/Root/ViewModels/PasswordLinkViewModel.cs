@@ -1,4 +1,4 @@
-namespace WebApp.Areas.Root.ViewModels;
+namespace Users.Web.Areas.Root.ViewModels;
 
 public class PasswordLinkViewModel
 {

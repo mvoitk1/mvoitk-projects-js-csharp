@@ -1,18 +1,15 @@
-using Catalog.Infrastructure;
 using Catalog.Module;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Abstractions;
-using Modules.SharedKernel;
-using Sales.Infrastructure;
 using Sales.Module;
-using Users.Infrastructure;
 using Users.Module;
 using WebApp.Helpers;
 using WebApp.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Modular monolith composition: each module owns its own DbContext, DI, controllers.
+// Modular monolith composition: each module owns its own DbContext, DI, controllers,
+// health checks, and seed/migrate logic.
 IModule[] modules =
 [
     new UsersModule(),
@@ -35,15 +32,21 @@ builder.Services.AddAppCors();
 builder.Services.AddAppApiVersioning();
 builder.Services.AddAppSwagger();
 builder.Services.AddAppLocalization(builder.Configuration);
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<UsersDbContext>()
-    .AddDbContextCheck<CatalogDbContext>()
-    .AddDbContextCheck<SalesDbContext>();
+
+var healthChecks = builder.Services.AddHealthChecks();
+foreach (var module in modules)
+{
+    module.RegisterHealthChecks(healthChecks);
+}
 
 // Build and configure pipeline
 var app = builder.Build();
 
-await app.SetupAppDataAsync();
+foreach (var module in modules)
+{
+    await module.SeedAsync(app.Services, app.Configuration, CancellationToken.None);
+}
+
 app.UseAppMiddleware();
 app.UseAppSwagger();
 app.MapAppEndpoints();

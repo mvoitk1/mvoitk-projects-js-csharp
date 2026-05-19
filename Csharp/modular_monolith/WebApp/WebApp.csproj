@@ -10,36 +10,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.8" />
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.8" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.8" />
-        <PackageReference Include="CsvHelper" Version="33.1.0" />
-        <PackageReference Include="X.PagedList" Version="10.5.9" />
-        <PackageReference Include="X.PagedList.EF" Version="10.5.9" />
-        <PackageReference Include="X.PagedList.Mvc.Core" Version="10.5.9" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.8" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
         <PackageReference Include="NuGet.Packaging" Version="6.14.3" />
-        <PackageReference Include="NuGet.Protocol" Version="6.14.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\App.Resources\App.Resources.csproj" />
       <ProjectReference Include="..\Users.Module\Users.Module.csproj" />
-      <ProjectReference Include="..\Users.Domain\Users.Domain.csproj" />
-      <ProjectReference Include="..\Users.Infrastructure\Users.Infrastructure.csproj" />
       <ProjectReference Include="..\Catalog.Module\Catalog.Module.csproj" />
-      <ProjectReference Include="..\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
       <ProjectReference Include="..\Sales.Module\Sales.Module.csproj" />
-      <ProjectReference Include="..\Sales.Infrastructure\Sales.Infrastructure.csproj" />
       <ProjectReference Include="..\Modules.Abstractions\Modules.Abstractions.csproj" />
       <ProjectReference Include="..\Modules.SharedKernel\Modules.SharedKernel.csproj" />
     </ItemGroup>

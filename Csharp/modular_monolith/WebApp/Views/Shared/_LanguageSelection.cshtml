@@ -13,7 +13,7 @@
         @foreach (var item in cultureItems)
         {
              <a class="dropdown-item @(Thread.CurrentThread.CurrentUICulture.Name == item.Value ? "active" : "")"
-                  asp-area="" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="@item.Value"
+                  asp-area="" asp-controller="Site" asp-action="SetLanguage" asp-route-culture="@item.Value"
                   asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString">
                   @item.Text
              </a>

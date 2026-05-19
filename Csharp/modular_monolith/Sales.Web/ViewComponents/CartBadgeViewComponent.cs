@@ -1,9 +1,8 @@
-using Sales.Application.Contracts;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Helpers;
 using Modules.SharedKernel;
+using Sales.Application.Contracts;
 
-namespace WebApp.ViewComponents;
+namespace Sales.Web.ViewComponents;
 
 public class CartBadgeViewComponent(ICartService cartService) : ViewComponent
 {

@@ -1,4 +1,4 @@
-using App.BLL.Contracts;
+using Sales.Application.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Helpers;
 using Modules.SharedKernel;

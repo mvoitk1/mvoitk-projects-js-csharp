@@ -1,4 +1,3 @@
-using App.DAL.EF;
 using Catalog.Infrastructure;
 using Catalog.Module;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +36,6 @@ builder.Services.AddAppApiVersioning();
 builder.Services.AddAppSwagger();
 builder.Services.AddAppLocalization(builder.Configuration);
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<AppDbContext>()
     .AddDbContextCheck<UsersDbContext>()
     .AddDbContextCheck<CatalogDbContext>()
     .AddDbContextCheck<SalesDbContext>();

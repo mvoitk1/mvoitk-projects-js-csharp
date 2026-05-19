@@ -1,4 +1,4 @@
-using App.DTO.v1.Admin;
+using Catalog.Web.Dtos.v1.Admin;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Catalog.Web.Areas.Admin.ViewModels;

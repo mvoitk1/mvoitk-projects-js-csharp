@@ -1,6 +1,4 @@
 using System.Threading;
-using App.DAL.EF;
-using App.DAL.EF.Seeding;
 using Catalog.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -24,14 +22,13 @@ public static class AppDataInitExtensions
             .CreateScope();
         var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<IApplicationBuilder>>();
 
-        var appContext = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
         var usersContext = serviceScope.ServiceProvider.GetRequiredService<UsersDbContext>();
         var catalogContext = serviceScope.ServiceProvider.GetRequiredService<CatalogDbContext>();
         var salesContext = serviceScope.ServiceProvider.GetRequiredService<SalesDbContext>();
 
-        if (appContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory") return;
+        if (usersContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory") return;
 
-        WaitDbConnection(appContext, logger);
+        WaitDbConnection(usersContext, logger);
 
         var configuration = app.Configuration;
 
@@ -41,7 +38,6 @@ public static class AppDataInitExtensions
             salesContext.Database.EnsureDeleted();
             catalogContext.Database.EnsureDeleted();
             UsersDataInit.DeleteDatabase(usersContext);
-            AppDataInit.DeleteDatabase(appContext);
         }
 
         if (configuration.GetValue<bool>("DataInitialization:MigrateDatabase"))
@@ -51,7 +47,6 @@ public static class AppDataInitExtensions
             UsersDataInit.MigrateDatabase(usersContext);
             catalogContext.Database.Migrate();
             salesContext.Database.Migrate();
-            AppDataInit.MigrateDatabase(appContext);
         }
 
         if (configuration.GetValue<bool>("DataInitialization:SeedIdentity"))
@@ -61,15 +56,9 @@ public static class AppDataInitExtensions
             var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
             await UsersDataInit.SeedIdentityAsync(userManager, roleManager);
         }
-
-        if (configuration.GetValue<bool>("DataInitialization:SeedData"))
-        {
-            logger.LogInformation("SeedData");
-            AppDataInit.SeedAppData(appContext);
-        }
     }
 
-    private static void WaitDbConnection(AppDbContext ctx, ILogger<IApplicationBuilder> logger)
+    private static void WaitDbConnection(DbContext ctx, ILogger<IApplicationBuilder> logger)
     {
         while (true)
         {

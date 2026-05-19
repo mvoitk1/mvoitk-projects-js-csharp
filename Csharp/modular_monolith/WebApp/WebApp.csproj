@@ -32,12 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\App.BLL\App.BLL.csproj" />
-      <ProjectReference Include="..\App.DAL.EF\App.DAL.EF.csproj" />
-      <ProjectReference Include="..\App.DTO\App.DTO.csproj" />
       <ProjectReference Include="..\App.Resources\App.Resources.csproj" />
-      <ProjectReference Include="..\App.DAL.Contracts\App.DAL.Contracts.csproj" />
-      <ProjectReference Include="..\App.BLL.Contracts\App.BLL.Contracts.csproj" />
       <ProjectReference Include="..\Users.Module\Users.Module.csproj" />
       <ProjectReference Include="..\Users.Domain\Users.Domain.csproj" />
       <ProjectReference Include="..\Users.Infrastructure\Users.Infrastructure.csproj" />

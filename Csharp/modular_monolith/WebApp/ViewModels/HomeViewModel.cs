@@ -1,6 +1,6 @@
-using App.DTO.v1.Categories;
-using App.DTO.v1.Collections;
-using App.DTO.v1.Products;
+using Catalog.Web.Dtos.v1.Categories;
+using Catalog.Web.Dtos.v1.Collections;
+using Catalog.Web.Dtos.v1.Products;
 
 namespace WebApp.ViewModels;
 

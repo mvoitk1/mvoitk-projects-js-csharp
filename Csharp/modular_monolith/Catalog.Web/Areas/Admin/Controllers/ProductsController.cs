@@ -1,4 +1,4 @@
-using App.DTO.v1.Admin;
+using Catalog.Web.Dtos.v1.Admin;
 using Catalog.Application.Contracts;
 using Catalog.Application.Dtos.Products;
 using Catalog.Web.Areas.Admin.ViewModels;

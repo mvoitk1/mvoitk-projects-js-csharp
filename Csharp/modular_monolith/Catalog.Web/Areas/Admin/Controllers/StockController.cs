@@ -1,6 +1,6 @@
 using Catalog.Application.Contracts;
 using Modules.SharedKernel.Mapping;
-using App.DTO.v1.Admin;
+using Catalog.Web.Dtos.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.Web.Areas.Admin.Controllers;

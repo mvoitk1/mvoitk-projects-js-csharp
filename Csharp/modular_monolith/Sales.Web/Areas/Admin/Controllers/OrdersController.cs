@@ -1,4 +1,4 @@
-using App.DTO.v1.Admin;
+using Sales.Web.Dtos.v1.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Modules.SharedKernel.Mapping;

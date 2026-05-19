@@ -2,7 +2,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using App.DTO.v1.Products;
+using Catalog.Web.Dtos.v1.Products;
 using Base.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;

@@ -37,11 +37,9 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         }
 
         // Strip well-known DTO namespace prefixes so Swagger schema names stay readable.
-        // e.g. "App.DTO.v1.Products.ProductDto" → "Products.ProductDto"
-        //      "Catalog.Web.Dtos.v1.Products.ProductDto" → "Products.ProductDto"
+        // e.g. "Catalog.Web.Dtos.v1.Products.ProductDto" → "Products.ProductDto"
         string[] dtoPrefixes =
         [
-            "App.DTO.v1.",
             "Catalog.Web.Dtos.v1.",
             "Sales.Web.Dtos.v1.",
         ];

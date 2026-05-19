@@ -21,7 +21,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\App.DAL.EF\App.DAL.EF.csproj" />
+        <ProjectReference Include="..\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
+        <ProjectReference Include="..\Sales.Infrastructure\Sales.Infrastructure.csproj" />
+        <ProjectReference Include="..\Users.Infrastructure\Users.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

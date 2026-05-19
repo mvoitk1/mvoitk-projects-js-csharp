@@ -1,4 +1,4 @@
-using App.DTO.v1.Admin;
+using Sales.Web.Dtos.v1.Admin;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Sales.Web.Areas.Admin.ViewModels;

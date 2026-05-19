@@ -27,6 +27,8 @@
     <ProjectReference Include="..\Catalog.Domain\Catalog.Domain.csproj" />
     <ProjectReference Include="..\Modules.Contracts\Modules.Contracts.csproj" />
     <ProjectReference Include="..\Modules.SharedKernel\Modules.SharedKernel.csproj" />
+    <ProjectReference Include="..\App.Resources\App.Resources.csproj" />
+    <ProjectReference Include="..\App.DTO\App.DTO.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ using Catalog.Domain.Enums;
 using Modules.SharedKernel;
 using Xunit;
 
-namespace WebApp.Tests.Unit.Mappers;
+namespace Tests.Unit.Mappers;
 
 public class ProductMapperTests
 {

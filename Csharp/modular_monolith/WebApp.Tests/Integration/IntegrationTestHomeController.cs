@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Tests.Shared;
 using Xunit;
 
 namespace WebApp.Tests.Integration;

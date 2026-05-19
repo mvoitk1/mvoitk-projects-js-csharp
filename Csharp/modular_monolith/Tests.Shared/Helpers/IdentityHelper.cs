@@ -5,11 +5,11 @@ using Users.Application.Dtos.Identity;
 using Base.Helpers;
 using Xunit;
 
-namespace WebApp.Tests.Helpers;
+namespace Tests.Shared.Helpers;
 
 public static class IdentityHelper
 {
-    public static async Task<JWTResponse> SetupUserAsync(HttpClient httpClient , string firstName, string lastName, string password, string email)
+    public static async Task<JWTResponse> SetupUserAsync(HttpClient httpClient, string firstName, string lastName, string password, string email)
     {
         var data = new Register()
         {
@@ -19,7 +19,6 @@ public static class IdentityHelper
             Email = email,
         };
 
-        // Act
         var response = await httpClient.PostAsync(
             "/api/v1/account/register",
             new StringContent(
@@ -28,10 +27,9 @@ public static class IdentityHelper
         );
 
         var responseString = await response.Content.ReadAsStringAsync();
-        
-        // Assert
+
         response.EnsureSuccessStatusCode();
-        
+
         var jwtResponse = System.Text.Json.JsonSerializer.Deserialize<JWTResponse>(responseString, JsonHelpers.JsonSerializerOptionsCamelCase);
 
         Assert.NotNull(jwtResponse);

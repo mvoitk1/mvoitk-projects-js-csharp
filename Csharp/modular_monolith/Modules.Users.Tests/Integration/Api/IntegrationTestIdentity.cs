@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using Users.Application.Dtos.Identity;
 using Base.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Tests.Shared;
 using Xunit;
 
-namespace WebApp.Tests.Integration.Api;
+namespace Tests.Integration.Api;
 
 [Collection("Database tests")]
 public class IntegrationTestIdentity : IClassFixture<CustomWebApplicationFactory<Program>>

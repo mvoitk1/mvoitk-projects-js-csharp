@@ -8,10 +8,11 @@ using Sales.Web.Dtos.v1.Cart;
 using Sales.Web.Dtos.v1.Orders;
 using Base.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
-using WebApp.Tests.Helpers;
+using Tests.Shared.Helpers;
+using Tests.Shared;
 using Xunit;
 
-namespace WebApp.Tests.Integration.Api;
+namespace Tests.Integration.Api;
 
 /// <summary>
 /// Cart and checkout flows over HTTP: add / update / remove, the IDOR guard that stops one

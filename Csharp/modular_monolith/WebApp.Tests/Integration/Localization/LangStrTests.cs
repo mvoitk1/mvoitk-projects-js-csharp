@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Threading;
 using Modules.SharedKernel;
+using Tests.Shared;
 using Xunit;
 
 namespace WebApp.Tests.Integration.Localization;

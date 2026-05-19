@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 using Users.Application.Dtos.Identity;
 using Base.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Tests.Shared;
 using Xunit;
 
-namespace WebApp.Tests.Integration.Api;
+namespace Tests.Integration.Api;
 
 /// <summary>
 /// Tests that verify IDOR protections: users cannot access each other's carts or orders.

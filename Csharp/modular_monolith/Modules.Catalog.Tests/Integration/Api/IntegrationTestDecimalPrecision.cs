@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 using Catalog.Web.Dtos.v1.Products;
 using Base.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Tests.Shared;
 using Xunit;
 
-namespace WebApp.Tests.Integration.Api;
+namespace Tests.Integration.Api;
 
 [Collection("Database tests")]
 public class IntegrationTestDecimalPrecision : IClassFixture<CustomWebApplicationFactory<Program>>

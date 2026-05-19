@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Catalog.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -8,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sales.Infrastructure;
 using Users.Infrastructure;
 
-namespace WebApp.Tests;
+namespace Tests.Shared;
 
 public class CustomWebApplicationFactory<TStartup>
     : WebApplicationFactory<TStartup> where TStartup: class

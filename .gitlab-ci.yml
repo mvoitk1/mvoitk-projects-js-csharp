@@ -53,6 +53,21 @@ deploy_csharp_a3:
     - printf "APP_PORT=%s\nASPNETCORE_ENVIRONMENT=%s\nPOSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\nJWT_KEY=%s\nJWT_ISSUER=%s\nJWT_AUDIENCE=%s\n" "${CSHARP_A3_APP_PORT:-82}" "${CSHARP_A3_ASPNETCORE_ENVIRONMENT:-Production}" "${CSHARP_A3_POSTGRES_DB:-csharp_a3}" "${CSHARP_A3_POSTGRES_USER:-csharp_a3}" "${CSHARP_A3_POSTGRES_PASSWORD}" "${CSHARP_A3_JWT_KEY}" "${CSHARP_A3_JWT_ISSUER:-https://shop.local}" "${CSHARP_A3_JWT_AUDIENCE:-https://shop.local}" > .env
     - docker compose -p csharp_a3 up --build --remove-orphans --detach
 
+deploy_csharp_a5:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - Csharp/modular_monolith/**/*
+  tags:
+    - shared
+  script:
+    - cd "Csharp/modular_monolith"
+    - test -n "$CSHARP_A5_POSTGRES_PASSWORD" || exit 1
+    - test -n "$CSHARP_A5_JWT_KEY" || exit 1
+    - printf "APP_PORT=%s\nASPNETCORE_ENVIRONMENT=%s\nPOSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\nJWT_KEY=%s\nJWT_ISSUER=%s\nJWT_AUDIENCE=%s\n" "${CSHARP_A5_APP_PORT:-83}" "${CSHARP_A5_ASPNETCORE_ENVIRONMENT:-Production}" "${CSHARP_A5_POSTGRES_DB:-csharp_a5}" "${CSHARP_A5_POSTGRES_USER:-csharp_a5}" "${CSHARP_A5_POSTGRES_PASSWORD}" "${CSHARP_A5_JWT_KEY}" "${CSHARP_A5_JWT_ISSUER:-https://shop.local}" "${CSHARP_A5_JWT_AUDIENCE:-https://shop.local}" > .env
+    - docker compose -p csharp_a5 up --build --remove-orphans --detach
+
 deploy_javascript_a4:
   stage: deploy
   rules:

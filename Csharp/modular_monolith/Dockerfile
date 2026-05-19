@@ -3,24 +3,52 @@ WORKDIR /src
 
 COPY ["webapp2025s.sln", "./"]
 COPY ["Directory.Build.props", "./"]
+
+# Host
 COPY ["WebApp/WebApp.csproj", "WebApp/"]
-COPY ["App.BLL/App.BLL.csproj", "App.BLL/"]
-COPY ["App.BLL.Contracts/App.BLL.Contracts.csproj", "App.BLL.Contracts/"]
-COPY ["App.BLL.DTO/App.BLL.DTO.csproj", "App.BLL.DTO/"]
-COPY ["App.DAL.EF/App.DAL.EF.csproj", "App.DAL.EF/"]
-COPY ["App.DAL.Contracts/App.DAL.Contracts.csproj", "App.DAL.Contracts/"]
-COPY ["App.DAL.DTO/App.DAL.DTO.csproj", "App.DAL.DTO/"]
-COPY ["App.Domain/App.Domain.csproj", "App.Domain/"]
-COPY ["App.DTO/App.DTO.csproj", "App.DTO/"]
+
+# Shared base layer
 COPY ["App.Resources/App.Resources.csproj", "App.Resources/"]
 COPY ["Base.BLL/Base.BLL.csproj", "Base.BLL/"]
 COPY ["Base.BLL.Contracts/Base.BLL.Contracts.csproj", "Base.BLL.Contracts/"]
-COPY ["Base.DAL.EF/Base.DAL.EF.csproj", "Base.DAL.EF/"]
-COPY ["Base.DAL.Contracts/Base.DAL.Contracts.csproj", "Base.DAL.Contracts/"]
-COPY ["Base.Domain/Base.Domain.csproj", "Base.Domain/"]
 COPY ["Base.Contracts/Base.Contracts.csproj", "Base.Contracts/"]
+COPY ["Base.DAL.Contracts/Base.DAL.Contracts.csproj", "Base.DAL.Contracts/"]
+COPY ["Base.DAL.EF/Base.DAL.EF.csproj", "Base.DAL.EF/"]
+COPY ["Base.Domain/Base.Domain.csproj", "Base.Domain/"]
 COPY ["Base.Helpers/Base.Helpers.csproj", "Base.Helpers/"]
 COPY ["Base.Resources/Base.Resources.csproj", "Base.Resources/"]
+
+# Module composition contracts
+COPY ["Modules.Abstractions/Modules.Abstractions.csproj", "Modules.Abstractions/"]
+COPY ["Modules.Contracts/Modules.Contracts.csproj", "Modules.Contracts/"]
+COPY ["Modules.SharedKernel/Modules.SharedKernel.csproj", "Modules.SharedKernel/"]
+
+# Catalog module
+COPY ["Catalog.Domain/Catalog.Domain.csproj", "Catalog.Domain/"]
+COPY ["Catalog.Application/Catalog.Application.csproj", "Catalog.Application/"]
+COPY ["Catalog.Infrastructure/Catalog.Infrastructure.csproj", "Catalog.Infrastructure/"]
+COPY ["Catalog.Web/Catalog.Web.csproj", "Catalog.Web/"]
+COPY ["Catalog.Module/Catalog.Module.csproj", "Catalog.Module/"]
+
+# Sales module
+COPY ["Sales.Domain/Sales.Domain.csproj", "Sales.Domain/"]
+COPY ["Sales.Application/Sales.Application.csproj", "Sales.Application/"]
+COPY ["Sales.Infrastructure/Sales.Infrastructure.csproj", "Sales.Infrastructure/"]
+COPY ["Sales.Web/Sales.Web.csproj", "Sales.Web/"]
+COPY ["Sales.Module/Sales.Module.csproj", "Sales.Module/"]
+
+# Users module
+COPY ["Users.Domain/Users.Domain.csproj", "Users.Domain/"]
+COPY ["Users.Application/Users.Application.csproj", "Users.Application/"]
+COPY ["Users.Infrastructure/Users.Infrastructure.csproj", "Users.Infrastructure/"]
+COPY ["Users.Web/Users.Web.csproj", "Users.Web/"]
+COPY ["Users.Module/Users.Module.csproj", "Users.Module/"]
+
+# Tests
+COPY ["Tests.Shared/Tests.Shared.csproj", "Tests.Shared/"]
+COPY ["Modules.Catalog.Tests/Modules.Catalog.Tests.csproj", "Modules.Catalog.Tests/"]
+COPY ["Modules.Sales.Tests/Modules.Sales.Tests.csproj", "Modules.Sales.Tests/"]
+COPY ["Modules.Users.Tests/Modules.Users.Tests.csproj", "Modules.Users.Tests/"]
 COPY ["WebApp.Tests/WebApp.Tests.csproj", "WebApp.Tests/"]
 COPY ["WebApp.Tests.Postgres/WebApp.Tests.Postgres.csproj", "WebApp.Tests.Postgres/"]
 

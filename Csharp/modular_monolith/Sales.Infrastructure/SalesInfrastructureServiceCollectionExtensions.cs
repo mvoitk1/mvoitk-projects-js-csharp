@@ -1,7 +1,10 @@
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Modules.Infrastructure;
+using Npgsql;
 using Sales.Application.Contracts;
 using Sales.Infrastructure.UnitOfWork;
 
@@ -16,15 +19,19 @@ public static class SalesInfrastructureServiceCollectionExtensions
                                ?? throw new InvalidOperationException(
                                    "Connection string 'DefaultConnection' not found.");
 
-        services.AddDbContext<SalesDbContext>(options =>
+        // Shared scoped connection so the module contexts can enlist in one transaction.
+        services.AddSharedRelationalConnection(_ => new NpgsqlConnection(connectionString));
+
+        services.AddDbContext<SalesDbContext>((sp, options) =>
         {
-            options.UseNpgsql(connectionString)
+            options.UseNpgsql(sp.GetRequiredService<DbConnection>())
                 .ConfigureWarnings(w =>
                     w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
         });
 
         services.AddScoped<ISalesUnitOfWork, SalesUnitOfWork>();
+        services.AddModuleTransactionParticipant<SalesDbContext>();
         return services;
     }
 }

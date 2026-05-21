@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Base.DAL.Contracts\Base.DAL.Contracts.csproj" />
     <ProjectReference Include="..\Base.DAL.EF\Base.DAL.EF.csproj" />
     <ProjectReference Include="..\Modules.SharedKernel\Modules.SharedKernel.csproj" />
+    <ProjectReference Include="..\Modules.Infrastructure\Modules.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

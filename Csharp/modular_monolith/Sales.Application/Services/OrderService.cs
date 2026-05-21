@@ -1,7 +1,9 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Modules.Contracts.Catalog.Commands;
 using Modules.Contracts.Catalog.Queries;
 using Modules.Contracts.Sales.Events;
+using Modules.SharedKernel;
 using Sales.Application.Contracts;
 using Sales.Application.Dtos.Orders;
 using Sales.Domain;
@@ -10,12 +12,19 @@ using Sales.Domain.Enums;
 namespace Sales.Application.Services;
 
 /// <summary>
-/// Order use-cases. PlaceOrderAsync uses MediatR to reserve stock atomically in
-/// the Catalog module before writing the order, and falls back to ReleaseStock
-/// if the write fails. Customer name lookups on admin queries go through
-/// GetUserSnapshotQuery (Users module).
+/// Order use-cases. PlaceOrderAsync reserves stock in the Catalog module and
+/// writes the order inside a single app-level transaction (<see cref="IUnitOfWorkScope"/>),
+/// so both commit or roll back together — no compensation needed. The
+/// OrderPlacedEvent is published only after the transaction commits, and a
+/// failing event handler is logged rather than allowed to fail a committed order.
+/// Customer name lookups on admin queries go through GetUserSnapshotQuery (Users module).
 /// </summary>
-public class OrderService(ISalesUnitOfWork uow, IMediator mediator, IPublisher publisher) : IOrderService
+public class OrderService(
+    ISalesUnitOfWork uow,
+    IMediator mediator,
+    IPublisher publisher,
+    IUnitOfWorkScope uowScope,
+    ILogger<OrderService> logger) : IOrderService
 {
     public async Task<OrderDto> PlaceOrderAsync(Guid userId, CreateOrderDto dto)
     {
@@ -27,18 +36,23 @@ public class OrderService(ISalesUnitOfWork uow, IMediator mediator, IPublisher p
             .Select(i => new ReserveStockLine(i.ProductVariantId, i.Quantity))
             .ToList();
 
-        var reservation = await mediator.Send(new ReserveStockCommand(lines));
-        if (!reservation.Success)
-            throw new InvalidOperationException(
-                $"Insufficient stock for variants: {string.Join(", ", reservation.InsufficientStockVariantIds)}");
+        Order order;
+        decimal totalAmount;
 
-        var pricingMap = await mediator.Send(new GetVariantsPricingQuery(
-            cart.Items.Select(i => i.ProductVariantId).Distinct().ToList()));
-
+        await uowScope.BeginAsync();
         try
         {
-            var totalAmount = cart.Items.Sum(i => i.UnitPrice * i.Quantity);
-            var order = new Order
+            // Stock decrement (Catalog) and order write (Sales) share one transaction.
+            var reservation = await mediator.Send(new ReserveStockCommand(lines));
+            if (!reservation.Success)
+                throw new InvalidOperationException(
+                    $"Insufficient stock for variants: {string.Join(", ", reservation.InsufficientStockVariantIds)}");
+
+            var pricingMap = await mediator.Send(new GetVariantsPricingQuery(
+                cart.Items.Select(i => i.ProductVariantId).Distinct().ToList()));
+
+            totalAmount = cart.Items.Sum(i => i.UnitPrice * i.Quantity);
+            order = new Order
             {
                 OrderNumber = GenerateOrderNumber(),
                 Status = OrderStatus.Confirmed,
@@ -74,20 +88,38 @@ public class OrderService(ISalesUnitOfWork uow, IMediator mediator, IPublisher p
             uow.Orders.Add(order);
             await uow.SaveChangesAsync();
 
+            await uowScope.CommitAsync();
+        }
+        catch
+        {
+            // Rollback undoes the stock decrement together with the order write.
+            await uowScope.RollbackAsync();
+            throw;
+        }
+
+        // Published only after commit. A failing handler must not roll back or
+        // release stock for an order that is already persisted and confirmed.
+        await PublishOrderPlacedSafelyAsync(order, userId, totalAmount);
+
+        return (await GetUserOrderByIdAsync(userId, order.Id))!;
+    }
+
+    private async Task PublishOrderPlacedSafelyAsync(Order order, Guid userId, decimal totalAmount)
+    {
+        try
+        {
             await publisher.Publish(new OrderPlacedEvent(
                 order.Id,
                 order.OrderNumber,
                 userId,
                 totalAmount,
                 order.Items.Select(i => new OrderPlacedLine(i.ProductVariantId, i.Quantity, i.UnitPrice)).ToList()));
-
-            return (await GetUserOrderByIdAsync(userId, order.Id))!;
         }
-        catch
+        catch (Exception ex)
         {
-            // Compensating: release the stock we just reserved.
-            await mediator.Send(new ReleaseStockCommand(lines));
-            throw;
+            logger.LogError(ex,
+                "OrderPlacedEvent handler failed for order {OrderId}; order is committed and remains valid.",
+                order.Id);
         }
     }
 

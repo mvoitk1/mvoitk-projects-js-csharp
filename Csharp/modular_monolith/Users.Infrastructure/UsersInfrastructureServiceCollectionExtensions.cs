@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -7,6 +8,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Modules.Infrastructure;
+using Npgsql;
 using Users.Application.Contracts;
 using Users.Domain;
 using Users.Infrastructure.UnitOfWork;
@@ -23,15 +26,19 @@ public static class UsersInfrastructureServiceCollectionExtensions
                                ?? throw new InvalidOperationException(
                                    "Connection string 'DefaultConnection' not found.");
 
-        services.AddDbContext<UsersDbContext>(options =>
+        // Shared scoped connection so the module contexts can enlist in one transaction.
+        services.AddSharedRelationalConnection(_ => new NpgsqlConnection(connectionString));
+
+        services.AddDbContext<UsersDbContext>((sp, options) =>
         {
-            options.UseNpgsql(connectionString)
+            options.UseNpgsql(sp.GetRequiredService<DbConnection>())
                 .ConfigureWarnings(w =>
                     w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
         });
 
         services.AddScoped<IUsersUnitOfWork, UsersUnitOfWork>();
+        services.AddModuleTransactionParticipant<UsersDbContext>();
         services.AddDataProtection().PersistKeysToDbContext<UsersDbContext>();
 
         services

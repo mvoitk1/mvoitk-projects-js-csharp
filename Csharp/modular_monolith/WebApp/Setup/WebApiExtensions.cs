@@ -47,23 +47,6 @@ public static class WebApiExtensions
         return services;
     }
 
-    public static IServiceCollection AddAppCors(this IServiceCollection services)
-    {
-        services.AddCors(options =>
-        {
-            options.AddPolicy("CorsAllowAll", policy =>
-                policy
-                    .WithOrigins(
-                        "https://mvoitk-ppfront.proxy.itcollege.ee",
-                        "http://localhost:5173"
-                    )
-                    .AllowAnyHeader()
-                    .AllowAnyMethod());
-        });
-
-        return services;
-    }
-
     public static IServiceCollection AddAppApiVersioning(this IServiceCollection services)
     {
         var apiVersioningBuilder = services.AddApiVersioning(options =>

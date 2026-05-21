@@ -14,4 +14,12 @@ public interface ITransactionParticipant
 
     /// <summary>Enlist the wrapped context in the supplied transaction.</summary>
     void Enlist(DbTransaction transaction);
+
+    /// <summary>
+    /// Detach the wrapped context from any enlisted transaction. Must be called
+    /// once the shared transaction completes, otherwise later queries on the
+    /// context reuse the now-completed transaction and throw
+    /// "Transaction is already completed".
+    /// </summary>
+    void Clear();
 }

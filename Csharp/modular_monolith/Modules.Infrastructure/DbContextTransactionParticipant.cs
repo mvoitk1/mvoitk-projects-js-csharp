@@ -13,4 +13,6 @@ public sealed class DbContextTransactionParticipant<TContext>(TContext context) 
     public bool IsRelational => context.Database.IsRelational();
 
     public void Enlist(DbTransaction transaction) => context.Database.UseTransaction(transaction);
+
+    public void Clear() => context.Database.UseTransaction(null);
 }

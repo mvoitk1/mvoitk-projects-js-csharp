@@ -41,6 +41,12 @@ public static class UsersInfrastructureServiceCollectionExtensions
         services.AddModuleTransactionParticipant<UsersDbContext>();
         services.AddDataProtection().PersistKeysToDbContext<UsersDbContext>();
 
+        // Cross-module MediatR handlers (e.g. GetUserSnapshotQuery) live here because
+        // they depend on Identity's UserManager. The Application-layer AddMediatR scan
+        // doesn't see this assembly, so register it explicitly.
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(typeof(UsersInfrastructureServiceCollectionExtensions).Assembly));
+
         services
             .AddIdentity<AppUser, AppRole>(options => options.SignIn.RequireConfirmedAccount = false)
             .AddEntityFrameworkStores<UsersDbContext>()

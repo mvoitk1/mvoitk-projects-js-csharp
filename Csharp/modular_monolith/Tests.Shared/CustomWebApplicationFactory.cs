@@ -1,5 +1,6 @@
 using System.Linq;
 using Catalog.Infrastructure;
+using Catalog.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -23,8 +24,13 @@ public class CustomWebApplicationFactory<TStartup>
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             scope.ServiceProvider.GetRequiredService<UsersDbContext>().Database.EnsureCreated();
-            scope.ServiceProvider.GetRequiredService<CatalogDbContext>().Database.EnsureCreated();
+            var catalog = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+            catalog.Database.EnsureCreated();
             scope.ServiceProvider.GetRequiredService<SalesDbContext>().Database.EnsureCreated();
+
+            // Seed example catalog data so tests resolving a product/variant have data.
+            // (The module's own seeder skips the InMemory provider, so do it here.)
+            CatalogDataInit.SeedDataAsync(catalog).GetAwaiter().GetResult();
         });
     }
 

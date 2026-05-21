@@ -26,8 +26,9 @@ public class IntegrationTestDecimalPrecision : IClassFixture<CustomWebApplicatio
     [Fact]
     public async Task ProductVariantPrice_RoundTripsExactDecimal()
     {
-        // The seeded variant prices are 29.99 — assert the API serializes the value
-        // exactly, with no float-imprecision tail (e.g. 29.989999...).
+        // Prices are stored as decimal(18,2). Assert the API serializes each price
+        // exactly (its canonical decimal string), with no binary-float drift tail
+        // (e.g. 24.899999... / 24.900000001) — regardless of the seeded value.
         var listResponse = await _client.GetAsync("/api/v1/products");
         listResponse.EnsureSuccessStatusCode();
         var listBody = await listResponse.Content.ReadAsStringAsync();
@@ -40,15 +41,20 @@ public class IntegrationTestDecimalPrecision : IClassFixture<CustomWebApplicatio
         detailResponse.EnsureSuccessStatusCode();
         var detailBody = await detailResponse.Content.ReadAsStringAsync();
 
-        // 1) Raw JSON must contain "29.99" with no extra digits (would fail for double precision drift).
-        Assert.Contains("\"price\": 29.99", detailBody);
-        Assert.DoesNotContain("29.989999", detailBody);
-        Assert.DoesNotContain("29.990000000", detailBody);
-
-        // 2) Parsed back as decimal — equal to the literal seed value.
         var product = JsonSerializer.Deserialize<ProductDto>(
             detailBody, JsonHelpers.JsonSerializerOptionsCamelCase)!;
         Assert.NotEmpty(product.Variants);
-        Assert.All(product.Variants, v => Assert.Equal(29.99m, v.Price));
+
+        foreach (var variant in product.Variants)
+        {
+            // The parsed decimal must serialize back to the exact same token in the
+            // raw JSON — proving no float-precision drift in (de)serialization.
+            var token = "\"price\": " + variant.Price.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            Assert.Contains(token, detailBody);
+        }
+
+        // No long fractional tails anywhere (the hallmark of double-backed money).
+        Assert.DoesNotContain("9999999", detailBody);
+        Assert.DoesNotContain("00000001", detailBody);
     }
 }

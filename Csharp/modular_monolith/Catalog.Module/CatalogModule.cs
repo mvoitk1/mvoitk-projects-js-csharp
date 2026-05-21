@@ -1,5 +1,6 @@
 using Catalog.Application;
 using Catalog.Infrastructure;
+using Catalog.Infrastructure.Seeding;
 using Catalog.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -27,14 +28,14 @@ public sealed class CatalogModule : IModule
         builder.AddDbContextCheck<CatalogDbContext>();
     }
 
-    public Task SeedAsync(IServiceProvider services, IConfiguration configuration, CancellationToken ct)
+    public async Task SeedAsync(IServiceProvider services, IConfiguration configuration, CancellationToken ct)
     {
         using var scope = services.CreateScope();
         var sp = scope.ServiceProvider;
         var logger = sp.GetRequiredService<ILogger<IApplicationBuilder>>();
         var context = sp.GetRequiredService<CatalogDbContext>();
 
-        if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory") return Task.CompletedTask;
+        if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory") return;
 
         if (configuration.GetValue<bool>("DataInitialization:DropDatabase"))
         {
@@ -48,6 +49,10 @@ public sealed class CatalogModule : IModule
             context.Database.Migrate();
         }
 
-        return Task.CompletedTask;
+        if (configuration.GetValue<bool>("DataInitialization:SeedData"))
+        {
+            logger.LogInformation("SeedData: Catalog");
+            await CatalogDataInit.SeedDataAsync(context);
+        }
     }
 }

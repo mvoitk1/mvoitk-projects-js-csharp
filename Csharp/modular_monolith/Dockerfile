@@ -22,6 +22,7 @@ COPY ["Base.Resources/Base.Resources.csproj", "Base.Resources/"]
 COPY ["Modules.Abstractions/Modules.Abstractions.csproj", "Modules.Abstractions/"]
 COPY ["Modules.Contracts/Modules.Contracts.csproj", "Modules.Contracts/"]
 COPY ["Modules.SharedKernel/Modules.SharedKernel.csproj", "Modules.SharedKernel/"]
+COPY ["Modules.Infrastructure/Modules.Infrastructure.csproj", "Modules.Infrastructure/"]
 
 # Catalog module
 COPY ["Catalog.Domain/Catalog.Domain.csproj", "Catalog.Domain/"]
